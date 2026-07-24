@@ -1,19 +1,30 @@
-# School OS
+# School-OS
 
-ระบบจัดการงานโรงเรียนสำหรับครู
+ระบบบริหารจัดการโรงเรียน
 
-## Vision
+## Description
 
-สร้างระบบที่ช่วยให้ครูจัดการงานประจำวันได้จากที่เดียว
+School-OS เป็นระบบที่ช่วยจัดการข้อมูลภายในโรงเรียน
+เช่น ตารางสอน ครู นักเรียน วิชา ห้องเรียน และข้อมูลพื้นฐานต่างๆ
 
-## Modules
+## Features
 
-- Dashboard
-- Leave System
-- Substitute Teacher
-- Grade Management
-- Notification
+- จัดการข้อมูลครู
+- จัดการข้อมูลนักเรียน
+- จัดการรายวิชา
+- จัดการห้องเรียน
+- สร้างและจัดการตารางสอน
 
-## Status
+## Technology
 
-Planning Stage
+Frontend:
+- React
+
+Backend:
+- Node.js
+- Express
+
+Database:
+- MySQL
+
+## Project Structure
