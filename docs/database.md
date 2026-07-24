@@ -96,3 +96,32 @@ Fields:
 - period_id
 - day_of_week
 - academic_year
+
+## Leave
+
+ข้อมูลการลา
+
+Fields:
+
+- leave_id
+- teacher_id
+- leave_type
+- start_date
+- end_date
+- reason
+- status
+- approved_by
+- created_at
+
+## Substitute
+
+ข้อมูลการสอนแทน
+
+Fields:
+
+- substitute_id
+- leave_id
+- timetable_id
+- substitute_teacher_id
+- assigned_by
+- status
