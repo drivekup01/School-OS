@@ -125,3 +125,69 @@ Fields:
 - substitute_teacher_id
 - assigned_by
 - status
+
+## Student
+
+ข้อมูลนักเรียน
+
+Fields:
+
+- student_id
+- student_code
+- first_name
+- last_name
+- gender
+- class_id
+- status
+
+## Academic Year
+
+ข้อมูลปีการศึกษา
+
+Fields:
+
+- academic_year_id
+- year
+- semester
+- status
+
+## Enrollment
+
+ข้อมูลการลงทะเบียนเรียน
+
+Fields:
+
+- enrollment_id
+- student_id
+- subject_id
+- teacher_id
+- class_id
+- academic_year_id
+
+## Grade Score
+
+ข้อมูลคะแนน
+
+Fields:
+
+- score_id
+- enrollment_id
+- category_id
+- score
+- created_at
+
+## Notification
+
+ข้อมูลการแจ้งเตือน
+
+Fields:
+
+- notification_id
+- user_id
+- title
+- message
+- type
+- reference_type
+- reference_id
+- status
+- created_at
