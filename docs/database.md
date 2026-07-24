@@ -191,3 +191,37 @@ Fields:
 - reference_id
 - status
 - created_at
+
+## Role
+
+ประเภทผู้ใช้งาน
+
+Fields:
+
+- role_id
+- role_name
+- description
+
+## Permission
+
+สิทธิ์การใช้งาน
+
+Fields:
+
+- permission_id
+- permission_name
+- module
+- action
+
+## School
+
+ข้อมูลโรงเรียน
+
+Fields:
+
+- school_id
+- school_name
+- address
+- phone
+- logo
+- academic_year
