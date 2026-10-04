@@ -1337,39 +1337,49 @@ body.admin-mode.daily-mode #nav-storage{display:none!important}
 }
 </style>
 <style id="school-header-clean-reset">
-/* ===== Clean header baseline ===== */
+/* ===== School-OS header — top mockup direction ===== */
 .school-topbar{
   position:relative!important;
-  height:104px!important;
-  min-height:104px!important;
-  padding:0!important;
+  height:118px!important;
+  min-height:118px!important;
+  padding:0 28px!important;
   margin:0!important;
   gap:0!important;
   overflow:hidden!important;
-  background:#f5f7fb!important;
-  border-bottom:0!important;
-  box-shadow:0 2px 10px rgba(18,58,104,.08)!important;
+  background:
+    radial-gradient(circle at 82% 12%,rgba(255,255,255,.22),transparent 28%),
+    linear-gradient(110deg,#0d376d 0%,#0f4f8f 38%,#2d87c5 66%,#cfe5f6 100%)!important;
+  border:0!important;
+  border-bottom:1px solid rgba(255,255,255,.45)!important;
+  box-shadow:0 3px 14px rgba(18,58,104,.14)!important;
+}
+.school-topbar::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(132deg,transparent 0 42%,rgba(255,255,255,.055) 42.2% 48%,transparent 48.2%),
+    linear-gradient(155deg,transparent 0 58%,rgba(255,255,255,.04) 58.2% 66%,transparent 66.2%);
 }
 
-/* Hide header photo while rebuilding layout */
-.school-header-photo{
-  display:none!important;
-}
+/* no photo while using clean gradient header */
+.school-header-photo{display:none!important}
 
-/* Brand area */
+/* Brand */
 .school-brand{
   position:relative!important;
   z-index:2!important;
   display:flex!important;
   align-items:center!important;
-  gap:16px!important;
-  width:100%!important;
+  gap:18px!important;
+  width:auto!important;
   min-width:0!important;
   height:100%!important;
-  padding:0 24px!important;
-  background:linear-gradient(90deg,#0d3568 0%,#124a86 58%,#eaf0f6 58%,#f5f7fb 100%)!important;
+  padding:0!important;
+  background:transparent!important;
   clip-path:none!important;
-  overflow:hidden!important;
+  overflow:visible!important;
 }
 .school-brand::before,
 .school-brand::after{
@@ -1378,10 +1388,9 @@ body.admin-mode.daily-mode #nav-storage{display:none!important}
 }
 .school-brand>*{position:relative;z-index:2}
 
-/* Logo: no white circular frame */
 .school-logo-shell{
-  width:74px!important;
-  height:74px!important;
+  width:84px!important;
+  height:84px!important;
   border:0!important;
   border-radius:0!important;
   background:transparent!important;
@@ -1393,100 +1402,219 @@ body.admin-mode.daily-mode #nav-storage{display:none!important}
   flex-shrink:0!important;
 }
 .school-logo-shell img{
-  width:82px!important;
-  height:82px!important;
+  width:92px!important;
+  height:92px!important;
   object-fit:contain!important;
   padding:0!important;
-  filter:drop-shadow(0 4px 7px rgba(0,0,0,.28))!important;
+  filter:drop-shadow(0 5px 8px rgba(0,0,0,.30))!important;
 }
-.school-logo-fallback{font-size:30px!important}
+.school-logo-fallback{font-size:38px!important}
 
-/* Bigger school name */
 .school-brand-text{min-width:0!important}
 .school-name{
   color:#ffd45b!important;
-  font-size:22px!important;
-  font-weight:800!important;
-  line-height:1.12!important;
+  font-size:27px!important;
+  font-weight:900!important;
+  line-height:1.1!important;
   white-space:nowrap!important;
   overflow:hidden!important;
   text-overflow:ellipsis!important;
-  max-width:430px!important;
-  text-shadow:0 1px 2px rgba(0,0,0,.16)!important;
+  max-width:520px!important;
+  text-shadow:0 2px 4px rgba(0,0,0,.16)!important;
 }
 .school-system-name{
-  margin-top:5px!important;
-  color:rgba(255,255,255,.93)!important;
-  font-size:11px!important;
+  margin-top:7px!important;
+  color:rgba(255,255,255,.96)!important;
+  font-size:15px!important;
   font-weight:700!important;
   white-space:nowrap!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.12)!important;
 }
 
-/* Keep controls on the right */
+/* Right tool row */
 .public-topbar-tools{
   position:absolute!important;
-  right:18px!important;
+  right:28px!important;
   top:50%!important;
   transform:translateY(-50%)!important;
   z-index:3!important;
   display:flex!important;
   align-items:center!important;
-  gap:9px!important;
-  margin:0!important;
-}
-
-/* Remove any white gap between header and app shell/sidebar */
-.app-shell{
+  gap:10px!important;
   margin:0!important;
   padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
 }
+
+.school-year,
+.school-save,
+.top-icon-btn,
+.admin-user-chip,
+.logout-top-btn,
+.academic-login-box input,
+.academic-login-box button{
+  height:40px!important;
+}
+
+.school-year{
+  display:flex!important;
+  align-items:center!important;
+  padding:0 16px!important;
+  border-radius:12px!important;
+  font-size:12px!important;
+  font-weight:800!important;
+  background:#fff3bf!important;
+  border:1px solid #efd066!important;
+  color:#72520c!important;
+  box-shadow:0 4px 10px rgba(17,57,99,.12)!important;
+}
+
+.admin-user-chip{
+  display:flex!important;
+  align-items:center!important;
+  color:#173c67!important;
+  font-size:12px!important;
+  font-weight:800!important;
+  background:rgba(255,255,255,.72)!important;
+  padding:0 12px!important;
+  border-radius:12px!important;
+  box-shadow:0 4px 10px rgba(17,57,99,.10)!important;
+}
+
+.logout-top-btn{
+  border:0!important;
+  border-radius:12px!important;
+  padding:0 16px!important;
+  font-size:12px!important;
+  font-weight:800!important;
+  background:#ef4f5f!important;
+  color:#fff!important;
+  box-shadow:0 4px 10px rgba(239,79,95,.20)!important;
+}
+
+.school-save{
+  display:flex!important;
+  align-items:center!important;
+  gap:7px!important;
+  background:rgba(255,255,255,.78)!important;
+  border:1px solid rgba(255,255,255,.92)!important;
+  color:#51657f!important;
+  border-radius:12px!important;
+  padding:0 14px!important;
+  box-shadow:0 4px 10px rgba(17,57,99,.10)!important;
+}
+
+.top-icon-btn{
+  padding:0 14px!important;
+  border-radius:12px!important;
+  border:1px solid rgba(255,255,255,.92)!important;
+  background:rgba(255,255,255,.88)!important;
+  color:#173f73!important;
+  font-size:12px!important;
+  font-weight:800!important;
+  box-shadow:0 4px 10px rgba(17,57,99,.10)!important;
+}
+.top-icon-btn:hover{
+  background:#fff!important;
+  transform:translateY(-1px);
+}
+
+/* Guest login */
+body.guest-mode .public-topbar-tools{
+  background:transparent!important;
+  border:0!important;
+  padding:0!important;
+  box-shadow:none!important;
+}
+.academic-login-box{
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  background:transparent!important;
+  border:0!important;
+  padding:0!important;
+}
+.academic-login-box input{
+  width:122px!important;
+  border-radius:12px!important;
+  border:1px solid rgba(255,255,255,.95)!important;
+  background:rgba(255,255,255,.92)!important;
+  padding:0 12px!important;
+  font-size:12px!important;
+  box-shadow:0 4px 10px rgba(17,57,99,.12)!important;
+}
+.academic-login-box input:focus{
+  border-color:#6e9dcc!important;
+  box-shadow:0 0 0 3px rgba(255,255,255,.20),0 5px 12px rgba(17,57,99,.16)!important;
+}
+.academic-login-box button{
+  border:0!important;
+  border-radius:12px!important;
+  padding:0 16px!important;
+  font-size:12px!important;
+  font-weight:800!important;
+  background:#0f4f8f!important;
+  color:#fff!important;
+  box-shadow:0 4px 10px rgba(15,79,143,.22)!important;
+}
+
+/* Header joins sidebar/content directly */
+.app-shell{margin:0!important;padding:0!important}
 .sidebar{
   margin:0!important;
   padding-top:0!important;
   border-top:0!important;
+  background:linear-gradient(180deg,#0d376d 0%,#0b2b55 100%)!important;
 }
-.main{
-  margin:0!important;
-  padding-top:0!important;
-}
+.main{margin:0!important;padding-top:0!important}
 .sb-collapse-wrap{
-  margin-top:0!important;
+  margin:0!important;
   border-top:0!important;
+  background:#0d376d!important;
 }
+body.admin-mode .main>.page.active{padding-top:18px!important}
+body.admin-mode .sidebar{min-height:calc(100vh - 118px)!important}
 
-/* preserve existing login/admin look */
-body.guest-mode .public-topbar-tools{
-  background:rgba(255,255,255,.94)!important;
-  border:1px solid #dce4ee!important;
-  border-radius:14px!important;
-  padding:8px 10px!important;
-  box-shadow:0 6px 18px rgba(20,52,86,.12)!important;
-}
-body.admin-mode .public-topbar-tools{
-  background:rgba(255,255,255,.90)!important;
-  border:1px solid #dce4ee!important;
-  border-radius:14px!important;
-  padding:8px 10px!important;
-  box-shadow:0 6px 18px rgba(20,52,86,.10)!important;
-}
+/* correct visibility */
 body.admin-mode .academic-login-box{display:none!important}
 body.guest-mode #adminTopBox{display:none!important}
 
-@media(max-width:1100px){
-  .school-brand{padding-left:18px!important}
-  .school-name{font-size:19px!important;max-width:300px!important}
-  .school-logo-shell{width:66px!important;height:66px!important}
-  .school-logo-shell img{width:74px!important;height:74px!important}
+@media(max-width:1180px){
+  .school-name{font-size:23px!important;max-width:390px!important}
+  .school-system-name{font-size:13px!important}
+  .school-logo-shell{width:76px!important;height:76px!important}
+  .school-logo-shell img{width:84px!important;height:84px!important}
+  .public-topbar-tools{right:16px!important;gap:7px!important}
+  .school-year,.school-save,.top-icon-btn,.admin-user-chip,.logout-top-btn,.academic-login-box input,.academic-login-box button{height:36px!important}
+  .academic-login-box input{width:108px!important}
 }
-@media(max-width:820px){
-  .school-topbar{height:92px!important;min-height:92px!important}
-  .school-brand{
-    padding:0 12px!important;
-    background:linear-gradient(90deg,#0d3568 0%,#124a86 72%,#eef3f8 72%,#f5f7fb 100%)!important;
+@media(max-width:900px){
+  .school-topbar{
+    height:154px!important;
+    min-height:154px!important;
+    padding:0 14px!important;
   }
-  .school-name{font-size:17px!important;max-width:220px!important}
-  .school-logo-shell{width:58px!important;height:58px!important}
-  .school-logo-shell img{width:66px!important;height:66px!important}
+  .school-brand{
+    height:82px!important;
+    align-items:center!important;
+  }
+  .school-name{font-size:19px!important;max-width:270px!important}
+  .school-system-name{font-size:11px!important}
+  .school-logo-shell{width:64px!important;height:64px!important}
+  .school-logo-shell img{width:72px!important;height:72px!important}
+  .public-topbar-tools{
+    left:14px!important;
+    right:14px!important;
+    top:auto!important;
+    bottom:10px!important;
+    transform:none!important;
+    justify-content:center!important;
+    flex-wrap:wrap!important;
+  }
+  body.admin-mode .sidebar{min-height:calc(100vh - 154px)!important}
 }
 </style>
 </head>
