@@ -132,7 +132,9 @@ function loadDatabase_() {
     },
     teachers, subjects, rooms, slots,
     days: days.length ? days : ['จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์'],
-    sched, substitute, customDepts,
+    sched, substitute,
+    announcements: parseJsonArray_(configMap.announcements),
+    customDepts,
     subjectColorSchemeVersion: n_(configMap.subjectColorSchemeVersion) || 2,
     systemMode: (s_(configMap.systemMode) || 'DAILY').toUpperCase()
   };
@@ -171,6 +173,17 @@ function parseList_(v) {
     return Array.isArray(parsed) ? parsed.map(String) : [];
   } catch (_) {
     return text.split('|').map(x => s_(x)).filter(Boolean);
+  }
+}
+
+function parseJsonArray_(v) {
+  const text = s_(v);
+  if (!text) return [];
+  try {
+    const parsed = JSON.parse(text);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (_) {
+    return [];
   }
 }
 
@@ -218,9 +231,10 @@ function saveDatabase_(p) {
     // DAILY is operational mode: only daily substitute data may change.
     if (mode === 'DAILY') {
       writeSubstitute_(ss, db.substitute || {});
+      setKeyValue_(ss, 'Config', 'announcements', JSON.stringify(db.announcements || []));
       SpreadsheetApp.flush();
       CacheService.getScriptCache().remove('school_os_bootstrap_v1');
-      return json_({ok:true,mode:mode,saved:['Substitute'],savedAt:new Date().toISOString()});
+      return json_({ok:true,mode:mode,saved:['Substitute','Announcements'],savedAt:new Date().toISOString()});
     }
 
     if (mode !== 'SETUP') throw new Error('โหมดระบบไม่อนุญาตให้แก้ไขข้อมูล');
@@ -235,6 +249,7 @@ function saveDatabase_(p) {
     writeSubstitute_(ss, db.substitute || {});
 
     setKeyValue_(ss, 'Config', 'customDepts', JSON.stringify(db.customDepts || []));
+    setKeyValue_(ss, 'Config', 'announcements', JSON.stringify(db.announcements || []));
     setKeyValue_(ss, 'Config', 'subjectColorSchemeVersion', Number(db.subjectColorSchemeVersion || 2));
 
     SpreadsheetApp.flush();
