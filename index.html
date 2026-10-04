@@ -30379,6 +30379,7 @@ background:#eef3fa;color:#49627f;border:1px solid #d7e1ef}
 </style>
 <script id="school-os-online-adapter">
 (function(){
+  var SAFE_LOGO_URL='https://drivekup01.github.io/School-OS/assets/school-logo.svg';
   function badge(text,cls){
     var el=document.getElementById('onlineDbBadge');
     if(!el){el=document.createElement('div');el.id='onlineDbBadge';document.body.appendChild(el);}
@@ -30387,7 +30388,7 @@ background:#eef3fa;color:#49627f;border:1px solid #d7e1ef}
   async function loadOnlineDatabase(){
     var url=window.SCHOOL_OS_API_URL||'';
     if(!url){badge('ฐานข้อมูลออนไลน์: รอเชื่อม Apps Script','');return;}
-    badge('กำลังโหลดฐานข้อมูลโรงเรียน...','');
+    badge('กำลังอัปเดตฐานข้อมูลโรงเรียน...','');
     try{
       var sep=url.indexOf('?')>=0?'&':'?';
       var res=await fetch(url+sep+'action=bootstrap',{method:'GET',redirect:'follow',cache:'no-store'});
@@ -30395,6 +30396,9 @@ background:#eef3fa;color:#49627f;border:1px solid #d7e1ef}
       var payload=await res.json();
       if(!payload||!payload.ok||!payload.data) throw new Error((payload&&payload.error)||'ข้อมูลไม่ถูกต้อง');
       DB=payload.data;
+      DB.school=DB.school||{};
+      if(!DB.school.logoDataUrl) DB.school.logoDataUrl=DB.school.logoUrl||SAFE_LOGO_URL;
+      if(!DB.school.logoUrl) DB.school.logoUrl=DB.school.logoDataUrl||SAFE_LOGO_URL;
       DB.substitute=DB.substitute||{};
       DB.customDepts=DB.customDepts||[];
       var profiles=getProfiles();
@@ -30411,11 +30415,9 @@ background:#eef3fa;color:#49627f;border:1px solid #d7e1ef}
       if(typeof renderCustomDeptList==='function') renderCustomDeptList();
       if(typeof renderAllUI==='function') renderAllUI();
       else {updateTopbar();updateSidebarCounts();renderDashboard();renderProfileSidebar();}
-      badge('● ฐานข้อมูลโรงเรียนออนไลน์ · อ่านอย่างเดียว','ok');
-      toast('☁️ โหลดฐานข้อมูลโรงเรียนจาก Google สำเร็จ','succ');
+      badge('● ฐานข้อมูลโรงเรียนออนไลน์','ok');
     }catch(err){
       badge('ฐานข้อมูลออนไลน์เชื่อมต่อไม่ได้ · ใช้ข้อมูลในเครื่อง','err');
-      toast('⚠️ เชื่อม Google Database ไม่สำเร็จ — ใช้ข้อมูลในเครื่องแทน','warn');
       console.error('School-OS Online DB:',err);
     }
   }
