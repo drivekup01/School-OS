@@ -1197,6 +1197,38 @@ body{background:var(--bg);color:#20324B}
 .quick-menu-item.primary .quick-menu-arrow{background:rgba(255,255,255,.13);color:#fff}
 .quick-menu-item.wizard .quick-menu-arrow{background:rgba(255,255,255,.38)}
 @media(max-width:900px){.quick-menu-grid{grid-template-columns:1fr}}
+
+.sub-share-actions{flex-wrap:wrap}
+.sub-group-wrap{display:flex;flex-direction:column;gap:12px}
+.sub-group-card{border:1px solid #dce5f1;border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 3px 12px rgba(15,46,93,.05)}
+.sub-group-head{display:flex;align-items:center;gap:12px;padding:11px 13px;background:linear-gradient(90deg,#f5e4fb,#fbf7fd);border-bottom:1px solid #e2d4ea}
+.sub-group-avatar{width:34px;height:34px;border-radius:50%;background:#7e57c2;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;flex:0 0 34px}
+.sub-group-main{min-width:0;flex:1}
+.sub-group-name{font-size:14px;font-weight:900;color:#243e63}
+.sub-group-meta{font-size:11px;color:#6d7280;margin-top:2px}
+.sub-group-table-wrap{overflow:auto}
+.sub-group-table{width:100%;border-collapse:collapse;min-width:980px}
+.sub-group-table th,.sub-group-table td{padding:8px;border-bottom:1px solid #e7edf5;font-size:12px;vertical-align:middle}
+.sub-group-table th{background:#f7f9fc;color:#4d607b;font-size:11px;text-align:left}
+.sub-group-table tr:last-child td{border-bottom:0}
+.sub-group-table tr.pending{background:#fffaf0}
+.sub-group-table tr.done{background:#f6fcf8}
+.sub-group-select,.sub-group-note{width:100%;min-width:110px;border:1px solid #d6e0ec;border-radius:7px;padding:6px 7px;background:#fff;font-size:11px}
+.sub-group-note{min-width:120px}
+.sub-status-pill{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:900;white-space:nowrap}
+.sub-status-pill.done{background:#dff4e7;color:#17763f}
+.sub-status-pill.pending{background:#fff1bd;color:#8a6500}
+.sub-group-edit{border:0;background:#edf3fb;color:#17457f;border-radius:7px;padding:6px 8px;font-size:11px;font-weight:800;cursor:pointer}
+.sub-export-canvas{position:fixed;left:-10000px;top:0;width:1200px;background:#fff;padding:20px;font-family:Tahoma,'Sarabun',sans-serif;color:#1a2e4a}
+.sub-export-title{text-align:center;background:#173f73;color:#fff;padding:12px;border-radius:10px 10px 0 0;font-size:18px;font-weight:900}
+.sub-export-date{text-align:center;background:#f0c24f;color:#5e4300;padding:7px;font-size:13px;font-weight:800}
+.sub-export-group{border:1px solid #ccd7e5;margin-top:10px;border-radius:9px;overflow:hidden}
+.sub-export-group-head{background:#f1e2fa;padding:8px 10px;font-size:12px;font-weight:900}
+.sub-export-table{width:100%;border-collapse:collapse}
+.sub-export-table th,.sub-export-table td{border:1px solid #d7e0eb;padding:6px 7px;font-size:11px}
+.sub-export-table th{background:#f3f6fa}
+.sub-export-done{background:#eaf8ef}.sub-export-pending{background:#fff5d1}
+@media(max-width:760px){.sub-share-actions .btn{font-size:10px;padding:7px 8px}}
 </style>
 </head>
 <body>
@@ -1289,36 +1321,12 @@ body{background:var(--bg);color:#20324B}
     <div class="card quick-menu-card">
       <div class="card-hd"><div class="card-title">🚀 เมนูลัด</div></div>
       <div class="quick-menu-grid">
-        <button class="quick-menu-item primary" onclick="nav('builder')">
-          <span class="quick-menu-icon">📅</span>
-          <span class="quick-menu-label">สร้าง/แก้ไขตาราง</span>
-          <span class="quick-menu-arrow">›</span>
-        </button>
-        <button class="quick-menu-item" onclick="nav('substitute')">
-          <span class="quick-menu-icon">🔄</span>
-          <span class="quick-menu-label">บันทึกสอนแทนวันนี้</span>
-          <span class="quick-menu-arrow">›</span>
-        </button>
-        <button class="quick-menu-item" onclick="nav('teachers')">
-          <span class="quick-menu-icon">👨‍🏫</span>
-          <span class="quick-menu-label">จัดการรายชื่อครู</span>
-          <span class="quick-menu-arrow">›</span>
-        </button>
-        <button class="quick-menu-item" onclick="nav('workload')">
-          <span class="quick-menu-icon">📊</span>
-          <span class="quick-menu-label">ตรวจภาระงานสอน</span>
-          <span class="quick-menu-arrow">›</span>
-        </button>
-        <button class="quick-menu-item" onclick="nav('export')">
-          <span class="quick-menu-icon">📥</span>
-          <span class="quick-menu-label">ส่งออกไฟล์ Word</span>
-          <span class="quick-menu-arrow">›</span>
-        </button>
-        <button class="quick-menu-item wizard" onclick="showWizard()">
-          <span class="quick-menu-icon">⚙️</span>
-          <span class="quick-menu-label">ตั้งค่าใหม่ด้วย Wizard</span>
-          <span class="quick-menu-arrow">›</span>
-        </button>
+        <button class="quick-menu-item primary" onclick="nav('builder')"><span class="quick-menu-icon">📅</span><span class="quick-menu-label">สร้าง/แก้ไขตาราง</span><span class="quick-menu-arrow">›</span></button>
+        <button class="quick-menu-item" onclick="nav('substitute')"><span class="quick-menu-icon">🔄</span><span class="quick-menu-label">บันทึกสอนแทนวันนี้</span><span class="quick-menu-arrow">›</span></button>
+        <button class="quick-menu-item" onclick="nav('teachers')"><span class="quick-menu-icon">👨‍🏫</span><span class="quick-menu-label">จัดการรายชื่อครู</span><span class="quick-menu-arrow">›</span></button>
+        <button class="quick-menu-item" onclick="nav('workload')"><span class="quick-menu-icon">📊</span><span class="quick-menu-label">ตรวจภาระงานสอน</span><span class="quick-menu-arrow">›</span></button>
+        <button class="quick-menu-item" onclick="nav('export')"><span class="quick-menu-icon">📥</span><span class="quick-menu-label">ส่งออกไฟล์ Word</span><span class="quick-menu-arrow">›</span></button>
+        <button class="quick-menu-item wizard" onclick="showWizard()"><span class="quick-menu-icon">⚙️</span><span class="quick-menu-label">ตั้งค่าใหม่ด้วย Wizard</span><span class="quick-menu-arrow">›</span></button>
       </div>
     </div>
   </div>
@@ -1820,9 +1828,12 @@ body{background:var(--bg);color:#20324B}
       <h1><span class="page-title-icon">🔄</span> ตารางสอนแทนรายวัน</h1>
       <p>ดูตารางสอนรวม เลือกคาบที่ต้องจัดสอนแทน และเลือกครูที่ว่างได้จากหน้าเดียว</p>
     </div>
-    <div class="ph-actions">
-      <button class="btn btn-out btn-sm" onclick="nav('sub-history')">📂 ประวัติการสอนแทน</button>
-      <button class="btn btn-gold" onclick="exportSubstituteDocx()">🖨️ พิมพ์ตารางสอนแทน</button>
+    <div class="ph-actions sub-share-actions">
+      <button class="btn btn-out btn-sm" onclick="nav('sub-history')">📂 ประวัติ</button>
+      <button class="btn btn-out btn-sm" onclick="copySubstituteSummary()">📋 คัดลอกข้อความ</button>
+      <button class="btn btn-out btn-sm" onclick="downloadSubstitutePNG()">⬇️ PNG</button>
+      <button class="btn btn-pri btn-sm" onclick="shareSubstituteOnline()">📤 แชร์ LINE / Telegram</button>
+      <button class="btn btn-gold btn-sm" onclick="exportSubstituteDocx()">🖨️ Word</button>
     </div>
   </div>
 
@@ -1889,8 +1900,8 @@ body{background:var(--bg);color:#20324B}
   <section class="sub-v2-assigned-card">
     <div class="sub-v2-card-head">
       <div>
-        <div class="sub-v2-card-title">✅ รายการจัดสอนแทนวันนี้</div>
-        <div class="sub-v2-card-sub">รายการที่เลือกครูสอนแทนแล้ว สามารถเปลี่ยนหรือลบได้</div>
+        <div class="sub-v2-card-title">✅ สรุปการจัดสอนแทนวันนี้</div>
+        <div class="sub-v2-card-sub">จัดกลุ่มตามครูลา • เพิ่มรูปแบบงานและสถานะข้อความ • พร้อม Export/แชร์</div>
       </div>
     </div>
     <div id="subAssignedList"></div>
@@ -30382,6 +30393,189 @@ if(_subV2OldSetSubTeacher){
 
 
 
+<script id="substitute-production-share-script">
+(function(){
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function tName(t){return t?(((t.prefix||'')+(t.first||'')+' '+(t.last||'')).trim()):'';}
+  function ensurePeriodMeta(p){
+    if(!p.workType) p.workType='ภาระงาน';
+    if(typeof p.messageStatus==='undefined') p.messageStatus='';
+    return p;
+  }
+  window.setSubWorkType=function(ai,pi,val){
+    var d=getSubDay(currentSubDate),a=d.absentList[ai]; if(!a||!a.periods[pi]) return;
+    a.periods[pi].workType=val; markDirty(); renderSubAssignedList();
+  };
+  window.setSubMessageStatus=function(ai,pi,val){
+    var d=getSubDay(currentSubDate),a=d.absentList[ai]; if(!a||!a.periods[pi]) return;
+    a.periods[pi].messageStatus=val; markDirty(); renderSubAssignedList();
+  };
+
+  window.renderSubAssignedList=function(){
+    var wrap=document.getElementById('subAssignedList');
+    if(!wrap) return;
+    if(!currentSubDate){wrap.innerHTML='<div class="sub-v2-assigned-empty">ยังไม่ได้เลือกวันที่</div>';return;}
+    var day=getSubDay(currentSubDate);
+    var groups=(day.absentList||[]);
+    if(!groups.length){wrap.innerHTML='<div class="sub-v2-assigned-empty">ยังไม่มีครูลาในวันนี้</div>';return;}
+    var h='<div class="sub-group-wrap">';
+    groups.forEach(function(a,ai){
+      var t=(DB.teachers||[]).find(function(x){return String(x.id)===String(a.teacherId);});
+      var name=tName(t)||'ไม่ระบุครู';
+      var dept=t&&t.dept?t.dept:'ไม่ระบุกลุ่มสาระ';
+      var periods=a.periods||[];
+      h+='<div class="sub-group-card"><div class="sub-group-head">'+
+        '<div class="sub-group-avatar">'+esc((t&&t.first?t.first.charAt(0):'?'))+'</div>'+
+        '<div class="sub-group-main"><div class="sub-group-name">ครูลา: '+esc(name)+'</div>'+
+        '<div class="sub-group-meta">กลุ่มสาระ: '+esc(dept)+' • สาเหตุ: '+esc(a.type||'ไม่ระบุ')+(a.note?' • '+esc(a.note):'')+'</div></div>'+
+        '<span class="badge b-purple">'+periods.length+' คาบ</span></div>';
+      if(!periods.length){
+        h+='<div style="padding:14px;color:#7b8798;font-size:12px">ไม่มีคาบสอนในวันนี้</div>';
+      }else{
+        h+='<div class="sub-group-table-wrap"><table class="sub-group-table"><thead><tr>'+
+          '<th>คาบ</th><th>เวลา</th><th>วิชา</th><th>ชั้น/ห้อง</th><th>ครูสอนแทน</th><th>รูปแบบงาน</th><th>บันทึกข้อความ</th><th>สถานะ</th><th></th>'+
+          '</tr></thead><tbody>';
+        periods.forEach(function(p,pi){
+          ensurePeriodMeta(p);
+          var slot=(DB.slots||[]).find(function(s){return String(s.id)===String(p.slotId);});
+          var room=(DB.rooms||[]).find(function(r){return String(r.id)===String(p.roomId);});
+          var done=!!p.subTeacher;
+          var works=['ภาระงาน','ใบงาน','แจกคาบ','สอนแทน','มอบหมายงาน'];
+          var msgs=['','ส่งแล้ว','รอส่ง','ไม่ต้องส่ง'];
+          h+='<tr class="'+(done?'done':'pending')+'">'+
+            '<td><strong>'+esc(slot?slot.label:p.slotId)+'</strong></td>'+
+            '<td>'+esc(slot?(slot.start+'–'+slot.end):'–')+'</td>'+
+            '<td>'+esc(p.subject||'–')+'</td>'+
+            '<td>'+esc(room?room.label:'–')+'</td>'+
+            '<td>'+(done?'<span class="badge b-green">'+esc(p.subTeacher)+'</span>':'<span class="badge b-yellow">รอจัดแทน</span>')+'</td>'+
+            '<td><select class="sub-group-select" onchange="setSubWorkType('+ai+','+pi+',this.value)">'+works.map(function(x){return '<option '+(p.workType===x?'selected':'')+'>'+esc(x)+'</option>';}).join('')+'</select></td>'+
+            '<td><select class="sub-group-select" onchange="setSubMessageStatus('+ai+','+pi+',this.value)">'+msgs.map(function(x){return '<option value="'+esc(x)+'" '+(p.messageStatus===x?'selected':'')+'>'+(x||'–')+'</option>';}).join('')+'</select></td>'+
+            '<td><span class="sub-status-pill '+(done?'done':'pending')+'">'+(done?'● จัดแล้ว':'● รอดำเนินการ')+'</span></td>'+
+            '<td><button class="sub-group-edit" onclick="subV2EditAssigned('+ai+','+pi+')">'+(done?'เปลี่ยน':'จัดครู')+'</button></td>'+
+            '</tr>';
+        });
+        h+='</tbody></table></div>';
+      }
+      h+='</div>';
+    });
+    h+='</div>';
+    wrap.innerHTML=h;
+  };
+
+  function buildText(){
+    if(!currentSubDate) return '';
+    var day=getSubDay(currentSubDate);
+    var lines=['📣 ตารางสอนแทน','🏫 '+((DB.school&&DB.school.name)||'โรงเรียน'),'📅 '+formatDateThai(currentSubDate),''];
+    if(!day.absentList||!day.absentList.length){lines.push('✅ ไม่มีครูลาในวันนี้');return lines.join('\n');}
+    day.absentList.forEach(function(a){
+      var t=(DB.teachers||[]).find(function(x){return String(x.id)===String(a.teacherId);});
+      lines.push('👤 ครูลา: '+(tName(t)||'ไม่ระบุ')+' ('+(a.type||'ไม่ระบุ')+')');
+      (a.periods||[]).forEach(function(p){
+        ensurePeriodMeta(p);
+        var slot=(DB.slots||[]).find(function(s){return String(s.id)===String(p.slotId);});
+        var room=(DB.rooms||[]).find(function(r){return String(r.id)===String(p.roomId);});
+        lines.push('• '+(slot?slot.label:'คาบ '+p.slotId)+' | '+(p.subject||'–')+' | '+(room?room.label:'–'));
+        lines.push('  ครูแทน: '+(p.subTeacher||'รอจัดแทน')+' | '+p.workType+(p.messageStatus?' | '+p.messageStatus:''));
+      });
+      lines.push('');
+    });
+    lines.push('กรุณาตรวจสอบตารางสอนแทนประจำวันครับ/ค่ะ');
+    return lines.join('\n');
+  }
+  window.copySubstituteSummary=async function(){
+    if(!currentSubDate){toast('กรุณาเลือกวันที่ก่อน','warn');return;}
+    var txt=buildText();
+    try{await navigator.clipboard.writeText(txt);toast('📋 คัดลอกข้อความสำหรับ LINE/Telegram แล้ว','succ');}
+    catch(e){
+      var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();
+      toast('📋 คัดลอกข้อความแล้ว','succ');
+    }
+  };
+
+  function buildExportNode(){
+    if(!currentSubDate) return null;
+    var day=getSubDay(currentSubDate);
+    var root=document.createElement('div');
+    root.className='sub-export-canvas';
+    var school=(DB.school&&DB.school.name)||'โรงเรียน';
+    var h='<div class="sub-export-title">ตารางสอนแทน '+esc(school)+'</div>'+
+      '<div class="sub-export-date">'+esc(formatDateThai(currentSubDate))+'</div>';
+    if(!day.absentList||!day.absentList.length){
+      h+='<div style="padding:30px;text-align:center;font-size:18px;color:#27854c;font-weight:900">✅ ไม่มีครูลาในวันนี้</div>';
+    } else {
+      day.absentList.forEach(function(a){
+        var t=(DB.teachers||[]).find(function(x){return String(x.id)===String(a.teacherId);});
+        var name=tName(t)||'ไม่ระบุครู';
+        var dept=t&&t.dept?t.dept:'ไม่ระบุกลุ่มสาระ';
+        h+='<div class="sub-export-group"><div class="sub-export-group-head">ครูลา: '+esc(name)+' &nbsp; | &nbsp; กลุ่มสาระ: '+esc(dept)+' &nbsp; | &nbsp; สาเหตุ: '+esc(a.type||'ไม่ระบุ')+(a.note?' — '+esc(a.note):'')+'</div>';
+        h+='<table class="sub-export-table"><thead><tr><th>คาบ</th><th>เวลา</th><th>วิชา</th><th>ชั้น/ห้อง</th><th>ครูสอนแทน</th><th>รูปแบบงาน</th><th>บันทึก</th><th>สถานะ</th></tr></thead><tbody>';
+        (a.periods||[]).forEach(function(p){
+          ensurePeriodMeta(p);
+          var slot=(DB.slots||[]).find(function(s){return String(s.id)===String(p.slotId);});
+          var room=(DB.rooms||[]).find(function(r){return String(r.id)===String(p.roomId);});
+          var done=!!p.subTeacher;
+          h+='<tr class="'+(done?'sub-export-done':'sub-export-pending')+'"><td><b>'+esc(slot?slot.label:p.slotId)+'</b></td><td>'+esc(slot?(slot.start+'–'+slot.end):'–')+'</td><td>'+esc(p.subject||'–')+'</td><td>'+esc(room?room.label:'–')+'</td><td>'+esc(p.subTeacher||'รอจัดแทน')+'</td><td>'+esc(p.workType)+'</td><td>'+esc(p.messageStatus||'–')+'</td><td><b>'+(done?'จัดแล้ว':'รอดำเนินการ')+'</b></td></tr>';
+        });
+        h+='</tbody></table></div>';
+      });
+    }
+    root.innerHTML=h;
+    document.body.appendChild(root);
+    return root;
+  }
+  async function renderBlob(){
+    if(typeof html2canvas==='undefined') throw new Error('ไลบรารีสร้างภาพยังไม่พร้อม');
+    var node=buildExportNode(); if(!node) throw new Error('ยังไม่ได้เลือกวันที่');
+    await new Promise(function(r){setTimeout(r,120);});
+    var canvas=await html2canvas(node,{scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false});
+    node.remove();
+    var blob=await new Promise(function(res){canvas.toBlob(res,'image/png');});
+    return {canvas:canvas,blob:blob};
+  }
+  window.downloadSubstitutePNG=async function(){
+    if(!currentSubDate){toast('กรุณาเลือกวันที่ก่อน','warn');return;}
+    try{
+      toast('กำลังสร้างภาพ...','info');
+      var out=await renderBlob();
+      var a=document.createElement('a');
+      a.href=URL.createObjectURL(out.blob);
+      a.download='ตารางสอนแทน_'+currentSubDate+'.png';
+      document.body.appendChild(a);a.click();a.remove();
+      setTimeout(function(){URL.revokeObjectURL(a.href);},1500);
+      toast('⬇️ ดาวน์โหลดภาพ PNG แล้ว','succ');
+    }catch(e){toast('สร้างภาพไม่สำเร็จ: '+e.message,'warn');}
+  };
+  window.shareSubstituteOnline=async function(){
+    if(!currentSubDate){toast('กรุณาเลือกวันที่ก่อน','warn');return;}
+    try{
+      toast('กำลังเตรียมภาพสำหรับแชร์...','info');
+      var out=await renderBlob();
+      var fname='ตารางสอนแทน_'+currentSubDate+'.png';
+      var file=new File([out.blob],fname,{type:'image/png'});
+      var txt=buildText();
+      if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
+        await navigator.share({title:'ตารางสอนแทน '+formatDateThai(currentSubDate),text:txt,files:[file]});
+        toast('📤 เปิดเมนูแชร์แล้ว เลือก LINE หรือ Telegram ได้เลย','succ');
+      }else{
+        var a=document.createElement('a');a.href=URL.createObjectURL(out.blob);a.download=fname;document.body.appendChild(a);a.click();a.remove();
+        try{await navigator.clipboard.writeText(txt);}catch(_){}
+        toast('อุปกรณ์นี้ไม่รองรับ Share โดยตรง — ดาวน์โหลดภาพและคัดลอกข้อความให้แล้ว','info');
+      }
+    }catch(e){if(e&&e.name!=='AbortError') toast('แชร์ไม่สำเร็จ: '+e.message,'warn');}
+  };
+
+  // Refresh grouped summary whenever original render completes.
+  var oldRenderSubContent=window.renderSubContent;
+  if(typeof oldRenderSubContent==='function'){
+    window.renderSubContent=function(){
+      var r=oldRenderSubContent.apply(this,arguments);
+      try{renderSubAssignedList();}catch(e){}
+      return r;
+    };
+  }
+})();
+</script>
+
 <script src="config.js"></script>
 <style id="school-os-online-style">
 #onlineDbBadge{position:fixed;right:16px;bottom:16px;z-index:5000;padding:8px 12px;border-radius:999px;
@@ -30401,6 +30595,8 @@ background:#eef3fa;color:#49627f;border:1px solid #d7e1ef}
   async function loadOnlineDatabase(){
     var url=window.SCHOOL_OS_API_URL||'';
     if(!url){badge('ฐานข้อมูลออนไลน์: รอเชื่อม Apps Script','');return;}
+    var localSub={};
+    try{localSub=(DB&&DB.substitute)?JSON.parse(JSON.stringify(DB.substitute)):{};}catch(_){}
     badge('กำลังอัปเดตฐานข้อมูลโรงเรียน...','');
     try{
       var sep=url.indexOf('?')>=0?'&':'?';
@@ -30412,7 +30608,8 @@ background:#eef3fa;color:#49627f;border:1px solid #d7e1ef}
       DB.school=DB.school||{};
       if(!DB.school.logoDataUrl) DB.school.logoDataUrl=DB.school.logoUrl||SAFE_LOGO_URL;
       if(!DB.school.logoUrl) DB.school.logoUrl=DB.school.logoDataUrl||SAFE_LOGO_URL;
-      DB.substitute=DB.substitute||{};
+      var remoteSub=DB.substitute||{};
+      DB.substitute=Object.keys(remoteSub).length?remoteSub:localSub;
       DB.customDepts=DB.customDepts||[];
       var profiles=getProfiles();
       if(!activeProfileId) activeProfileId='online-school-os';
