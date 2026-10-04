@@ -1280,37 +1280,7 @@ body{background:var(--bg);color:#20324B}
         <button class="btn btn-gold" onclick="showWizard()">⚙️ ตั้งค่าใหม่ด้วย Wizard</button>
       </div>
     </div>
-    <!-- grade progress -->
-    <div class="card">
-      <div class="card-hd"><div class="card-title">📈 ความคืบหน้าตารางแต่ละชั้น</div></div>
-      <div id="dashGradeProgress">
-        <div class="empty-state" style="padding:16px"><div class="empty-icon">🚪</div><div class="empty-text">ยังไม่มีห้องเรียน</div></div>
-      </div>
-    </div>
-  </div>
-  <!-- lower grid -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
-    <!-- workload -->
-    <div class="card">
-      <div class="card-hd"><div class="card-title">📊 ภาระงานสอนสูงสุด</div></div>
-      <div id="dashWorkload">
-        <div class="empty-state" style="padding:20px"><div class="empty-icon">👨‍🏫</div><div class="empty-text">ยังไม่มีข้อมูล</div></div>
-      </div>
-    </div>
-    <!-- curriculum check -->
-    <div class="card">
-      <div class="card-hd"><div class="card-title">📋 ตรวจหลักสูตรแกนกลาง 2551</div>
-        <select id="currGradeSel" onchange="updateCurrCheck()" style="font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:5px;max-width:100px">
-          <option value="">ชั้น</option>
-        </select>
-      </div>
-      <div id="dashCurrCheck">
-        <div style="font-size:13px;color:var(--muted);padding:8px">เพิ่มห้องเรียนก่อนเพื่อดูสรุปหลักสูตร</div>
-      </div>
-    </div>
-  </div>
 </div>
-
 <!-- ═══════════ PAGE: SCHOOL ═══════════ -->
 <div class="page" id="page-school">
   <div class="ph"><div class="ph-left"><h1>🏫 ข้อมูลโรงเรียน</h1><p>ตั้งค่าข้อมูลพื้นฐาน ปีการศึกษา และผู้ลงนาม</p></div>
