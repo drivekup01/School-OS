@@ -975,7 +975,7 @@ body{background:var(--bg);color:#20324B}
   border-bottom-right-radius:52px;z-index:0;pointer-events:none;
 }
 .school-brand{position:relative;z-index:1;min-width:420px!important;padding-left:26px;gap:13px!important}
-.school-logo-shell{width:52px!important;height:52px!important;border:2px solid #E7C66F!important;box-shadow:0 3px 10px rgba(0,0,0,.16)!important;background:#fff!important}
+.school-logo-shell{width:70px!important;height:70px!important;border:2px solid #E7C66F!important;box-shadow:0 3px 10px rgba(0,0,0,.16)!important;background:#fff!important}
 .school-name{color:#F7D36D!important;font-size:17px!important;max-width:315px!important;font-family:'Sarabun',sans-serif!important;line-height:1.15!important}
 .school-system-name{color:rgba(255,255,255,.88)!important;font-size:10px!important;letter-spacing:.1px}
 .tb-spacer{flex:1}
@@ -30394,9 +30394,7 @@ background:#eef3fa;color:#49627f;border:1px solid #d7e1ef}
       if(!res.ok) throw new Error('HTTP '+res.status);
       var payload=await res.json();
       if(!payload||!payload.ok||!payload.data) throw new Error((payload&&payload.error)||'ข้อมูลไม่ถูกต้อง');
-      var oldLogo=(DB&&DB.school&&DB.school.logoDataUrl)||'';
       DB=payload.data;
-      if(oldLogo && !DB.school.logoDataUrl) DB.school.logoDataUrl=oldLogo;
       DB.substitute=DB.substitute||{};
       DB.customDepts=DB.customDepts||[];
       var profiles=getProfiles();
