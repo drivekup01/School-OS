@@ -1505,6 +1505,144 @@ label,.fg label{font-size:13px!important}
   .tb-spacer{display:none!important}
 }
 </style>
+
+<style id="responsive-header-v2">
+/* Tablet header only */
+@media (max-width:1100px){
+  .school-topbar{
+    height:150px!important;
+    min-height:150px!important;
+    padding:0!important;
+    overflow:hidden!important;
+    align-items:center!important;
+  }
+  .school-topbar:after{
+    left:60%!important;
+    right:0!important;
+    top:0!important;
+    height:150px!important;
+    background-size:cover!important;
+    background-position:center center!important;
+    background-repeat:no-repeat!important;
+    opacity:1!important;
+  }
+  .school-topbar:before{
+    width:68%!important;
+    height:150px!important;
+    background:linear-gradient(90deg,#0B2C57 0%,#123F73 70%,rgba(18,63,115,.78) 84%,rgba(18,63,115,0) 100%)!important;
+  }
+  .school-brand{
+    width:64%!important;
+    max-width:64%!important;
+    min-width:0!important;
+    min-height:150px!important;
+    padding:0 12px 0 20px!important;
+    gap:12px!important;
+    flex:0 1 64%!important;
+  }
+  .school-logo-shell{
+    width:72px!important;
+    height:72px!important;
+    flex:0 0 72px!important;
+  }
+  .school-brand-text{
+    width:calc(100% - 84px)!important;
+    min-width:0!important;
+    max-width:none!important;
+    padding:0!important;
+  }
+  .school-name{
+    min-width:0!important;
+    max-width:100%!important;
+    font-size:22px!important;
+    line-height:1.18!important;
+    white-space:normal!important;
+    overflow:hidden!important;
+    text-overflow:clip!important;
+    display:-webkit-box!important;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+  }
+  .school-system-name{
+    display:block!important;
+    min-width:0!important;
+    max-width:100%!important;
+    margin-top:4px!important;
+    font-size:12px!important;
+    line-height:1.25!important;
+    white-space:normal!important;
+  }
+}
+
+/* Mobile header only */
+@media (max-width:760px){
+  .school-topbar{
+    height:120px!important;
+    min-height:120px!important;
+    width:100%!important;
+    padding:0!important;
+    overflow:hidden!important;
+    align-items:center!important;
+  }
+  .school-topbar:after{
+    left:62%!important;
+    right:0!important;
+    top:0!important;
+    height:120px!important;
+    background-size:cover!important;
+    background-position:center center!important;
+    background-repeat:no-repeat!important;
+    opacity:1!important;
+  }
+  .school-topbar:before{
+    width:74%!important;
+    height:120px!important;
+    background:linear-gradient(90deg,#0B2C57 0%,#123F73 70%,rgba(18,63,115,.82) 86%,rgba(18,63,115,0) 100%)!important;
+  }
+  .school-brand{
+    width:68%!important;
+    max-width:68%!important;
+    min-width:0!important;
+    min-height:120px!important;
+    padding:0 8px 0 14px!important;
+    gap:10px!important;
+    flex:0 1 68%!important;
+  }
+  .school-logo-shell{
+    width:54px!important;
+    height:54px!important;
+    flex:0 0 54px!important;
+  }
+  .school-brand-text{
+    width:calc(100% - 64px)!important;
+    min-width:0!important;
+    max-width:none!important;
+    padding:0!important;
+  }
+  .school-name{
+    min-width:0!important;
+    max-width:100%!important;
+    font-size:15px!important;
+    line-height:1.18!important;
+    white-space:normal!important;
+    overflow:hidden!important;
+    text-overflow:clip!important;
+    display:-webkit-box!important;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+  }
+  .school-system-name{
+    display:block!important;
+    min-width:0!important;
+    max-width:100%!important;
+    margin-top:3px!important;
+    font-size:10px!important;
+    line-height:1.2!important;
+    white-space:normal!important;
+  }
+  .topbar-tools,.tb-spacer{display:none!important}
+}
+</style>
 </head>
 <body class="guest-mode">
 <!-- TOPBAR -->
