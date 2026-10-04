@@ -73,7 +73,7 @@ function loadDatabase_() {
       year: s_(schoolMap.year), semester: s_(schoolMap.semester),
       acadName: s_(schoolMap.acadName), acadPos: s_(schoolMap.acadPos),
       principalName: s_(schoolMap.principalName), principalPos: s_(schoolMap.principalPos),
-      logoDataUrl: '', logoSize: s_(schoolMap.logoSize) || 'small'
+      logoDataUrl: s_(schoolMap.logoUrl), logoUrl: s_(schoolMap.logoUrl), logoSize: s_(schoolMap.logoSize) || 'small'
     },
     teachers, subjects, rooms, slots,
     days: days.length ? days : ['จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์'],
