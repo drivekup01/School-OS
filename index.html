@@ -1240,104 +1240,6 @@ body.admin-mode.daily-mode #nav-storage{display:none!important}
   .public-info-grid{grid-template-columns:1fr}
   .admin-top-box{flex-wrap:wrap;justify-content:flex-end}
 }
-
-/* ===== Simplified dashboard cards ===== */
-.public-home{padding:18px 20px 26px!important}
-.public-hero,.public-info-grid{display:none!important}
-.public-menu-grid{
-  display:grid!important;
-  grid-template-columns:repeat(4,minmax(0,1fr))!important;
-  gap:12px!important;
-  margin-top:0!important;
-  align-items:stretch!important;
-}
-.public-menu-card{
-  min-height:340px!important;
-  height:340px!important;
-  border-radius:12px!important;
-  padding:18px!important;
-  display:flex!important;
-  flex-direction:column!important;
-  align-items:center!important;
-  justify-content:flex-start!important;
-  text-align:center!important;
-  border:1px solid #dce6f1!important;
-  box-shadow:0 4px 14px rgba(18,58,104,.06)!important;
-  overflow:hidden!important;
-}
-.public-menu-card.blue{background:linear-gradient(180deg,#edf7ff 0%,#e5f1fb 100%)!important;color:#175c9f!important}
-.public-menu-card.green{background:linear-gradient(180deg,#edfff7 0%,#e3f7ee 100%)!important;color:#0a7d54!important}
-.public-menu-card.pink{background:linear-gradient(180deg,#fff2f7 0%,#fde8ef 100%)!important;color:#b9285a!important}
-.public-menu-card.yellow{background:linear-gradient(180deg,#fffaf0 0%,#fff3d8 100%)!important;color:#9a6b05!important}
-.public-card-icon{
-  width:64px!important;
-  height:64px!important;
-  border-radius:14px!important;
-  background:rgba(255,255,255,.78)!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  font-size:34px!important;
-  margin:2px 0 14px!important;
-  flex:0 0 auto!important;
-}
-.public-card-copy{
-  width:100%!important;
-  display:flex!important;
-  flex-direction:column!important;
-  align-items:center!important;
-  flex:1 1 auto!important;
-}
-.public-card-copy strong{
-  display:block!important;
-  font-size:19px!important;
-  line-height:1.3!important;
-  font-weight:900!important;
-  margin-bottom:6px!important;
-}
-.public-card-copy small{
-  display:block!important;
-  font-size:11px!important;
-  line-height:1.5!important;
-  opacity:.84!important;
-  margin-bottom:12px!important;
-}
-.public-card-points{
-  display:block!important;
-  text-align:left!important;
-  width:78%!important;
-  font-size:11px!important;
-  line-height:1.7!important;
-  color:#334e70!important;
-  margin-top:2px!important;
-}
-.public-card-cta{
-  width:100%!important;
-  min-height:42px!important;
-  margin-top:auto!important;
-  border-radius:8px!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  gap:10px!important;
-  color:#fff!important;
-  font-size:12px!important;
-  font-weight:900!important;
-}
-.public-menu-card.blue .public-card-cta{background:#1c70d0!important}
-.public-menu-card.green .public-card-cta{background:#119661!important}
-.public-menu-card.pink .public-card-cta{background:#ef2d67!important}
-.public-menu-card.yellow .public-card-cta{background:#b67b00!important}
-.public-card-arrow{display:none!important}
-@media(max-width:1100px){
-  .public-menu-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-  .public-menu-card{height:320px!important;min-height:320px!important}
-}
-@media(max-width:700px){
-  .public-home{padding:12px!important}
-  .public-menu-grid{grid-template-columns:1fr!important}
-  .public-menu-card{height:auto!important;min-height:300px!important}
-}
 </style>
 
 <style id="home-back-button-style">
@@ -1438,46 +1340,45 @@ body.admin-mode.daily-mode #nav-storage{display:none!important}
 
 <!-- ═══════════ PAGE: DASHBOARD ═══════════ -->
 <div class="page active public-home" id="page-dashboard">
-  <section class="public-menu-grid public-menu-grid-4">
+  <section class="public-hero">
+    <div class="public-hero-copy">
+      <div class="public-kicker">School-OS</div>
+      <h1 id="publicSchoolTitle">ระบบตารางสอนโรงเรียน</h1>
+      <p>ดูตารางสอนได้ทันทีโดยไม่ต้องเข้าสู่ระบบ • การแก้ไขข้อมูลสำหรับฝ่ายวิชาการเท่านั้น</p>
+    </div>
+    <div class="public-lock-note">
+      <span class="public-lock-icon">🔒</span>
+      <div><strong>โหมดดูข้อมูล</strong><small>เข้าสู่ระบบมุมขวาบนเมื่อต้องการแก้ไข</small></div>
+    </div>
+  </section>
+
+  <section class="public-menu-grid">
     <button class="public-menu-card blue" onclick="nav('teacher-view')">
       <span class="public-card-icon">📅</span>
-      <span class="public-card-copy">
-        <strong>ดูตารางสอนครูรายคน</strong>
-        <small>ค้นหาตารางสอนของครูรายบุคคล</small>
-        <span class="public-card-points">• ดูตามชื่อครู<br>• แสดงครบทุกคาบ<br>• ดูรายสัปดาห์ / รายวัน</span>
-      </span>
-      <span class="public-card-cta">ดูตารางสอนครู <b>›</b></span>
+      <span class="public-card-copy"><strong>ดูตารางสอนครูรายคน</strong><small>ค้นหาชื่อครู แล้วดูตารางสอนรายบุคคล</small></span>
+      <span class="public-card-arrow">›</span>
     </button>
-
     <button class="public-menu-card green" onclick="nav('teacher-all')">
       <span class="public-card-icon">👥</span>
-      <span class="public-card-copy">
-        <strong>ดูตารางสอนครูทุกคน</strong>
-        <small>ดูตารางสอนแบบรวมทั้งหมด</small>
-        <span class="public-card-points">• แสดงทุกระดับชั้น<br>• แสดงทุกห้องเรียน<br>• ดูรายสัปดาห์ / รายวัน</span>
-      </span>
-      <span class="public-card-cta">ดูตารางสอนทุกคน <b>›</b></span>
+      <span class="public-card-copy"><strong>ดูตารางสอนครูทุกคน</strong><small>ดูตารางสอนรวมของครูทั้งโรงเรียน</small></span>
+      <span class="public-card-arrow">›</span>
     </button>
-
     <button class="public-menu-card pink" onclick="nav('substitute')">
       <span class="public-card-icon">🔄</span>
-      <span class="public-card-copy">
-        <strong>ตารางสอนแทนรายวัน</strong>
-        <small>ดูรายการสอนแทนประจำวัน</small>
-        <span class="public-card-points">• ตรวจสอบครูลา<br>• ดูครูผู้สอนแทน<br>• ดูสถานะการจัดสอนแทน</span>
-      </span>
-      <span class="public-card-cta">ดูตารางสอนแทนรายวัน <b>›</b></span>
+      <span class="public-card-copy"><strong>ตารางสอนแทนรายวัน</strong><small>ตรวจสอบครูลา ครูสอนแทน และสถานะรายวัน</small></span>
+      <span class="public-card-arrow">›</span>
     </button>
+  </section>
 
-    <button class="public-menu-card yellow" onclick="nav('school')">
-      <span class="public-card-icon">📖</span>
-      <span class="public-card-copy">
-        <strong>ข้อมูลพื้นฐาน</strong>
-        <small>ข้อมูลครู / วิชา / ห้องเรียน</small>
-        <span class="public-card-points">• รายชื่อครู<br>• รายชื่อวิชา<br>• รายชื่อห้องเรียน</span>
-      </span>
-      <span class="public-card-cta">ดูข้อมูลพื้นฐาน <b>›</b></span>
-    </button>
+  <section class="public-info-grid">
+    <div class="public-info-card">
+      <h3>📌 การใช้งานสำหรับครู</h3>
+      <p>สามารถดูตารางสอนรายคน ตารางของครูทุกคน และตารางสอนแทนรายวันได้โดยไม่ต้อง Login</p>
+    </div>
+    <div class="public-info-card">
+      <h3>🔐 สำหรับฝ่ายวิชาการ</h3>
+      <p>กรอก ID / Password ที่มุมขวาบนเพื่อเปิดเมนูจัดการ และสลับโหมด SETUP / DAILY</p>
+    </div>
   </section>
 </div>
 
