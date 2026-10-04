@@ -969,21 +969,29 @@ body{background:var(--bg)}
 *{box-sizing:border-box}
 body{background:var(--bg);color:#20324B}
 .school-topbar{
-  height:160px!important;padding:0 24px 0 0!important;background:#fff!important;
+  height:160px!important;padding:0 24px 0 0!important;background:#0B2C57!important;
   border-bottom:1px solid #E9EEF6!important;box-shadow:0 2px 14px rgba(20,50,90,.07)!important;
-  position:relative;overflow:visible;gap:0!important;
+  position:relative;overflow:hidden;gap:0!important;
+}
+.school-topbar:after{
+  content:'';position:absolute;left:350px;right:0;top:0;height:160px;
+  background-image:url('assets/school-header.webp');
+  background-size:cover;
+  background-position:center 54%;
+  background-repeat:no-repeat;
+  z-index:0;pointer-events:none;
 }
 .school-topbar:before{
-  content:'';position:absolute;left:0;top:0;width:430px;height:160px;
-  background:linear-gradient(135deg,#0B2C57 0%,#133F73 76%,#E4B548 76.5%,#F2D47B 79%,transparent 79.5%);
-  border-bottom-right-radius:52px;z-index:0;pointer-events:none;
+  content:'';position:absolute;left:0;top:0;width:610px;height:160px;
+  background:linear-gradient(90deg,#0B2C57 0%,#133F73 63%,rgba(19,63,115,.95) 70%,rgba(19,63,115,.58) 82%,rgba(19,63,115,0) 100%);
+  z-index:1;pointer-events:none;
 }
-.school-brand{position:relative;z-index:1;min-width:440px!important;padding-left:24px;gap:13px!important}
+.school-brand{position:relative;z-index:2;min-width:440px!important;padding-left:24px;gap:13px!important}
 .school-logo-shell{width:70px!important;height:70px!important;border:none!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;overflow:visible!important}
 .school-name{color:#F7D36D!important;font-size:17px!important;max-width:315px!important;font-family:'Sarabun',sans-serif!important;line-height:1.15!important}
 .school-system-name{color:rgba(255,255,255,.88)!important;font-size:10px!important;letter-spacing:.1px}
 .tb-spacer{flex:1}
-.topbar-tools{position:relative;z-index:1;padding-right:22px;gap:8px!important}
+.topbar-tools{position:relative;z-index:2;padding-right:22px;gap:8px!important}
 .school-year,.school-save{height:34px;display:flex;align-items:center;border-radius:18px!important;background:#F7F9FC!important;border:1px solid #DEE6F1!important;color:#3A5377!important;padding:0 12px!important}
 .school-year{background:#FFF9EA!important;border-color:#E8CC76!important;color:#7B5B13!important}
 .top-icon-btn{height:36px!important;border-radius:10px!important;background:#fff!important;border:1px solid #DDE6F2!important;box-shadow:0 2px 8px rgba(20,50,90,.035)}
