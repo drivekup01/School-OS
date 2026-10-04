@@ -1,0 +1,3928 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบจัดตารางเรียน - ตารางสอน</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Noto+Serif+Thai:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+
+:root{
+  --pri:#1a3a6e;--pri2:#2a5298;--pri3:#4472c4;
+  --gold:#c9a84c;--gold2:#f0d070;
+  --bg:#f0f3f9;--card:#fff;--text:#1a2030;--muted:#6272a4;
+  --border:#d0d8ee;--succ:#2e7d32;--err:#c62828;--warn:#e65100;
+  --sidebar:260px;--rad:12px;
+  --sh:0 2px 20px rgba(26,58,110,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+
+/* ── APP SHELL ── */
+.app-shell{display:flex;flex:1;min-height:0}
+
+/* ── TOPBAR ── */
+.topbar{height:58px;background:linear-gradient(135deg,var(--pri) 0%,var(--pri2) 70%,var(--pri3));
+  display:flex;align-items:center;padding:0 20px;gap:14px;box-shadow:0 2px 12px rgba(26,58,110,.35);position:sticky;top:0;z-index:300}
+.tb-logo{font-family:'Noto Serif Thai',serif;font-size:17px;font-weight:700;color:var(--gold2);white-space:nowrap}
+.tb-sub{font-size:11px;color:rgba(255,255,255,.65);margin-top:1px}
+.tb-spacer{flex:1}
+.tb-school{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+  border-radius:20px;padding:4px 13px;font-size:12px;color:#fff;font-weight:600}
+.tb-tag{background:rgba(201,168,76,.25);border:1px solid var(--gold);
+  border-radius:12px;padding:3px 10px;font-size:11px;color:var(--gold2);font-weight:700}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sidebar);background:var(--pri);color:#fff;display:flex;flex-direction:column;
+  overflow-y:auto;flex-shrink:0;transition:width .2s}
+.sb-section{padding:16px 0 8px}
+.sb-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
+  color:rgba(255,255,255,.45);padding:0 18px 7px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 18px;cursor:pointer;
+  font-size:14px;font-weight:500;color:rgba(255,255,255,.75);transition:all .15s;border-left:3px solid transparent;user-select:none}
+.sb-item:hover{background:rgba(255,255,255,.1);color:#fff}
+.sb-item.active{background:rgba(255,255,255,.15);color:#fff;border-left-color:var(--gold2);font-weight:700}
+.sb-item .icon{font-size:17px;width:22px;text-align:center;flex-shrink:0}
+.sb-badge{margin-left:auto;background:rgba(255,255,255,.2);border-radius:10px;
+  padding:1px 7px;font-size:11px;font-weight:700}
+.sb-divider{border:none;border-top:1px solid rgba(255,255,255,.1);margin:6px 14px}
+
+/* ── MAIN ── */
+.main{flex:1;overflow-y:auto;min-width:0}
+.page{padding:26px 28px;display:none}
+.page.active{display:block}
+
+/* ── PAGE HEADER ── */
+.ph{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:22px}
+.ph-left h1{font-family:'Noto Serif Thai',serif;font-size:22px;font-weight:700;color:var(--pri)}
+.ph-left p{font-size:13px;color:var(--muted);margin-top:3px}
+.ph-actions{display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap}
+
+/* ── CARDS ── */
+.card{background:var(--card);border-radius:var(--rad);box-shadow:var(--sh);padding:24px;margin-bottom:18px}
+.card-sm{padding:16px 20px}
+.card-hd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}
+.card-title{font-size:16px;font-weight:700;color:var(--pri);display:flex;align-items:center;gap:8px}
+
+/* ── STAT CARDS ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.stat-card{background:var(--card);border-radius:var(--rad);box-shadow:var(--sh);padding:18px 20px;
+  border-left:4px solid transparent}
+.stat-card.c1{border-color:#3d6fc4}.stat-card.c2{border-color:#2e7d32}.stat-card.c3{border-color:#c9a84c}.stat-card.c4{border-color:#c62828}
+.stat-num{font-size:32px;font-weight:800;color:var(--pri);line-height:1}
+.stat-label{font-size:12px;color:var(--muted);margin-top:4px;font-weight:600}
+
+/* ── BUTTONS ── */
+.btn{padding:9px 18px;border-radius:8px;border:none;font-family:'Sarabun',sans-serif;
+  font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn-pri{background:var(--pri);color:#fff}.btn-pri:hover{background:var(--pri2);box-shadow:0 3px 12px rgba(26,58,110,.3)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--pri)}.btn-gold:hover{box-shadow:0 3px 12px rgba(201,168,76,.4)}
+.btn-out{background:transparent;color:var(--pri);border:2px solid var(--pri)}.btn-out:hover{background:var(--pri);color:#fff}
+.btn-succ{background:var(--succ);color:#fff}.btn-succ:hover{background:#1b5e20}
+.btn-warn{background:#fff3e0;color:var(--warn);border:1.5px solid #ffcc80}.btn-warn:hover{background:var(--warn);color:#fff;border-color:var(--warn)}
+.btn-danger{background:#ffebee;color:var(--err);border:1.5px solid #ffcdd2}.btn-danger:hover{background:var(--err);color:#fff;border-color:var(--err)}
+.btn-ghost{background:transparent;color:var(--muted);border:1.5px solid var(--border)}.btn-ghost:hover{background:var(--border)}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-xs{padding:3px 9px;font-size:11px;border-radius:5px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* ── FORMS ── */
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fgrid.g3{grid-template-columns:1fr 1fr 1fr}
+.fgrid.g1{grid-template-columns:1fr}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg.s2{grid-column:span 2}.fg.s3{grid-column:span 3}
+label{font-size:12px;font-weight:700;color:var(--pri);text-transform:uppercase;letter-spacing:.5px}
+input[type=text],input[type=number],input[type=time],input[type=email],select,textarea{
+  padding:9px 12px;border:1.5px solid var(--border);border-radius:7px;
+  font-family:'Sarabun',sans-serif;font-size:14px;color:var(--text);
+  width:100%;outline:none;transition:border .15s,box-shadow .15s;background:#fff}
+input:focus,select:focus,textarea:focus{border-color:var(--pri2);box-shadow:0 0 0 3px rgba(42,82,152,.1)}
+textarea{resize:vertical;min-height:64px}
+.req{color:var(--err);margin-left:2px}
+
+/* ── TABLES ── */
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{background:var(--pri);color:#fff;padding:10px 12px;text-align:left;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+.tbl th:first-child{border-radius:0}.tbl th:last-child{border-radius:0}
+.tbl td{padding:9px 12px;border-bottom:1px solid #edf1f8;vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:#f7f9ff}
+.tbl-wrap{border-radius:var(--rad);overflow:hidden;border:1px solid var(--border)}
+
+/* ── TEACHER CHIP ── */
+.tchr-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:12px;
+  font-size:12px;font-weight:600;background:#e8f0fe;color:var(--pri);border:1px solid #c5d3f5}
+.tchr-avt{width:24px;height:24px;border-radius:50%;background:var(--pri2);color:#fff;
+  font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* ── WORKLOAD BAR ── */
+.wl-bar-bg{background:#e8eef8;border-radius:6px;height:8px;flex:1;overflow:hidden;min-width:60px}
+.wl-bar-fill{height:8px;border-radius:6px;transition:width .3s}
+.wl-ok{background:var(--succ)}.wl-warn{background:var(--gold)}.wl-over{background:var(--err)}
+.wl-row{display:flex;align-items:center;gap:8px}
+.wl-num{font-size:12px;font-weight:700;min-width:40px;text-align:right}
+
+/* ── SCHEDULE BUILDER ── */
+.sched-wrap{overflow:auto;border:1px solid var(--border);border-radius:10px;max-height:70vh}
+.sched-tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:700px}
+.sched-tbl th{background:var(--pri);color:#fff;padding:10px 6px;text-align:center;
+  border-right:1px solid rgba(255,255,255,.18);font-size:13px;position:sticky;top:0;z-index:10}
+.sched-tbl th.th-time{position:sticky;left:0;z-index:20;background:var(--pri);min-width:74px;width:74px}
+.sched-tbl td{border:1px solid #dce6f5;padding:3px;vertical-align:top;min-width:110px}
+.sched-tbl td.td-period{position:sticky;left:0;background:#eef3ff;z-index:5;min-width:74px;width:74px;text-align:center;vertical-align:middle;padding:5px 3px}
+.td-period .p-num{font-weight:800;font-size:13px;color:var(--pri)}
+.td-period .p-time{font-size:10px;color:var(--muted);margin-top:1px}
+
+.cell-inner{border-radius:5px;padding:4px 5px;min-height:44px;transition:background .15s}
+.cell-subj-sel{width:100%;font-size:11px;padding:3px 5px;border:1.5px solid #d0d9f0;border-radius:4px;
+  font-family:'Sarabun',sans-serif;background:#fff;color:var(--text);margin-bottom:3px}
+.cell-tchr-sel{width:100%;font-size:11px;padding:3px 5px;border:1px solid #e0e8f5;border-radius:4px;
+  font-family:'Sarabun',sans-serif;background:#fafbff;color:var(--muted)}
+.cell-subj-sel:focus,.cell-tchr-sel:focus{outline:none;border-color:var(--pri2)}
+
+/* ── ROOM TABS ── */
+.room-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+.rtab{padding:7px 16px;border-radius:8px;border:1.5px solid var(--border);
+  font-size:13px;font-weight:700;cursor:pointer;background:#fff;color:var(--muted);transition:all .15s;display:flex;align-items:center;gap:5px}
+.rtab:hover{border-color:var(--pri);color:var(--pri)}
+.rtab.active{background:var(--pri);border-color:var(--pri);color:#fff}
+.rtab .rm-badge{background:rgba(255,255,255,.25);border-radius:8px;padding:0 5px;font-size:10px}
+
+/* ── TEACHER VIEW (daily) ── */
+.teacher-view-wrap{overflow:auto;border:1px solid var(--border);border-radius:10px}
+.tv-tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:800px}
+.tv-tbl th{background:var(--pri);color:#fff;padding:10px 8px;text-align:center;border-right:1px solid rgba(255,255,255,.2)}
+.tv-tbl td{border:1px solid #dce6f5;padding:6px;text-align:center;vertical-align:middle;min-height:48px}
+.tv-tbl td.tc-row{background:#eef3ff;font-weight:700;font-size:12px;color:var(--pri);text-align:left;padding:8px 12px;position:sticky;left:0;min-width:130px}
+.tv-cell{border-radius:5px;padding:4px 6px}
+.tv-subj{font-weight:700;font-size:12px}
+.tv-room{font-size:10px;color:var(--muted);margin-top:1px}
+
+/* ── IMPORT DROP ── */
+.drop-zone{border:2px dashed var(--border);border-radius:10px;padding:32px;text-align:center;
+  cursor:pointer;transition:all .2s;background:#fafbff}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--pri);background:#eef2ff}
+.drop-icon{font-size:36px;margin-bottom:8px}
+.drop-text{font-size:14px;color:var(--muted);font-weight:600}
+.drop-sub{font-size:12px;color:#9aa5c0;margin-top:4px}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700}
+.b-blue{background:#dbeafe;color:#1e40af}.b-green{background:#dcfce7;color:#166534}
+.b-yellow{background:#fef9c3;color:#854d0e}.b-red{background:#fee2e2;color:#991b1b}
+.b-purple{background:#ede9fe;color:#6d28d9}
+
+/* ── MODALS ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;
+  align-items:center;justify-content:center;padding:20px}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.25);
+  width:100%;max-width:560px;max-height:90vh;overflow-y:auto;padding:28px}
+.modal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-title{font-family:'Noto Serif Thai',serif;font-size:20px;font-weight:700;color:var(--pri)}
+.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1;padding:2px 6px;border-radius:5px}
+.modal-close:hover{background:#f0f2f8}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:22px;padding-top:16px;border-top:1px solid var(--border)}
+
+/* ── ALERTS ── */
+.alert{padding:11px 15px;border-radius:8px;font-size:13px;margin-bottom:14px;display:flex;align-items:flex-start;gap:9px}
+.a-info{background:#e3f2fd;color:#0d47a1;border-left:4px solid #1976d2}
+.a-warn{background:#fff8e1;color:#7f3f00;border-left:4px solid var(--gold)}
+.a-succ{background:#e8f5e9;color:#1b5e20;border-left:4px solid var(--succ)}
+.a-err{background:#ffebee;color:#b71c1c;border-left:4px solid var(--err)}
+
+/* ── SUBJECT COLOR CHIPS ── */
+.subj-colors{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.sc-opt{width:24px;height:24px;border-radius:5px;cursor:pointer;border:3px solid transparent;transition:border .1s}
+.sc-opt.sel{border-color:var(--pri)}
+
+/* ── MISC ── */
+.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
+.tag-list{display:flex;flex-wrap:wrap;gap:5px}
+.tag{padding:3px 9px;border-radius:12px;font-size:12px;font-weight:600;background:#e8f0fe;color:var(--pri)}
+.empty-state{text-align:center;padding:48px 20px;color:var(--muted)}
+.empty-icon{font-size:48px;margin-bottom:12px}
+.empty-text{font-size:15px;font-weight:600}
+.empty-sub{font-size:13px;margin-top:4px}
+.color-dot{width:12px;height:12px;border-radius:3px;display:inline-block}
+.sig-line-ui{display:flex;align-items:flex-end;gap:3px}
+.sig-ul{flex:1;border-bottom:1px solid #888;min-width:80px}
+
+/* ── TOAST ── */
+.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{display:flex;align-items:center;gap:10px;padding:12px 18px;border-radius:10px;
+  font-size:13px;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,.2);
+  pointer-events:all;animation:toastIn .25s ease;min-width:240px;max-width:340px}
+@keyframes toastIn{from{transform:translateX(60px);opacity:0}to{transform:none;opacity:1}}
+@keyframes toastOut{to{transform:translateX(60px);opacity:0}}
+.toast.out{animation:toastOut .25s ease forwards}
+.toast-succ{background:#1b5e20;color:#fff}.toast-err{background:#b71c1c;color:#fff}
+.toast-info{background:#1a3a6e;color:#fff}.toast-warn{background:#e65100;color:#fff}
+.toast-icon{font-size:17px;flex-shrink:0}
+
+/* ── SAVE INDICATOR ── */
+.save-ind{display:flex;align-items:center;gap:6px;font-size:11px;padding:4px 10px;
+  border-radius:12px;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.8);
+  background:rgba(255,255,255,.1);transition:all .3s;cursor:default}
+.save-dot{width:7px;height:7px;border-radius:50%;background:#aaa;transition:background .3s;flex-shrink:0}
+.save-dot.saved{background:#69f070}.save-dot.saving{background:#ffd740;animation:pulse .6s infinite}
+.save-dot.unsaved{background:#ff6b6b}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── PROFILE SWITCHER ── */
+.profile-bar{background:rgba(0,0,0,.15);padding:10px 16px;border-top:1px solid rgba(255,255,255,.08)}
+.profile-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;
+  cursor:pointer;font-size:13px;color:rgba(255,255,255,.75);transition:all .15s;user-select:none}
+.profile-item:hover{background:rgba(255,255,255,.1);color:#fff}
+.profile-item.active-prof{background:rgba(255,255,255,.18);color:var(--gold2);font-weight:700}
+.profile-dot{width:9px;height:9px;border-radius:50%;background:var(--gold);flex-shrink:0}
+
+/* ── STORAGE PAGE ── */
+.storage-card{background:linear-gradient(135deg,#1a3a6e,#2a5298);color:#fff;border-radius:14px;padding:24px;margin-bottom:16px}
+.storage-num{font-size:36px;font-weight:800;color:var(--gold2)}
+.storage-bar-bg{background:rgba(255,255,255,.2);border-radius:6px;height:10px;margin:10px 0}
+.storage-bar-fill{height:10px;border-radius:6px;background:var(--gold2);transition:width .4s}
+.backup-card{border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .2s}
+.backup-card:hover{border-color:var(--pri);background:#eef2ff}
+
+/* ── LOGO UPLOADER ── */
+.logo-upload-zone{border:2px dashed var(--border);border-radius:12px;padding:20px;
+  text-align:center;cursor:pointer;transition:all .2s;background:#fafbff;position:relative}
+.logo-upload-zone:hover,.logo-upload-zone.drag{border-color:var(--pri);background:#eef2ff}
+.logo-preview-wrap{display:flex;align-items:center;gap:18px;padding:14px 18px;
+  background:#f7f9ff;border:1.5px solid var(--border);border-radius:10px;margin-top:10px}
+.logo-preview-img{width:80px;height:80px;object-fit:contain;border-radius:8px;
+  border:1.5px solid var(--border);background:#fff;padding:4px}
+.logo-info{flex:1}
+.logo-info .lname{font-size:13px;font-weight:700;color:var(--pri)}
+.logo-info .lsub{font-size:11px;color:var(--muted);margin-top:3px}
+.logo-size-btns{display:flex;gap:6px;margin-top:8px}
+.logo-size-btn{padding:3px 10px;border-radius:6px;border:1.5px solid var(--border);
+  font-size:11px;font-weight:700;cursor:pointer;background:#fff;color:var(--muted);transition:all .15s}
+.logo-size-btn.on{border-color:var(--pri);background:var(--pri);color:#fff}
+
+/* ── SETUP WIZARD ── */
+.wizard-overlay{position:fixed;inset:0;background:rgba(10,20,50,.72);z-index:600;
+  display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.wizard-box{background:#fff;border-radius:18px;box-shadow:0 24px 80px rgba(0,0,0,.35);
+  width:100%;max-width:680px;max-height:90vh;overflow-y:auto;animation:wzIn .3s ease}
+@keyframes wzIn{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+.wz-header{background:linear-gradient(135deg,var(--pri) 0%,var(--pri2) 60%,var(--pri3));
+  padding:28px 32px;border-radius:18px 18px 0 0;color:#fff}
+.wz-title{font-family:'Noto Serif Thai',serif;font-size:22px;font-weight:700;color:var(--gold2)}
+.wz-sub{font-size:13px;opacity:.75;margin-top:5px}
+.wz-steps{display:flex;gap:0;margin-top:18px}
+.wz-step-dot{flex:1;text-align:center;position:relative}
+.wz-step-dot::after{content:'';position:absolute;top:14px;left:50%;width:100%;height:2px;
+  background:rgba(255,255,255,.3);z-index:0}
+.wz-step-dot:last-child::after{display:none}
+.wz-dot{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.2);
+  border:2px solid rgba(255,255,255,.4);color:#fff;font-size:12px;font-weight:800;
+  display:inline-flex;align-items:center;justify-content:center;position:relative;z-index:1;
+  transition:all .2s}
+.wz-dot.active{background:var(--gold2);border-color:var(--gold2);color:var(--pri)}
+.wz-dot.done{background:#69f070;border-color:#69f070;color:#1b5e20}
+.wz-step-lbl{font-size:10px;opacity:.7;margin-top:4px}
+.wz-body{padding:28px 32px}
+.wz-footer{padding:16px 32px 24px;display:flex;justify-content:space-between;align-items:center;
+  border-top:1px solid var(--border)}
+.wz-section{margin-bottom:20px}
+.wz-section-title{font-size:15px;font-weight:800;color:var(--pri);margin-bottom:10px;
+  display:flex;align-items:center;gap:7px}
+/* primary quick setup grid */
+.grade-pick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.grade-pick-btn{padding:10px 6px;border:2px solid var(--border);border-radius:9px;
+  text-align:center;cursor:pointer;transition:all .15s;background:#fff}
+.grade-pick-btn:hover,.grade-pick-btn.on{border-color:var(--pri);background:#eef2ff}
+.grade-pick-btn .gp-grade{font-size:16px;font-weight:800;color:var(--pri)}
+.grade-pick-btn .gp-label{font-size:11px;color:var(--muted);margin-top:2px}
+.subj-preset-grid{display:flex;flex-wrap:wrap;gap:6px}
+.subj-preset-chip{padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);
+  font-size:12px;font-weight:700;cursor:pointer;background:#fff;color:var(--muted);
+  transition:all .15s;display:flex;align-items:center;gap:5px}
+.subj-preset-chip .sc{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.subj-preset-chip.on{border-color:var(--pri);background:#eef2ff;color:var(--pri)}
+.subj-preset-chip:hover{border-color:var(--pri2)}
+/* primary dashboard extras */
+.curriculum-card{background:linear-gradient(135deg,#1a3a6e,#2a5298);color:#fff;
+  border-radius:12px;padding:18px 20px;margin-bottom:14px}
+.curr-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;
+  border-bottom:1px solid rgba(255,255,255,.1)}
+.curr-row:last-child{border-bottom:none}
+.curr-subj{font-size:13px;font-weight:600}
+.curr-std{font-size:12px;opacity:.65}
+.curr-actual{font-size:14px;font-weight:800}
+.curr-ok{color:#69f070}.curr-warn{color:#ffd740}.curr-over{color:#ff6b6b}
+
+/* ── SUBSTITUTE TEACHING ── */
+.sub-date-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 18px;
+  background:linear-gradient(135deg,var(--pri),var(--pri2));border-radius:10px;margin-bottom:18px}
+.sub-date-bar label{color:rgba(255,255,255,.7);font-size:12px;font-weight:700;white-space:nowrap}
+.sub-date-input{padding:8px 14px;border-radius:7px;border:none;font-family:'Sarabun',sans-serif;
+  font-size:15px;font-weight:700;color:var(--pri);background:#fff;outline:none;cursor:pointer}
+.sub-date-badge{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);
+  border-radius:20px;padding:5px 14px;font-size:13px;font-weight:700;color:#fff;white-space:nowrap}
+.absent-card{border-radius:10px;border:2px solid var(--border);background:#fff;
+  overflow:hidden;margin-bottom:14px;transition:box-shadow .2s}
+.absent-card:hover{box-shadow:0 4px 20px rgba(26,58,110,.12)}
+.absent-hd{display:flex;align-items:center;gap:12px;padding:12px 16px;
+  background:linear-gradient(90deg,#fff3e0,#fff8f0);border-bottom:1px solid #ffe0b2}
+.absent-avt{width:42px;height:42px;border-radius:50%;background:var(--warn);color:#fff;
+  font-size:17px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.absent-name{font-size:15px;font-weight:800;color:var(--text)}
+.absent-meta{font-size:12px;color:var(--muted);margin-top:2px}
+.absent-reason{margin-left:auto;display:flex;align-items:center;gap:8px}
+.period-sub-row{display:flex;align-items:center;gap:8px;padding:8px 16px;
+  border-bottom:1px solid #f0f4ff;transition:background .15s}
+.period-sub-row:last-child{border-bottom:none}
+.period-sub-row:hover{background:#f7f9ff}
+.period-pill{background:var(--pri);color:#fff;border-radius:6px;padding:3px 9px;
+  font-size:11px;font-weight:800;min-width:56px;text-align:center;flex-shrink:0}
+.period-subj{font-size:13px;font-weight:700;color:var(--text);min-width:100px}
+.period-room{font-size:12px;color:var(--muted);min-width:55px}
+.sub-select{flex:1;padding:6px 10px;border:1.5px solid var(--border);border-radius:7px;
+  font-family:'Sarabun',sans-serif;font-size:13px;color:var(--text);
+  background:#fff;outline:none;transition:border .15s;max-width:260px}
+.sub-select:focus{border-color:var(--pri2);box-shadow:0 0 0 3px rgba(42,82,152,.1)}
+.sub-select.assigned{border-color:var(--succ);background:#f0fff4}
+.sub-note-inp{padding:5px 9px;border:1.5px solid var(--border);border-radius:6px;
+  font-family:'Sarabun',sans-serif;font-size:12px;color:var(--text);
+  background:#fff;outline:none;width:160px;transition:border .15s}
+.sub-note-inp:focus{border-color:var(--gold)}
+.history-row{display:flex;align-items:center;gap:10px;padding:10px 14px;
+  border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s}
+.history-row:hover{background:#f7f9ff}
+.history-date{font-size:14px;font-weight:800;color:var(--pri);min-width:100px}
+.history-info{font-size:12px;color:var(--muted)}
+.history-badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:3px}
+.no-absent{text-align:center;padding:36px;color:var(--muted)}
+.no-absent-icon{font-size:48px;margin-bottom:10px}
+.sub-summary-bar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.sum-box{flex:1;min-width:100px;background:var(--card);border-radius:10px;
+  padding:14px 16px;border-left:4px solid transparent;box-shadow:var(--sh);text-align:center}
+.sum-box.s1{border-color:#e65100}.sum-box.s2{border-color:#c62828}.sum-box.s3{border-color:#2e7d32}
+.sum-num{font-size:28px;font-weight:800;color:var(--pri)}
+.sum-lbl{font-size:12px;color:var(--muted);font-weight:600;margin-top:3px}
+
+@media(max-width:820px){
+  .sidebar{width:0;overflow:hidden}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .fgrid{grid-template-columns:1fr}.fgrid.g3{grid-template-columns:1fr 1fr}
+  .fg.s2,.fg.s3{grid-column:span 1}
+  .page{padding:16px 14px}
+}
+
+
+/* ══ CONFLICT DETECTION SYSTEM ══ */
+.conflict-badge{display:inline-flex;align-items:center;justify-content:center;
+  min-width:20px;height:20px;border-radius:10px;background:#E53935;color:#fff;
+  font-size:10px;font-weight:800;padding:0 5px;margin-left:6px;
+  animation:conflictPulse 2s infinite;line-height:1}
+.conflict-badge.zero{background:#2E7D32;animation:none}
+@keyframes conflictPulse{0%,100%{opacity:1}50%{opacity:.6}}
+.conflict-page{padding:0}
+.conflict-hero{background:linear-gradient(135deg,#B71C1C,#E53935);
+  color:#fff;border-radius:12px;padding:20px 24px;margin-bottom:18px;
+  display:flex;align-items:center;gap:16px}
+.conflict-hero-icon{font-size:40px;line-height:1}
+.conflict-hero-title{font-size:20px;font-weight:800;margin-bottom:4px}
+.conflict-hero-sub{font-size:13px;opacity:.85}
+.conflict-ok-hero{background:linear-gradient(135deg,#1B5E20,#2E7D32)}
+.conflict-filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.cf-chip{padding:5px 14px;border-radius:18px;border:1.5px solid var(--border);
+  cursor:pointer;font-size:12px;font-weight:700;background:#fff;color:var(--muted);
+  transition:all .15s}
+.cf-chip.on{border-color:#E53935;background:#E53935;color:#fff}
+.conflict-card{background:#fff;border-radius:10px;box-shadow:var(--sh);
+  border-left:4px solid #E53935;margin-bottom:12px;overflow:hidden}
+.conflict-card-hd{display:flex;align-items:center;gap:10px;padding:12px 16px;
+  background:#FFF5F5;border-bottom:1px solid #FFCDD2;cursor:pointer}
+.conflict-card-hd:hover{background:#FFEBEE}
+.conflict-teacher-name{font-size:14px;font-weight:800;color:#B71C1C;flex:1}
+.conflict-count-badge{background:#E53935;color:#fff;border-radius:12px;
+  padding:2px 10px;font-size:11px;font-weight:800}
+.conflict-card-body{padding:0}
+.conflict-row{display:grid;grid-template-columns:2fr 2fr 2fr 1.5fr;
+  gap:0;padding:10px 16px;border-bottom:1px solid #FFF0F0;font-size:12px;
+  align-items:center}
+.conflict-row:last-child{border-bottom:none}
+.conflict-row:hover{background:#FFF9F9}
+.conflict-col-hdr{background:#FFEBEE;font-weight:800;color:#C62828;
+  font-size:11px;padding:7px 16px}
+.conflict-slot{background:#E53935;color:#fff;border-radius:6px;
+  padding:2px 8px;font-size:11px;font-weight:700;display:inline-block}
+.conflict-room-tag{background:#EEF3FF;color:#1A3A6E;border-radius:4px;
+  padding:1px 7px;font-size:11px;font-weight:600;display:inline-block}
+.conflict-subj{font-weight:700;color:#1A3A6E}
+.no-conflict-box{text-align:center;padding:48px 20px}
+.no-conflict-icon{font-size:56px;margin-bottom:12px}
+.no-conflict-title{font-size:18px;font-weight:800;color:#2E7D32;margin-bottom:6px}
+.no-conflict-sub{font-size:13px;color:var(--muted)}
+/* Builder conflict highlight */
+.cell-conflict{outline:2.5px solid #E53935!important;
+  box-shadow:0 0 0 3px rgba(229,57,53,.18)!important;position:relative}
+.cell-conflict::after{content:'⚠';position:absolute;top:2px;right:3px;
+  font-size:10px;color:#E53935;font-weight:800;line-height:1}
+
+
+/* ── TEACHER VIEW EXPORT ── */
+.tv-action-bar {
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  padding: 10px 0 14px 0; border-bottom: 1px solid var(--border); margin-bottom: 14px;
+}
+.tv-action-bar .tv-teacher-name {
+  font-size: 15px; font-weight: 800; color: var(--pri); flex: 1;
+}
+@media print {
+  /* Hide EVERYTHING except the dedicated print overlay */
+  body > *:not(#tvPrintOverlay) { display: none !important; }
+  #tvPrintOverlay { display: block !important; }
+  @page { size: A4 landscape; margin: 1cm; }
+}
+.print-header {
+  display: none;
+  text-align: center; margin-bottom: 12px;
+}
+.print-header h2 { font-size: 16px; font-weight: 800; margin: 0; }
+.print-header p  { font-size: 12px; color: #666; margin: 2px 0 0; }
+
+/* ── REAL-TIME CONFLICT WARNINGS ── */
+.cell-tchr-sel option.busy { color: #C62828; font-weight: 700; }
+.cell-tchr-sel.has-conflict { border-color: #E53935 !important; background: #FFF5F5 !important; }
+.conflict-toast {
+  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+  background: #C62828; color: #fff; padding: 10px 20px 10px 14px;
+  border-radius: 10px; font-size: 13px; font-weight: 700;
+  box-shadow: 0 4px 20px rgba(198,40,40,.4); z-index: 9999;
+  display: flex; align-items: center; gap: 10px; max-width: 480px;
+  animation: conflictSlide .25s ease; pointer-events: none;
+}
+.conflict-toast .ct-close { pointer-events: all; cursor: pointer; opacity: .7; font-size: 16px; }
+.conflict-toast .ct-close:hover { opacity: 1; }
+@keyframes conflictSlide { from { opacity:0; transform:translateX(-50%) translateY(12px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+.cell-warn-badge {
+  display: block; width: 100%; text-align: center; font-size: 10px;
+  font-weight: 700; color: #C62828; background: #FFEBEE;
+  border-radius: 3px; padding: 1px 4px; margin-top: 2px;
+  border: 1px solid #FFCDD2;
+}
+.cell-ok-badge {
+  display: block; width: 100%; text-align: center; font-size: 10px;
+  color: #2E7D32; background: #E8F5E9; border-radius: 3px;
+  padding: 1px 4px; margin-top: 2px; border: 1px solid #C8E6C9;
+}
+
+/* ══ QUOTA & AUTO-SCHEDULE ══════════════════════════════ */
+.quota-panel {
+  background: var(--card); border-radius: 10px; box-shadow: var(--sh);
+  margin-bottom: 14px; overflow: hidden;
+}
+.quota-panel-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; background: var(--pri); color: #fff;
+  font-weight: 800; font-size: 13px; cursor: pointer;
+}
+.quota-panel-body { padding: 10px 14px; }
+.quota-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 0; border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.quota-row:last-child { border-bottom: none; }
+.quota-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+.quota-name { flex: 1; font-weight: 700; color: var(--text); }
+.quota-bar-wrap {
+  width: 80px; height: 8px; background: #e9ecf5; border-radius: 4px; overflow: hidden;
+}
+.quota-bar-fill {
+  height: 100%; border-radius: 4px; transition: width .3s ease, background .3s;
+}
+.quota-count {
+  font-weight: 800; font-size: 13px; min-width: 28px; text-align: right;
+}
+.quota-count.done { color: #2E7D32; }
+.quota-count.warn { color: #E65100; }
+.quota-count.over { color: #C62828; }
+.quota-subject-sel select {
+  font-size: 11px; padding: 2px 4px; max-width: 100%;
+}
+/* Option styling */
+.cell-subj-sel option.quota-done { color: #2E7D32; font-weight: 700; }
+.cell-subj-sel option.quota-warn { color: #E65100; font-weight: 700; }
+.cell-subj-sel option.quota-over { color: #C62828; font-weight: 700; }
+/* Auto-schedule modal */
+.auto-sched-grid {
+  display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 12px;
+}
+.auto-subj-row {
+  display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+  border: 1.5px solid var(--border); border-radius: 8px; background: #fff;
+}
+.auto-subj-row .dot { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+.auto-subj-row label { flex: 1; font-size: 12px; font-weight: 700; }
+.auto-subj-row input { width: 52px; text-align: center; font-size: 12px; padding: 3px 5px;
+  border: 1.5px solid var(--border); border-radius: 6px; font-weight: 800; }
+.auto-result-info {
+  background: #EEF3FF; border-radius: 8px; padding: 10px 14px;
+  font-size: 12px; color: var(--pri); margin-bottom: 10px;
+}
+
+/* ══ AUTO-SCHEDULE PAGE ══════════════════════════════════════ */
+.auto-page-hero {
+  background: linear-gradient(135deg, #1A3A6E 0%, #2A5298 60%, #4472C4 100%);
+  border-radius: 14px; padding: 24px 28px; margin-bottom: 20px;
+  color: #fff; display: flex; align-items: center; gap: 20px;
+}
+.auto-page-hero-icon { font-size: 52px; line-height: 1; }
+.auto-page-hero-title { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+.auto-page-hero-sub { font-size: 13px; opacity: .85; line-height: 1.5; }
+.auto-step-row {
+  display: flex; gap: 0; margin-bottom: 20px;
+  border-radius: 12px; overflow: hidden; box-shadow: var(--sh);
+}
+.auto-step-card {
+  flex: 1; padding: 14px 16px; background: var(--card);
+  border-right: 1px solid var(--border); position: relative;
+}
+.auto-step-card:last-child { border-right: none; }
+.auto-step-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--pri); color: #fff; font-size: 13px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 8px;
+}
+.auto-step-title { font-size: 13px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+.auto-step-sub { font-size: 11px; color: var(--muted); line-height: 1.4; }
+.auto-config-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;
+}
+.auto-config-card {
+  background: var(--card); border-radius: 12px; padding: 16px 18px;
+  box-shadow: var(--sh); border: 1.5px solid var(--border);
+}
+.auto-config-title { font-size: 13px; font-weight: 800; color: var(--pri); margin-bottom: 12px; }
+.auto-subj-table { width: 100%; border-collapse: collapse; }
+.auto-subj-table th {
+  background: var(--pri); color: #fff; font-size: 11px; font-weight: 700;
+  padding: 7px 10px; text-align: left;
+}
+.auto-subj-table td {
+  padding: 6px 10px; font-size: 12px; border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.auto-subj-table tr:last-child td { border-bottom: none; }
+.auto-subj-table tr:nth-child(even) td { background: var(--bg); }
+.auto-subj-table input[type=number] {
+  width: 58px; text-align: center; font-size: 13px; font-weight: 800;
+  padding: 4px 6px; border: 1.5px solid var(--border); border-radius: 6px;
+  color: var(--pri);
+}
+.auto-subj-table input[type=number]:focus { border-color: var(--pri); outline: none; }
+.auto-total-bar {
+  display: flex; align-items: center; gap: 10px; margin-top: 10px;
+  padding: 8px 12px; background: var(--bg); border-radius: 8px;
+  font-size: 12px; font-weight: 700;
+}
+.auto-total-num { font-size: 20px; font-weight: 800; color: var(--pri); }
+.auto-total-ok { color: #2E7D32; }
+.auto-total-warn { color: #E65100; }
+.auto-mode-cards {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 12px;
+}
+.auto-mode-card {
+  padding: 14px 12px; border-radius: 10px; border: 2px solid var(--border);
+  cursor: pointer; transition: all .15s; background: var(--card);
+  text-align: center;
+}
+.auto-mode-card:hover { border-color: var(--pri2); }
+.auto-mode-card.selected { border-color: var(--pri); background: #EEF3FF; }
+.auto-mode-card .mode-icon { font-size: 28px; margin-bottom: 6px; }
+.auto-mode-card .mode-title { font-size: 12px; font-weight: 800; color: var(--text); margin-bottom: 3px; }
+.auto-mode-card .mode-desc { font-size: 10px; color: var(--muted); line-height: 1.3; }
+.auto-room-pills {
+  display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;
+}
+.auto-room-pill {
+  padding: 5px 12px; border-radius: 16px; border: 1.5px solid var(--border);
+  cursor: pointer; font-size: 12px; font-weight: 700; background: var(--card);
+  color: var(--muted); transition: all .15s;
+}
+.auto-room-pill.on { border-color: var(--pri); background: var(--pri); color: #fff; }
+.auto-generate-btn {
+  width: 100%; padding: 16px; font-size: 16px; font-weight: 800;
+  border-radius: 12px; border: none; cursor: pointer;
+  background: linear-gradient(135deg, #1A3A6E, #4472C4);
+  color: #fff; transition: all .2s; box-shadow: 0 4px 16px rgba(26,58,110,.3);
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.auto-generate-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(26,58,110,.4); }
+.auto-generate-btn:active { transform: translateY(0); }
+.auto-result-table-wrap { overflow-x: auto; margin-top: 16px; }
+.auto-result-tbl {
+  width: 100%; border-collapse: collapse; font-size: 12px; min-width: 600px;
+}
+.auto-result-tbl th {
+  background: var(--pri); color: #fff; padding: 8px 10px;
+  font-size: 11px; font-weight: 700; text-align: center; white-space: nowrap;
+}
+.auto-result-tbl td {
+  padding: 4px; border: 1px solid var(--border); vertical-align: top;
+}
+.auto-result-cell {
+  border-radius: 6px; padding: 5px 7px; min-height: 44px;
+  display: flex; flex-direction: column; gap: 3px;
+}
+.arc-subj { font-size: 11px; font-weight: 800; color: #1A3A6E; }
+.arc-tchr { font-size: 10px; color: #4A5568; }
+.arc-empty { color: #ccc; font-size: 10px; text-align: center; padding: 8px 0; }
+.arc-tchr-sel {
+  width: 100%; font-size: 10px; padding: 2px 3px;
+  border: 1px solid #d0d9f0; border-radius: 4px; background: #fff;
+  color: var(--text); margin-top: 2px; cursor: pointer;
+}
+.arc-tchr-sel.conflict-sel { border-color: #E53935; background: #FFF5F5; }
+.arc-tchr-label {
+  font-size: 9px; font-weight: 700; color: var(--muted);
+  margin-top: 3px; display: block;
+}
+.arc-tchr2-sel {
+  border-color: #9AA5C0; background: #F8F9FF;
+}
+.arc-tchr3-sel {
+  border-color: #B8C4D4; background: #F5F7FA;
+}
+.auto-progress-bar {
+  height: 6px; background: #e9ecf5; border-radius: 3px;
+  overflow: hidden; margin-top: 8px;
+}
+.auto-progress-fill { height: 100%; border-radius: 3px; transition: width .5s ease; }
+.auto-stat-row {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 16px;
+}
+.auto-stat-box {
+  background: var(--card); border-radius: 10px; padding: 12px 14px;
+  box-shadow: var(--sh); text-align: center; border-top: 3px solid var(--pri);
+}
+.auto-stat-num { font-size: 24px; font-weight: 800; color: var(--pri); }
+.auto-stat-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.auto-apply-bar {
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  padding: 12px 0; border-top: 1px solid var(--border); margin-top: 12px;
+}
+
+/* ══ BREAK SLOT ══════════════════════════════════════════ */
+.slot-row-wrap { display:flex; align-items:center; gap:6px;
+  padding:8px 10px; background:#f5f8ff; border:1px solid var(--border);
+  border-radius:7px; margin-bottom:7px; }
+.slot-break-badge {
+  display:inline-flex; align-items:center; gap:4px;
+  background:#FFF8E1; border:1.5px solid #FFC107; border-radius:6px;
+  padding:2px 8px; font-size:11px; font-weight:700; color:#E65100;
+  white-space:nowrap;
+}
+.slot-break-chk { width:15px; height:15px; cursor:pointer; accent-color:#E65100; }
+.builder-break-row td {
+  background: linear-gradient(90deg,#FFF8E1 0%,#FFF3CD 100%) !important;
+  border-top: 2px solid #FFC107 !important;
+  border-bottom: 2px solid #FFC107 !important;
+}
+.builder-break-cell {
+  text-align:center; font-weight:800; color:#E65100;
+  font-size:13px; padding:10px 0; letter-spacing:.5px;
+}
+
+/* == SHARE: AirDrop + Bluetooth == */
+.capture-overlay{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:4000;display:flex;align-items:center;justify-content:center}
+.capture-box{background:#fff;border-radius:16px;padding:28px 36px;text-align:center;max-width:300px;box-shadow:0 8px 40px rgba(0,0,0,.3)}
+.capture-spin{width:46px;height:46px;border:5px solid #e9ecf5;border-top-color:#4472C4;border-radius:50%;animation:cspin .85s linear infinite;margin:0 auto 12px}
+@keyframes cspin{to{transform:rotate(360deg)}}
+.share-prev-modal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:4000;display:flex;align-items:center;justify-content:center}
+.share-prev-inner{background:#fff;border-radius:16px;padding:18px 20px;max-width:480px;width:94%;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.3)}
+.share-prev-img{max-width:100%;border-radius:8px;border:1px solid #dde;margin:10px 0;display:block}
+.btn-airdrop{display:inline-flex;align-items:center;gap:7px;padding:10px 16px;border-radius:10px;border:none;cursor:pointer;font-size:13px;font-weight:800;background:linear-gradient(135deg,#007AFF,#34AADC);color:#fff;box-shadow:0 2px 8px rgba(0,122,255,.3);transition:all .15s}
+.btn-airdrop:hover{filter:brightness(1.1);transform:translateY(-1px)}
+
+
+.btn-airdrop.sm,
+
+.btn-airdrop-lg{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:10px;
+  border:none;cursor:pointer;font-size:14px;font-weight:800;
+  background:linear-gradient(135deg,#007AFF,#34AADC);color:#fff;
+  box-shadow:0 2px 10px rgba(0,122,255,.35);transition:all .15s;}
+.btn-airdrop-lg:hover{filter:brightness(1.08);transform:translateY(-1px);}
+.btn-airdrop-lg svg{flex-shrink:0;}
+
+/* ══ PROFESSIONAL TEACHER VIEW ══════════════════════════ */
+.tv-page-layout {
+  display: grid; grid-template-columns: 280px 1fr; gap: 16px; align-items: start;
+}
+@media(max-width:768px){.tv-page-layout{grid-template-columns:1fr;}}
+.tv-sidebar { position: sticky; top: 70px; }
+.tv-search {
+  width: 100%; padding: 9px 12px; font-size: 13px;
+  border: 1.5px solid var(--border); border-radius: 8px;
+  background: #fff; color: var(--text); margin-bottom: 8px; box-sizing: border-box;
+}
+.tv-search:focus { border-color: var(--pri); outline: none; }
+.tv-teacher-list {
+  max-height: calc(100vh - 220px); overflow-y: auto;
+  border: 1.5px solid var(--border); border-radius: 10px; background: #fff;
+}
+.tv-teacher-item {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  cursor: pointer; border-bottom: 1px solid #f0f2f8; transition: all .12s;
+  position: relative;
+}
+.tv-teacher-item:last-child { border-bottom: none; }
+.tv-teacher-item:hover { background: #EEF3FF; }
+.tv-teacher-item.active { background: #E8EDFF; border-left: 3px solid var(--pri); }
+.tv-teacher-avatar {
+  width: 36px; height: 36px; border-radius: 50%; display: flex;
+  align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 800; color: #fff; flex-shrink: 0;
+  background: linear-gradient(135deg, #1A3A6E, #2A5298);
+}
+.tv-teacher-info { flex: 1; min-width: 0; }
+.tv-teacher-name { font-size: 12px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tv-teacher-meta { font-size: 10px; color: var(--muted); margin-top: 1px; }
+.tv-period-badge {
+  font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 10px;
+  background: #E8EDFF; color: var(--pri); flex-shrink: 0; min-width: 28px; text-align: center;
+}
+.tv-period-badge.has-conflict { background: #FFEBEE; color: #C62828; }
+.tv-period-badge.zero { background: #f5f5f5; color: #999; }
+.tv-main-panel { min-height: 300px; }
+.tv-header-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 8px; margin-bottom: 12px;
+}
+.tv-teacher-title {
+  font-size: 17px; font-weight: 800; color: var(--pri);
+  display: flex; align-items: center; gap: 10px;
+}
+.tv-stats-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.tv-chip {
+  font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px;
+  background: #EEF3FF; color: var(--pri);
+}
+.tv-chip.warn { background: #FFEBEE; color: #C62828; }
+.tv-chip.ok   { background: #E8F5E9; color: #2E7D32; }
+.tv-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+.tv-tbl th { background: #1A3A6E; color: #fff; padding: 8px 5px; text-align: center; border: 1px solid #1a2f5e; }
+.tv-tbl td { border: 1px solid #dde; padding: 5px 4px; vertical-align: top; min-width: 90px; }
+.tv-tbl tr:hover td { background: rgba(68,114,196,.04); }
+.tv-cell {
+  background: #FFFFFF; border: 1px solid #D9E2F2; border-radius: 5px; padding: 4px 5px; margin: 1px 0;
+  cursor: default;
+}
+.tv-cell .tv-subj { font-weight: 700; font-size: 11px; color: #1A3A6E; }
+.tv-cell .tv-room { font-size: 10px; color: #666; margin-top: 1px; }
+.tv-cell .tv-role { font-size: 9px; padding: 1px 4px; border-radius: 3px; margin-bottom: 2px; display: inline-block; background:#F5F7FA; color:#445; border:1px solid #D9E2F2; }
+.tv-empty-msg { color: #ccc; text-align: center; padding: 5px 2px; font-size: 11px; }
+.tv-break-row td { background: #FFF8E1 !important; border-top: 2px solid #FFC107 !important; border-bottom: 2px solid #FFC107 !important; }
+.tv-slot-cell { background: #EEF3FF !important; text-align: center; font-weight: 700; font-size: 11px; white-space: nowrap; }
+.tv-no-teacher { padding: 40px 20px; text-align: center; }
+.tv-no-teacher-icon { font-size: 48px; margin-bottom: 12px; }
+.tv-no-teacher-text { font-size: 14px; color: var(--muted); }
+
+/* ══ LEARN ROOM FIELD ═══════════════════════════════════ */
+.cell-room-inp {
+  width: 100%; font-size: 10px; padding: 2px 4px;
+  border: 1px dashed #b0bcd8; border-radius: 4px;
+  background: rgba(255,255,255,.75); color: #555;
+  font-family: 'Sarabun', sans-serif;
+  margin-top: 2px; box-sizing: border-box;
+  transition: border-color .15s, background .15s;
+}
+.cell-room-inp:focus {
+  outline: none; border-color: var(--pri2);
+  background: #fff; color: var(--text);
+}
+.cell-room-inp::placeholder { color: #b0bcd8; font-style: italic; }
+.cell-room-tag {
+  display: inline-block; font-size: 9px; font-weight: 700;
+  color: #2A5298; background: #E8EDFF; border-radius: 3px;
+  padding: 1px 5px; margin-top: 2px; max-width: 100%;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* ══ LOCK SYSTEM ═══════════════════════════════════════ */
+.cell-lock-btn {
+  position: absolute; top: 2px; right: 2px;
+  background: rgba(255,255,255,.9); border: 1px solid #d0d9f0;
+  border-radius: 3px; cursor: pointer; font-size: 11px;
+  padding: 1px 4px; line-height: 1; z-index: 5;
+  transition: all .15s;
+}
+.cell-lock-btn:hover { background: #fff; transform: scale(1.1); }
+.cell-lock-btn.locked { background: #FFE082; border-color: #FFB300; color: #E65100; }
+.td-locked { position: relative; border: 2px solid #FFB300 !important; }
+.td-locked::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: repeating-linear-gradient(45deg, transparent, transparent 8px,
+    rgba(255,179,0,.08) 8px, rgba(255,179,0,.08) 16px);
+  pointer-events: none; z-index: 1;
+}
+.lock-legend {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; color: #666; padding: 4px 10px;
+  background: #FFF8E1; border-radius: 6px; border: 1px solid #FFD54F;
+}
+
+/* ══ SMART SUBSTITUTE DROPDOWN ═══════════════════════════ */
+.sub-select optgroup[label^="✅"] { color: #10b981; font-weight: 700; }
+.sub-select optgroup[label^="🟡"] { color: #f59e0b; font-weight: 700; }
+.sub-select optgroup[label^="🔴"] { color: #ef4444; font-weight: 700; }
+.sub-select optgroup[label^="⛔"] { color: #6b7280; font-weight: 700; }
+.sub-select option[disabled] { color: #9ca3af; font-style: italic; }
+
+/* ══ CUSTOM DEPARTMENTS ═══════════════════════════════ */
+.custom-dept-card {
+  background: linear-gradient(135deg, #f0f7ff 0%, #e8f0ff 100%);
+  border: 1.5px dashed #5b8def;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+.custom-dept-card-title {
+  font-weight: 700; color: #1A3A6E; font-size: 14px;
+  margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+}
+.custom-dept-add {
+  display: flex; gap: 6px; margin-bottom: 10px;
+}
+.custom-dept-add input {
+  flex: 1; padding: 7px 10px; font-size: 13px;
+  border: 1.5px solid #c5d3ea; border-radius: 6px;
+  font-family: 'Sarabun', sans-serif;
+}
+.custom-dept-add input:focus { outline: none; border-color: #5b8def; }
+.custom-dept-list {
+  background: rgba(255,255,255,.6); border-radius: 6px; padding: 6px;
+  max-height: 220px; overflow-y: auto;
+}
+.custom-dept-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px; background: #fff; border-radius: 5px;
+  margin-bottom: 4px; border: 1px solid #e0e8f5;
+}
+.custom-dept-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: #5b8def; color: white; font-size: 11px; font-weight: 700;
+}
+.custom-dept-name {
+  flex: 1; font-size: 13px; font-weight: 600; color: #1A3A6E;
+}
+
+/* ══ SCHOOL BRAND UI V13 ═════════════════════════════════════ */
+:root{--pri:#0F2E5D;--pri2:#1B4E91;--pri3:#2E66AC;--gold:#D7A83D;--gold2:#F1C968;--bg:#F5F7FB;--border:#DCE4F1;--rad:14px;--sh:0 6px 24px rgba(15,46,93,.08)}
+body{background:var(--bg)}
+.school-topbar{height:72px;background:#fff;border-bottom:1px solid #E5EAF2;box-shadow:0 2px 12px rgba(15,46,93,.08);padding:0 22px;gap:18px}
+.school-brand{display:flex;align-items:center;gap:12px;min-width:280px}
+.school-logo-shell{width:48px;height:48px;border-radius:50%;background:#fff;border:2px solid #E4C878;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 2px 8px rgba(15,46,93,.10);flex-shrink:0}
+.school-logo-shell img{width:100%;height:100%;object-fit:contain;padding:3px}
+.school-logo-fallback{font-size:24px}
+.school-brand-text{min-width:0}
+.school-name{font-family:'Noto Serif Thai',serif;font-size:18px;font-weight:800;color:var(--pri);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:460px}
+.school-system-name{font-size:11px;color:#6A7895;margin-top:3px;font-weight:600}
+.topbar-tools{display:flex;align-items:center;gap:9px}
+.school-year{background:#FFF8E5;border:1px solid #E8C55B;color:#8A6510;border-radius:18px;padding:5px 12px;font-size:11px}
+.school-save{background:#F2F7FF;border:1px solid #D9E7F8;color:#52637F;border-radius:18px;padding:5px 10px}
+.top-icon-btn{height:34px;padding:0 12px;border-radius:9px;border:1px solid #D8E1EF;background:#fff;color:var(--pri);font-family:'Sarabun',sans-serif;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.15s}
+.top-icon-btn:hover{background:#F3F7FC;border-color:#BFCDE1}
+.sidebar{background:linear-gradient(180deg,#102E59 0%,#0B2447 100%);border-right:1px solid rgba(255,255,255,.06)}
+.sb-collapse-wrap{background:rgba(255,255,255,.025)}
+.sb-section{padding:15px 0 7px}
+.sb-label{font-size:9px;letter-spacing:1.6px;color:rgba(255,255,255,.42);padding:0 18px 8px}
+.sb-item{margin:2px 8px;padding:10px 12px;border-radius:9px;border-left:none;color:rgba(255,255,255,.77)}
+.sb-item:hover{background:rgba(255,255,255,.08)}
+.sb-item.active{background:linear-gradient(90deg,#F6D476,#E8B84B);color:#17345F;font-weight:800;box-shadow:0 4px 12px rgba(0,0,0,.14)}
+.sb-item.active .sb-badge{background:rgba(23,52,95,.12);color:#17345F}
+.sb-divider{border-top-color:rgba(255,255,255,.08);margin:7px 14px}
+.main{background:linear-gradient(180deg,#F7F9FC 0%,#F4F7FB 100%)}
+.page{padding:24px 26px 30px}
+.ph{margin-bottom:18px;align-items:center}
+.ph-left h1{font-family:'Sarabun',sans-serif;font-size:25px;font-weight:800;color:#17345F;letter-spacing:-.2px}
+.ph-left p{font-size:12px;color:#7787A2;margin-top:5px}
+.page-title-icon{display:inline-flex;width:36px;height:36px;align-items:center;justify-content:center;background:#FFF2C7;border-radius:10px;font-size:18px;margin-right:4px}
+.card{border:1px solid #E8EDF5;box-shadow:0 5px 18px rgba(15,46,93,.06);border-radius:15px}
+.room-tabs{background:#fff;border:1px solid #E5EAF2;border-radius:14px;padding:12px!important;margin-bottom:14px!important;box-shadow:0 3px 14px rgba(15,46,93,.05)}
+.room-tab{border-radius:9px!important;border-color:#DCE4F1!important;background:#fff!important;color:#36557E!important}
+.room-tab.active{background:#123969!important;color:#fff!important;border-color:#123969!important;box-shadow:0 3px 8px rgba(18,57,105,.18)}
+.btn{border-radius:9px}
+.btn-pri{background:#173F73}.btn-pri:hover{background:#0F315F}
+.btn-gold{background:linear-gradient(135deg,#F1CF6C,#E6AF36);color:#17345F}
+.tbl-wrap,.sched-wrap{border-radius:14px}
+@media(max-width:900px){.school-system-name{display:none}.school-name{max-width:240px}.top-icon-btn span{display:none}.school-brand{min-width:0}.school-topbar{padding:0 12px}}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- v3: grade-scoped subjects + horizontal preview -->
+
+<style id="collapsible-sidebar-style">
+/* ══ COLLAPSIBLE SIDEBAR ══ */
+.sidebar{transition:width .22s ease;position:relative}
+.sb-collapse-wrap{
+  position:sticky;top:0;z-index:40;padding:8px 9px 6px;background:var(--pri);
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+.sb-collapse-btn{
+  width:100%;height:34px;border:1px solid rgba(255,255,255,.22);border-radius:8px;
+  background:rgba(255,255,255,.08);color:#fff;cursor:pointer;font-family:'Sarabun',sans-serif;
+  font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:7px;
+  transition:background .15s,border-color .15s;white-space:nowrap;overflow:hidden;
+}
+.sb-collapse-btn:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.38)}
+.sidebar.sidebar-collapsed{width:58px!important;overflow-x:hidden}
+.sidebar.sidebar-collapsed .sb-collapse-wrap{padding:8px 7px 6px}
+.sidebar.sidebar-collapsed .sb-collapse-btn{padding:0;font-size:0}
+.sidebar.sidebar-collapsed .sb-collapse-btn .sb-collapse-arrow{font-size:19px}
+.sidebar.sidebar-collapsed .sb-label,
+.sidebar.sidebar-collapsed .sb-divider,
+.sidebar.sidebar-collapsed .profile-bar{display:none!important}
+.sidebar.sidebar-collapsed .sb-section{padding:7px 0}
+.sidebar.sidebar-collapsed .sb-item{
+  font-size:0!important;padding:11px 0!important;gap:0!important;justify-content:center;
+  border-left-width:3px;min-height:43px;
+}
+.sidebar.sidebar-collapsed .sb-item .icon{font-size:19px!important;width:auto!important;margin:0!important}
+.sidebar.sidebar-collapsed .sb-badge{display:none!important}
+.sidebar.sidebar-collapsed .sb-item.active{background:rgba(255,255,255,.16)}
+@media(max-width:820px){
+  .sidebar.sidebar-collapsed{width:58px!important}
+}
+</style>
+
+<style id="after-mockup-ui-v14">
+:root{
+  --pri:#0C2F5D;--pri2:#174B86;--pri3:#2A67A8;
+  --gold:#E7B64A;--gold2:#F3D27A;--gold-soft:#FFF5D8;
+  --bg:#F4F7FB;--card:#FFFFFF;--border:#E3EAF4;
+  --text:#17345F;--muted:#73839D;--sidebar:228px;
+  --sh:0 8px 24px rgba(22,54,96,.07);
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:#20324B}
+.school-topbar{
+  height:78px!important;padding:0 24px 0 0!important;background:#fff!important;
+  border-bottom:1px solid #E9EEF6!important;box-shadow:0 2px 14px rgba(20,50,90,.07)!important;
+  position:relative;overflow:visible;gap:0!important;
+}
+.school-topbar:before{
+  content:'';position:absolute;left:0;top:0;width:430px;height:78px;
+  background:linear-gradient(135deg,#0B2C57 0%,#133F73 76%,#E4B548 76.5%,#F2D47B 79%,transparent 79.5%);
+  border-bottom-right-radius:52px;z-index:0;pointer-events:none;
+}
+.school-brand{position:relative;z-index:1;min-width:420px!important;padding-left:26px;gap:13px!important}
+.school-logo-shell{width:52px!important;height:52px!important;border:2px solid #E7C66F!important;box-shadow:0 3px 10px rgba(0,0,0,.16)!important;background:#fff!important}
+.school-name{color:#F7D36D!important;font-size:17px!important;max-width:315px!important;font-family:'Sarabun',sans-serif!important;line-height:1.15!important}
+.school-system-name{color:rgba(255,255,255,.88)!important;font-size:10px!important;letter-spacing:.1px}
+.tb-spacer{flex:1}
+.topbar-tools{position:relative;z-index:1;padding-right:22px;gap:8px!important}
+.school-year,.school-save{height:34px;display:flex;align-items:center;border-radius:18px!important;background:#F7F9FC!important;border:1px solid #DEE6F1!important;color:#3A5377!important;padding:0 12px!important}
+.school-year{background:#FFF9EA!important;border-color:#E8CC76!important;color:#7B5B13!important}
+.top-icon-btn{height:36px!important;border-radius:10px!important;background:#fff!important;border:1px solid #DDE6F2!important;box-shadow:0 2px 8px rgba(20,50,90,.035)}
+.top-icon-btn:hover{background:#F7FAFE!important;border-color:#C9D6E7!important}
+
+.app-shell{height:calc(100vh - 78px)!important}
+.sidebar{width:228px!important;background:linear-gradient(180deg,#0C2D57 0%,#082443 100%)!important;padding-top:0!important;box-shadow:4px 0 14px rgba(7,33,65,.08)}
+.sb-collapse-wrap{padding:10px 10px 8px!important;background:rgba(255,255,255,.025)!important}
+.sb-collapse-btn{height:36px!important;border-radius:9px!important;border-color:rgba(255,255,255,.18)!important;background:rgba(255,255,255,.07)!important}
+.sb-section{padding:12px 0 5px!important}
+.sb-label{text-transform:none!important;font-size:9px!important;letter-spacing:1.35px!important;color:rgba(255,255,255,.37)!important;padding:0 16px 7px!important}
+.sb-item{min-height:40px;margin:2px 8px!important;padding:9px 11px!important;border-radius:9px!important;color:rgba(255,255,255,.80)!important;font-size:13px!important;gap:9px!important}
+.sb-item .icon{font-size:16px!important;width:21px!important}
+.sb-item:hover{background:rgba(255,255,255,.075)!important;color:#fff!important}
+.sb-item.active{background:linear-gradient(90deg,#F3D06E,#E9B74B)!important;color:#12335D!important;box-shadow:0 5px 14px rgba(0,0,0,.16)!important}
+.sb-divider{margin:5px 14px!important;border-top-color:rgba(255,255,255,.07)!important}
+.sb-badge{margin-left:auto!important;background:rgba(255,255,255,.14)!important;border-radius:12px!important;min-width:25px!important;padding:2px 7px!important;text-align:center!important}
+.main{background:linear-gradient(180deg,#F7F9FC 0%,#F3F6FA 100%)!important}.page{padding:24px 28px 34px!important}
+.ph{margin-bottom:18px!important}
+.ph-left h1{font-size:27px!important;color:#17345F!important;display:flex;align-items:center;gap:8px}
+.ph-left p{font-size:12px!important;color:#71809A!important;margin-top:5px!important}
+.page-title-icon{width:40px!important;height:40px!important;background:#FFF1BE!important;border:1px solid #F2D57D!important;border-radius:11px!important}
+.ph-actions{gap:8px!important}
+.ph-actions .btn{height:36px!important;padding:0 14px!important;border-radius:9px!important;box-shadow:0 2px 7px rgba(20,50,90,.04)}
+.ph-actions .btn-pri{background:linear-gradient(135deg,#F2CC65,#E6AC36)!important;color:#17345F!important;border:none!important}
+.card{background:#fff!important;border:1px solid #E8EDF5!important;border-radius:16px!important;box-shadow:0 6px 20px rgba(20,50,90,.055)!important}
+
+/* Builder page from reference mockup */
+#page-builder .builder-page-head{padding:0 2px 2px}
+.builder-room-panel{background:#fff;border:1px solid #E7EDF5;border-radius:15px;padding:13px 14px 14px;margin-bottom:13px;box-shadow:0 5px 17px rgba(20,50,90,.05)}
+.builder-section-title{font-size:13px;font-weight:800;color:#17345F;display:flex;align-items:center;gap:7px;margin-bottom:10px}
+#page-builder .room-tabs{box-shadow:none!important;border:none!important;padding:0!important;margin:0!important;background:transparent!important;border-radius:0!important}
+#page-builder .room-tab{height:34px!important;padding:0 14px!important;font-size:11px!important;border-radius:8px!important;box-shadow:none!important}
+#page-builder .room-tab.active{background:#0F3767!important;box-shadow:0 3px 8px rgba(15,55,103,.18)!important}
+.builder-table-panel{background:#fff;border:1px solid #E7EDF5;border-radius:15px;padding:12px 14px 15px;box-shadow:0 6px 20px rgba(20,50,90,.055)}
+.builder-table-titlebar{height:38px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:800;color:#17345F;margin-bottom:8px}
+.builder-table-titlebar .mini-icon{width:28px;height:28px;border-radius:8px;background:#FFF1BE;border:1px solid #F2D57D;display:flex;align-items:center;justify-content:center}
+#page-builder .card.builder-grid-card{padding:0!important;border:none!important;box-shadow:none!important;border-radius:10px!important;overflow:auto}
+#page-builder .sched-tbl{border-radius:10px;overflow:hidden}
+#page-builder .sched-tbl th{background:#103B70!important}
+#page-builder .sched-tbl th[style*="E65100"],#page-builder .sched-tbl th[style*="#E65100"]{background:#E2AD35!important;color:#17345F!important}
+#page-builder .builder-break-cell{background:#FFF7DE!important;color:#A66A00!important}
+#page-builder .cell-subj-sel,#page-builder .cell-tchr-sel,#page-builder .cell-room-inp{border-radius:6px!important}
+
+@media(max-width:1100px){
+ .school-topbar:before{width:360px}.school-brand{min-width:350px!important}.school-name{max-width:250px!important}
+}
+</style>
+
+
+<style id="substitute-v2-style">
+/* ══ SUBSTITUTE V2 — daily all-teacher overview ═══════════ */
+#page-substitute{padding-bottom:40px}
+.sub-v2-toolbar{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  background:linear-gradient(135deg,#0D3769,#184E88);border-radius:14px;padding:14px 16px;
+  box-shadow:0 6px 18px rgba(12,47,93,.12);margin-bottom:14px
+}
+.sub-v2-date{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sub-v2-label{font-size:12px;font-weight:800;color:rgba(255,255,255,.78)}
+.sub-v2-date-input{
+  width:190px!important;padding:9px 12px!important;border:0!important;border-radius:9px!important;
+  background:#fff!important;color:#12345F!important;font-size:14px!important;font-weight:800!important;
+  box-shadow:none!important
+}
+.sub-v2-day{
+  padding:7px 13px;border-radius:18px;background:rgba(255,255,255,.13);
+  border:1px solid rgba(255,255,255,.22);color:#fff;font-size:12px;font-weight:700
+}
+.sub-v2-toolbar-actions{display:flex;gap:8px;align-items:center}
+.sub-v2-toolbar .btn-ghost,.sub-v2-toolbar .btn-out{
+  color:#fff!important;border-color:rgba(255,255,255,.35)!important;background:rgba(255,255,255,.10)!important
+}
+.sub-v2-toolbar .btn:hover{background:rgba(255,255,255,.20)!important}
+
+.sub-v2-stats{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.sub-v2-stat{
+  display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #E6ECF4;border-radius:12px;
+  padding:12px 14px;box-shadow:0 4px 14px rgba(15,46,93,.05);min-height:72px
+}
+.sub-v2-stat-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.sub-v2-stat.blue .sub-v2-stat-icon{background:#EAF2FF}
+.sub-v2-stat.gray .sub-v2-stat-icon{background:#EEF0F3}
+.sub-v2-stat.orange .sub-v2-stat-icon{background:#FFF1E6}
+.sub-v2-stat.green .sub-v2-stat-icon{background:#EAF8EF}
+.sub-v2-stat-num{font-size:24px;font-weight:900;color:#17345F;line-height:1}
+.sub-v2-stat-label{font-size:11px;color:#7787A2;font-weight:700;margin-top:5px}
+
+.sub-v2-layout{display:grid;grid-template-columns:minmax(0,1fr) 315px;gap:14px;align-items:start}
+.sub-v2-main-card,.sub-v2-side-card,.sub-v2-assigned-card{
+  background:#fff;border:1px solid #E5EBF4;border-radius:14px;box-shadow:0 5px 18px rgba(15,46,93,.055)
+}
+.sub-v2-main-card{min-width:0;overflow:hidden}
+.sub-v2-side-card{position:sticky;top:12px;min-height:420px}
+.sub-v2-assigned-card{margin-top:14px;overflow:hidden}
+.sub-v2-card-head{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:14px 16px;
+  border-bottom:1px solid #EAF0F6
+}
+.sub-v2-card-title{font-size:15px;font-weight:900;color:#17345F}
+.sub-v2-card-sub{font-size:10px;color:#7A8AA2;margin-top:3px}
+.sub-v2-legend{display:flex;gap:9px;flex-wrap:wrap;align-items:center;font-size:10px;color:#687A96}
+.sub-v2-legend span{display:flex;align-items:center;gap:4px}
+.sub-v2-legend i{width:10px;height:10px;border-radius:3px;border:1px solid #D9E2EF}
+.lg-normal{background:#fff}.lg-free{background:#E9F8EE}.lg-absent{background:#E4E7EB}.lg-need{background:#FFF0E6;border-color:#F4B183!important}
+
+.sub-v2-grid-wrap{overflow:auto;max-height:62vh}
+.sub-v2-table{width:100%;border-collapse:separate;border-spacing:0;font-size:11px;min-width:900px}
+.sub-v2-table th{
+  position:sticky;top:0;z-index:12;background:#113867;color:#fff;padding:9px 6px;text-align:center;
+  border-right:1px solid rgba(255,255,255,.13);font-weight:800;white-space:nowrap
+}
+.sub-v2-table th:first-child{left:0;z-index:14;min-width:170px;text-align:left;padding-left:14px}
+.sub-v2-table .sub-v2-th-time{display:block;font-size:9px;font-weight:500;color:rgba(255,255,255,.65);margin-top:2px}
+.sub-v2-table td{border-right:1px solid #E5EBF3;border-bottom:1px solid #E5EBF3;padding:4px;text-align:center;vertical-align:middle}
+.sub-v2-table td:first-child{
+  position:sticky;left:0;z-index:8;background:#F7F9FC;text-align:left;padding:7px 10px;min-width:170px
+}
+.sub-v2-table tr.teacher-absent td{background:#ECEFF2!important;color:#7D8794}
+.sub-v2-table tr.teacher-absent td:first-child{background:#DDE1E6!important}
+.sub-v2-teacher{display:flex;align-items:center;gap:8px}
+.sub-v2-avatar{
+  width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#183F73,#2A68AA);
+  color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:11px;flex-shrink:0
+}
+.teacher-absent .sub-v2-avatar{background:#89929E}
+.sub-v2-tname{font-size:11px;font-weight:800;color:#17345F;white-space:nowrap}
+.teacher-absent .sub-v2-tname{color:#59636E}
+.sub-v2-tmeta{font-size:9px;color:#8A99AE;margin-top:1px}
+.sub-v2-leave-badge{display:inline-block;margin-left:5px;padding:1px 6px;border-radius:9px;background:#8A939E;color:#fff;font-size:8px;font-weight:800}
+
+.sub-v2-cell{
+  min-height:46px;border-radius:7px;padding:5px 4px;display:flex;flex-direction:column;justify-content:center;
+  cursor:pointer;transition:.14s;border:1px solid transparent;position:relative
+}
+.sub-v2-cell:hover{transform:translateY(-1px);box-shadow:0 3px 9px rgba(15,46,93,.10);border-color:#BDD0EA}
+.sub-v2-cell.busy{background:#F8FAFD}
+.sub-v2-cell.free{background:#EAF8EF;color:#227A3D}
+.sub-v2-cell.need{background:#FFF0E7;border-color:#F4B183;color:#9A4A12}
+.sub-v2-cell.assigned{background:#EAF3FF;border-color:#86AEE3;color:#174B86}
+.sub-v2-cell.break{background:#FFF8E8;color:#9B6C0E;cursor:default}
+.teacher-absent .sub-v2-cell.busy,.teacher-absent .sub-v2-cell.free{background:#E2E5E9;color:#727D89}
+.sub-v2-cell.selected{outline:2px solid #2E6CB0;outline-offset:1px}
+.sub-v2-subj{font-size:10px;font-weight:900;line-height:1.18}
+.sub-v2-room{font-size:9px;margin-top:2px;color:#7687A0}
+.sub-v2-cell.free .sub-v2-room{color:#4C9861}
+.sub-v2-action{font-size:8px;font-weight:900;margin-top:4px;color:#D3621D}
+.sub-v2-cell.assigned .sub-v2-action{color:#2462A4}
+.sub-v2-empty{text-align:center;padding:48px 20px;color:#8492A8;font-size:13px}
+
+.sub-v2-side-empty{min-height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px;color:#7787A0}
+.sub-v2-side-empty-icon{font-size:34px;margin-bottom:8px}
+.sub-v2-side-empty strong{color:#17345F;font-size:14px}
+.sub-v2-side-empty span{font-size:11px;margin-top:5px;line-height:1.5}
+.sub-v2-side-head{padding:14px 15px;background:#F8FAFD;border-bottom:1px solid #E8EEF5}
+.sub-v2-side-kicker{font-size:9px;color:#8492A8;font-weight:800;text-transform:uppercase;letter-spacing:.6px}
+.sub-v2-side-title{font-size:16px;font-weight:900;color:#17345F;margin-top:3px}
+.sub-v2-side-detail{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:12px 14px;border-bottom:1px solid #EAF0F5}
+.sub-v2-detail-box{background:#F7F9FC;border-radius:8px;padding:8px 9px}
+.sub-v2-detail-label{font-size:8px;color:#8A99AE;font-weight:800}
+.sub-v2-detail-value{font-size:11px;color:#17345F;font-weight:800;margin-top:2px}
+.sub-v2-side-section{padding:12px 14px}
+.sub-v2-side-section-title{font-size:11px;font-weight:900;color:#17345F;margin-bottom:8px;display:flex;justify-content:space-between;gap:6px}
+.sub-v2-free-list{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow:auto}
+.sub-v2-free-item{
+  display:flex;align-items:center;gap:8px;border:1px solid #E1E8F1;border-radius:9px;padding:8px 9px;cursor:pointer;background:#fff
+}
+.sub-v2-free-item:hover{border-color:#AFC5E1;background:#F7FAFE}
+.sub-v2-free-item input{width:auto!important;accent-color:#174B86}
+.sub-v2-free-name{font-size:11px;font-weight:800;color:#263A55;flex:1}
+.sub-v2-free-meta{font-size:8px;color:#7C8AA0;margin-top:1px}
+.sub-v2-free-tag{font-size:8px;font-weight:800;border-radius:9px;padding:2px 6px;background:#DCF5E3;color:#25763D}
+.sub-v2-no-free{font-size:11px;color:#8A97AA;text-align:center;padding:18px 8px;background:#F8FAFC;border-radius:8px}
+.sub-v2-confirm{
+  width:100%;border:none;border-radius:9px;background:#123B6B;color:#fff;padding:10px 12px;
+  font-family:'Sarabun',sans-serif;font-size:12px;font-weight:900;cursor:pointer;margin-top:9px
+}
+.sub-v2-confirm:hover{background:#0B2E59}
+.sub-v2-info-note{padding:10px 12px;border-radius:8px;background:#F4F7FB;color:#71819A;font-size:10px;line-height:1.5}
+
+.sub-v2-assigned-table{width:100%;border-collapse:collapse;font-size:11px}
+.sub-v2-assigned-table th{background:#F6F8FB;color:#536985;text-align:left;padding:8px 10px;font-size:9px;border-bottom:1px solid #E5EBF3}
+.sub-v2-assigned-table td{padding:8px 10px;border-bottom:1px solid #EEF2F7;color:#32445D}
+.sub-v2-assigned-table tr:last-child td{border-bottom:none}
+.sub-v2-assigned-empty{text-align:center;padding:24px;color:#8B98AA;font-size:11px}
+.sub-v2-mini-btn{border:1px solid #D9E3EF;background:#fff;border-radius:6px;padding:3px 7px;font-family:'Sarabun',sans-serif;font-size:9px;font-weight:800;cursor:pointer;color:#48617F}
+.sub-v2-mini-btn.danger{color:#B44747;border-color:#E9CACA}
+
+@media(max-width:1180px){
+  .sub-v2-layout{grid-template-columns:1fr}
+  .sub-v2-side-card{position:static;min-height:0}
+  .sub-v2-side-empty{min-height:180px}
+}
+@media(max-width:760px){
+  .sub-v2-stats{grid-template-columns:1fr 1fr}
+  .sub-v2-toolbar{align-items:stretch}
+  .sub-v2-date,.sub-v2-toolbar-actions{width:100%}
+}
+</style>
+
+
+</head>
+<body>
+<!-- TOPBAR -->
+<div class="topbar school-topbar">
+  <div class="school-brand">
+    <div class="school-logo-shell" id="tbBrandLogo"><span class="school-logo-fallback">🏫</span></div>
+    <div class="school-brand-text">
+      <div class="school-name" id="tbBrandName">ยังไม่ตั้งค่าโรงเรียน</div>
+      <div class="school-system-name">ระบบจัดตารางเรียน - ตารางสอน</div>
+    </div>
+  </div>
+  <div class="tb-spacer"></div>
+  <div class="topbar-tools">
+    <div class="tb-tag school-year" id="tbYear">ปีการศึกษา –</div>
+    <div class="save-ind school-save" id="saveIndicator" title="สถานะการบันทึก"><div class="save-dot" id="saveDot"></div><span id="saveLabel">–</span></div>
+    <button class="top-icon-btn" onclick="nav('storage')" title="ข้อมูลและสำรองข้อมูล">💾 <span>ข้อมูล</span></button>
+    <button class="top-icon-btn" onclick="exportAllDocx()" title="ส่งออก Word">📄 <span>Word</span></button>
+  </div>
+  <div id="tbSchool" style="display:none"></div>
+</div>
+
+<div class="app-shell">
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sb-collapse-wrap">
+    <button class="sb-collapse-btn" id="sbCollapseBtn" type="button" onclick="toggleSidebarCompact()" title="ย่อ/ขยายเมนูด้านซ้าย">
+      <span class="sb-collapse-arrow" id="sbCollapseArrow">«</span>
+      <span class="sb-collapse-text">ย่อเมนู</span>
+    </button>
+  </div>
+    <div class="sb-section">
+    <div class="sb-label">ระบบหลัก</div>
+    <div class="sb-item active" onclick="nav('dashboard')" id="nav-dashboard"><span class="icon">🏠</span>หน้าหลัก</div>
+    <div class="sb-item" onclick="nav('school')" id="nav-school"><span class="icon">🏫</span>ข้อมูลโรงเรียน</div>
+  </div>
+  <hr class="sb-divider">
+  <div class="sb-section">
+    <div class="sb-label">ข้อมูลพื้นฐาน</div>
+    <div class="sb-item" onclick="nav('teachers')" id="nav-teachers"><span class="icon">👨‍🏫</span>ครูทั้งโรงเรียน<span class="sb-badge" id="sbTeacherCount">0</span></div>
+    <div class="sb-item" onclick="nav('subjects')" id="nav-subjects"><span class="icon">📚</span>วิชาเรียน<span class="sb-badge" id="sbSubjectCount">0</span></div>
+    <div class="sb-item" onclick="nav('rooms')" id="nav-rooms"><span class="icon">🚪</span>ห้องเรียน<span class="sb-badge" id="sbRoomCount">0</span></div>
+    <div class="sb-item" onclick="nav('timeslots')" id="nav-timeslots"><span class="icon">⏰</span>คาบ&วันเรียน</div>
+  </div>
+  <hr class="sb-divider">
+  <div class="sb-section">
+    <div class="sb-label">จัดการตารางเรียน</div>
+    <div class="sb-item" onclick="nav('builder')" id="nav-builder"><span class="icon">🗓️</span>สร้างตาราง</div>
+    <div class="sb-item" onclick="nav('auto-schedule')" id="nav-auto-schedule"><span class="icon">✨</span>จัดตารางอัตโนมัติ</div>
+    <div class="sb-item" onclick="nav('teacher-view')" id="nav-teacher-view"><span class="icon">📖</span>ตารางสอนรายครู</div>
+    <div class="sb-item" onclick="nav('workload')" id="nav-workload"><span class="icon">📊</span>ภาระงานสอน</div>
+    <div class="sb-item" onclick="nav('conflict')" id="nav-conflict"><span class="icon">⚠️</span>ตารางสอนชนกัน<span id="conflictBadge" class="conflict-badge zero">0</span></div>
+  </div>
+  <hr class="sb-divider">
+  <div class="sb-section">
+    <div class="sb-label">รายงานและส่งออก</div>
+    <div class="sb-item" onclick="nav('export')" id="nav-export"><span class="icon">✨</span>ดูตัวอย่าง & ส่งออก</div>
+    <div class="sb-item" onclick="nav('substitute')" id="nav-substitute"><span class="icon">🔄</span>ตารางสอนแทนรายวัน</div>
+  </div>
+  <hr class="sb-divider">
+  <div class="sb-section">
+    <div class="sb-label">ระบบ</div>
+    <div class="sb-item" onclick="nav('storage')" id="nav-storage"><span class="icon">💾</span>บันทึก & สำรองข้อมูล</div>
+  </div>
+  <div class="profile-bar" id="profileBar"></div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main" id="mainContent">
+
+<!-- ═══════════ PAGE: DASHBOARD ═══════════ -->
+<div class="page active" id="page-dashboard">
+  <div class="ph">
+    <div class="ph-left"><h1>🏠 ภาพรวมระบบ</h1><p>ระบบตารางเรียน-ตารางสอน มัธยมศึกษาตอนต้น–ตอนปลาย</p></div>
+    <div class="ph-actions">
+      <button class="btn btn-out btn-sm" onclick="loadDemoData()">🧪 โหลดข้อมูลตัวอย่าง</button>
+      <button class="btn btn-gold" onclick="showWizard()">🚀 ตั้งค่าโรงเรียน Wizard</button>
+    </div>
+  </div>
+  <!-- stat row -->
+  <div class="stats-row" id="statsRow">
+    <div class="stat-card c1"><div class="stat-num" id="stTeacher">0</div><div class="stat-label">👨‍🏫 ครูทั้งหมด</div></div>
+    <div class="stat-card c2"><div class="stat-num" id="stSubject">0</div><div class="stat-label">📚 วิชาทั้งหมด</div></div>
+    <div class="stat-card c3"><div class="stat-num" id="stRoom">0</div><div class="stat-label">🚪 ห้องเรียน</div></div>
+    <div class="stat-card c4"><div class="stat-num" id="stFilled">0</div><div class="stat-label">📋 ช่องที่กรอกแล้ว</div></div>
+  </div>
+  <!-- main grid -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px">
+    <!-- quick links -->
+    <div class="card">
+      <div class="card-hd"><div class="card-title">🚀 เมนูลัด</div></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn btn-pri" onclick="nav('builder')">🗓️ สร้าง/แก้ไขตาราง</button>
+        <button class="btn btn-out" onclick="nav('substitute')">🔄 บันทึกสอนแทนวันนี้</button>
+        <button class="btn btn-out" onclick="nav('teachers')">👨‍🏫 จัดการรายชื่อครู</button>
+        <button class="btn btn-out" onclick="nav('workload')">📊 ตรวจภาระงานสอน</button>
+        <button class="btn btn-out" onclick="nav('export')">📥 ส่งออกไฟล์ Word</button>
+        <button class="btn btn-gold" onclick="showWizard()">⚙️ ตั้งค่าใหม่ด้วย Wizard</button>
+      </div>
+    </div>
+    <!-- grade progress -->
+    <div class="card">
+      <div class="card-hd"><div class="card-title">📈 ความคืบหน้าตารางแต่ละชั้น</div></div>
+      <div id="dashGradeProgress">
+        <div class="empty-state" style="padding:16px"><div class="empty-icon">🚪</div><div class="empty-text">ยังไม่มีห้องเรียน</div></div>
+      </div>
+    </div>
+  </div>
+  <!-- lower grid -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+    <!-- workload -->
+    <div class="card">
+      <div class="card-hd"><div class="card-title">📊 ภาระงานสอนสูงสุด</div></div>
+      <div id="dashWorkload">
+        <div class="empty-state" style="padding:20px"><div class="empty-icon">👨‍🏫</div><div class="empty-text">ยังไม่มีข้อมูล</div></div>
+      </div>
+    </div>
+    <!-- curriculum check -->
+    <div class="card">
+      <div class="card-hd"><div class="card-title">📋 ตรวจหลักสูตรแกนกลาง 2551</div>
+        <select id="currGradeSel" onchange="updateCurrCheck()" style="font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:5px;max-width:100px">
+          <option value="">ชั้น</option>
+        </select>
+      </div>
+      <div id="dashCurrCheck">
+        <div style="font-size:13px;color:var(--muted);padding:8px">เพิ่มห้องเรียนก่อนเพื่อดูสรุปหลักสูตร</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ PAGE: SCHOOL ═══════════ -->
+<div class="page" id="page-school">
+  <div class="ph"><div class="ph-left"><h1>🏫 ข้อมูลโรงเรียน</h1><p>ตั้งค่าข้อมูลพื้นฐาน ปีการศึกษา และผู้ลงนาม</p></div>
+    <div class="ph-actions"><button class="btn btn-gold" onclick="saveSchool()">💾 บันทึก</button></div>
+  </div>
+  <!-- logo + basic info row -->
+  <div style="display:grid;grid-template-columns:260px 1fr;gap:18px;margin-bottom:18px">
+    <!-- Logo card -->
+    <div class="card" style="padding:20px">
+      <div class="card-title" style="margin-bottom:14px;font-size:15px">🏫 โลโก้โรงเรียน</div>
+      <div id="logoDropZone" class="logo-upload-zone"
+        onclick="document.getElementById('logoFileInput').click()"
+        ondragover="event.preventDefault();this.classList.add('drag')"
+        ondragleave="this.classList.remove('drag')"
+        ondrop="handleLogoDrop(event)">
+        <input type="file" id="logoFileInput" accept="image/*" style="display:none" onchange="handleLogoFile(event)">
+        <div id="logoPlaceholder">
+          <div style="font-size:36px;margin-bottom:8px">🖼️</div>
+          <div style="font-size:13px;font-weight:700;color:var(--pri)">คลิกหรือลากรูปมาวาง</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">PNG, JPG, SVG · แนะนำ 200×200px ขึ้นไป</div>
+        </div>
+      </div>
+      <div id="logoPreviewArea" style="display:none;margin-top:10px">
+        <div class="logo-preview-wrap">
+          <img id="logoPreviewImg" class="logo-preview-img" src="" alt="โลโก้">
+          <div class="logo-info">
+            <div class="lname" id="logoFileName">–</div>
+            <div class="lsub" id="logoFileSize">–</div>
+            <div style="margin-top:8px">
+              <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px">ขนาดในเอกสาร Word</div>
+              <div class="logo-size-btns">
+                <div class="logo-size-btn on" data-size="small" onclick="setLogoSize('small')">เล็ก</div>
+                <div class="logo-size-btn" data-size="medium" onclick="setLogoSize('medium')">กลาง</div>
+                <div class="logo-size-btn" data-size="large" onclick="setLogoSize('large')">ใหญ่</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn btn-out btn-sm" onclick="document.getElementById('logoFileInput').click()">🔄 เปลี่ยนรูป</button>
+          <button class="btn btn-danger btn-sm" onclick="removeLogo()">🗑️ ลบโลโก้</button>
+        </div>
+      </div>
+      <div id="logoSaveNote" style="display:none;margin-top:8px" class="alert a-info" style="font-size:11px">
+        💾 โลโก้จะบันทึกพร้อมกับข้อมูลโรงเรียน
+      </div>
+    </div>
+    <!-- Basic info -->
+    <div class="card">
+      <div class="card-title" style="margin-bottom:14px;font-size:15px">📋 ข้อมูลพื้นฐาน</div>
+      <div class="fgrid">
+        <div class="fg s2"><label>ชื่อโรงเรียน <span class="req">*</span></label><input type="text" id="scName" placeholder="โรงเรียนบ้านนาดี"></div>
+        <div class="fg s2"><label>ที่อยู่</label><textarea id="scAddr" placeholder="ที่อยู่ / อำเภอ / จังหวัด" rows="2"></textarea></div>
+        <div class="fg"><label>ปีการศึกษา <span class="req">*</span></label><input type="text" id="scYear" value="2568" placeholder="2568"></div>
+        <div class="fg"><label>ภาคเรียน</label>
+          <select id="scSem"><option value="1">ภาคเรียนที่ 1</option><option value="2">ภาคเรียนที่ 2</option></select></div>
+      </div>
+    </div>
+  </div>
+  <!-- Signing section -->
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px;font-size:15px">✍️ ผู้ลงนาม</div>
+    <div class="fgrid">
+      <div class="fg"><label>ชื่อครูวิชาการ / หัวหน้าฝ่ายวิชาการ</label><input type="text" id="scAcad" placeholder="ชื่อ-นามสกุล"></div>
+      <div class="fg"><label>ตำแหน่ง/วิทยฐานะ ครูวิชาการ</label><input type="text" id="scAcadPos" placeholder="เช่น ครู คศ.2"></div>
+      <div class="fg"><label>ผู้อำนวยการโรงเรียน</label><input type="text" id="scPrincipal" placeholder="ชื่อ-นามสกุล"></div>
+      <div class="fg"><label>ตำแหน่ง/วิทยฐานะ ผู้อำนวยการ</label><select id="scPrinPos" style="padding:7px 10px;font-size:13px;border:1.5px solid var(--border);border-radius:7px;width:100%"><option value="">-- เลือก --</option><option>ผู้อำนวยการสถานศึกษา</option><option>ผู้อำนวยการสถานศึกษา คศ.3</option><option>ผู้อำนวยการสถานศึกษา คศ.4</option><option>รองผู้อำนวยการสถานศึกษา</option><option>รองผู้อำนวยการสถานศึกษา คศ.3</option><option>รองผู้อำนวยการสถานศึกษา คศ.2</option><option>ผู้อำนวยการ คศ.3</option><option>ผู้อำนวยการ คศ.4</option><option>รองผู้อำนวยการ คศ.2</option><option>รองผู้อำนวยการ คศ.3</option></select></div>
+    </div>
+    <div id="schoolSaveMsg" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<!-- ═══════════ PAGE: TEACHERS ═══════════ -->
+<div class="page" id="page-teachers">
+  <div class="ph">
+    <div class="ph-left"><h1>👨‍🏫 ครูทั้งโรงเรียน</h1><p>จัดการรายชื่อครู กำหนดวิชาที่สอน และตรวจสอบภาระงาน</p></div>
+    <div class="ph-actions">
+      <button class="btn btn-ghost btn-sm" onclick="nav('import-teachers')">📂 นำเข้า CSV/Excel</button>
+      <button class="btn btn-out btn-sm" onclick="downloadTeacherTemplate()">📋 ดาวน์โหลด Template</button>
+      <button class="btn btn-pri" onclick="openAddTeacher()">+ เพิ่มครู</button>
+    </div>
+  </div>
+  <div class="alert a-info">💡 คลิก <strong>แก้ไข</strong> ที่แถวครูเพื่อกำหนดวิชาที่สอน และห้องประจำวิชา ข้อมูลจะนำไปใช้ใน Dropdown ตอนสร้างตารางโดยอัตโนมัติ</div>
+  <div class="card card-sm">
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <input type="text" id="teacherSearch" placeholder="🔍 ค้นหาครู..." style="max-width:280px" oninput="renderTeacherTable()">
+      <select id="teacherFilterDept" onchange="renderTeacherTable()" style="max-width:180px">
+        <option value="">ทุกกลุ่มสาระ</option>
+      </select>
+    </div>
+    <div class="tbl-wrap" id="teacherTableWrap">
+      <div class="empty-state"><div class="empty-icon">👨‍🏫</div><div class="empty-text">ยังไม่มีรายชื่อครู</div><div class="empty-sub">กดปุ่ม "+ เพิ่มครู" หรือ "นำเข้า CSV"</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ PAGE: IMPORT TEACHERS ═══════════ -->
+<div class="page" id="page-import-teachers">
+  <div class="ph"><div class="ph-left"><h1>📂 นำเข้ารายชื่อครูจากไฟล์</h1><p>รองรับ CSV และ Excel (.xlsx ที่แปลงเป็น CSV)</p></div>
+    <div class="ph-actions"><button class="btn btn-out" onclick="nav('teachers')">‹ กลับ</button></div>
+  </div>
+  <div class="card">
+    <div class="alert a-info">📌 รูปแบบไฟล์ CSV ต้องมีคอลัมน์ตามลำดับ: <strong>ลำดับ, คำนำหน้า, ชื่อ, นามสกุล, วุฒิการศึกษา, วิทยฐานะ, กลุ่มสาระ, วิชาที่สอน (คั่นด้วย |), เบอร์โทร, อีเมล</strong><br>
+    สามารถดาวน์โหลด Template ตัวอย่างจากหน้าจัดการครู</div>
+    <div class="drop-zone" id="csvDropZone" onclick="document.getElementById('csvFileInput').click()"
+      ondragover="event.preventDefault();this.classList.add('drag')"
+      ondragleave="this.classList.remove('drag')"
+      ondrop="handleCsvDrop(event)">
+      <div class="drop-icon">📂</div>
+      <div class="drop-text">คลิกหรือลากไฟล์ CSV มาวางที่นี่</div>
+      <div class="drop-sub">รองรับไฟล์ .csv (UTF-8) ขนาดไม่เกิน 5MB</div>
+      <input type="file" id="csvFileInput" accept=".csv,.txt" style="display:none" onchange="handleCsvFile(event)">
+    </div>
+    <div id="csvPreview" style="margin-top:16px"></div>
+  </div>
+</div>
+
+<!-- ═══════════ PAGE: SUBJECTS ═══════════ -->
+<div class="page" id="page-subjects">
+  <div class="ph"><div class="ph-left"><h1>📚 วิชาเรียน</h1><p>จัดการรายวิชา พร้อมกำหนดสีและกลุ่มสาระ</p></div>
+    <div class="ph-actions"><button class="btn btn-pri" onclick="openAddSubject()">+ เพิ่มวิชา</button></div>
+  </div>
+  <!-- Custom Departments Manager -->
+  <div class="custom-dept-card">
+    <div class="custom-dept-card-title">✨ จัดการกลุ่มสาระเพิ่มเติม (นอกเหนือจาก 8 กลุ่มสาระหลัก)</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px">
+      เพิ่มกลุ่มสาระเฉพาะของโรงเรียน เช่น "ภาษาจีน" "ห้องเรียนพิเศษ EP" "STEM" — กลุ่มสาระที่เพิ่มจะปรากฏให้เลือกได้ทั้งในเมนู "วิชาเรียน" และ "ครูผู้สอน"
+    </div>
+    <div class="custom-dept-add">
+      <input type="text" id="newDeptInput" placeholder="ชื่อกลุ่มสาระเพิ่มเติม เช่น ภาษาจีน, EP, STEM" maxlength="60" onkeypress="if(event.key==='Enter'){addCustomDept();}">
+      <button class="btn btn-pri btn-sm" onclick="addCustomDept()">+ เพิ่ม</button>
+    </div>
+    <div class="custom-dept-list" id="customDeptList"></div>
+  </div>
+
+  <div class="card card-sm">
+    <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
+      <span style="font-size:13px;color:var(--muted)">เพิ่มวิชาแนะนำ:</span>
+      <div id="quickAddSubjs" style="display:flex;gap:5px;flex-wrap:wrap"></div>
+    </div>
+    <div class="tbl-wrap" id="subjectTableWrap">
+      <div class="empty-state"><div class="empty-icon">📚</div><div class="empty-text">ยังไม่มีวิชา</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ PAGE: ROOMS ═══════════ -->
+<div class="page" id="page-rooms">
+  <div class="ph"><div class="ph-left"><h1>🚪 ห้องเรียน / ชั้นเรียน</h1><p>เพิ่มห้องเรียนแต่ละระดับ สามารถสร้างตารางได้หลายห้องพร้อมกัน</p></div>
+    <div class="ph-actions"><button class="btn btn-pri" onclick="openAddRoom()">+ เพิ่มห้องเรียน</button></div>
+  </div>
+  <div class="alert a-info">💡 แต่ละห้องจะมีตารางเรียนและตารางสอนของตัวเอง คุณสามารถส่งออกทีเดียวทุกห้องได้</div>
+  <div class="tbl-wrap" id="roomTableWrap">
+    <div class="empty-state"><div class="empty-icon">🚪</div><div class="empty-text">ยังไม่มีห้องเรียน</div><div class="empty-sub">กดปุ่ม "+ เพิ่มห้องเรียน"</div></div>
+  </div>
+</div>
+
+<!-- ═══════════ PAGE: TIMESLOTS ═══════════ -->
+<div class="page" id="page-timeslots">
+  <div class="ph"><div class="ph-left"><h1>⏰ คาบเรียนและวันเรียน</h1><p>กำหนดจำนวนคาบ เวลา และวันเรียนสำหรับทุกห้อง</p></div>
+    <div class="ph-actions"><button class="btn btn-out" onclick="addSlot()">+ เพิ่มคาบ</button></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+    <div class="card">
+      <div class="card-hd"><div class="card-title">⏰ คาบเรียน</div></div>
+      <div id="slotsUI"></div>
+    </div>
+    <div class="card">
+      <div class="card-hd"><div class="card-title">📅 วันเรียน</div></div>
+      <div class="day-row" id="dayPicker" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+      <div style="margin-top:16px" class="alert a-info" style="margin-bottom:0">วันที่เลือกจะแสดงในตารางทุกห้อง</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ PAGE: BUILDER ═══════════ -->
+
+<!-- ══════════ PAGE: AUTO SCHEDULE ══════════ -->
+<div class="page" id="page-auto-schedule">
+  <div class="ph">
+    <div class="ph-left"><h1>✨ จัดตารางอัตโนมัติ</h1><p>ระบบช่วยจัดตารางเรียนตามโควต้าวิชา แล้วค่อยกำหนดครูผู้สอน</p></div>
+  </div>
+
+  <!-- Hero -->
+  <div class="auto-page-hero">
+    <div class="auto-page-hero-icon">🎲</div>
+    <div>
+      <div class="auto-page-hero-title">ระบบจัดตารางอัตโนมัติ Pro</div>
+      <div class="auto-page-hero-sub">
+        กำหนดจำนวนคาบ/สัปดาห์ของแต่ละวิชา → เลือกโหมดการจัด → กดสร้างตาราง<br>
+        จากนั้นเลือกครูผู้สอนในแต่ละช่องได้ทันที
+      </div>
+    </div>
+  </div>
+
+  <!-- Steps -->
+  <div class="auto-step-row">
+    <div class="auto-step-card">
+      <div class="auto-step-num">1</div>
+      <div class="auto-step-title">เลือกห้องเรียน</div>
+      <div class="auto-step-sub">เลือกห้องที่ต้องการจัดตาราง (ได้หลายห้องพร้อมกัน)</div>
+    </div>
+    <div class="auto-step-card">
+      <div class="auto-step-num">2</div>
+      <div class="auto-step-title">กำหนดโควต้าวิชา</div>
+      <div class="auto-step-sub">ตั้งจำนวนคาบ/สัปดาห์ของแต่ละวิชา</div>
+    </div>
+    <div class="auto-step-card">
+      <div class="auto-step-num">3</div>
+      <div class="auto-step-title">เลือกโหมดการจัด</div>
+      <div class="auto-step-sub">สุ่มทั้งหมด / กระจายสม่ำเสมอ / รวมกลุ่มตามวัน</div>
+    </div>
+    <div class="auto-step-card">
+      <div class="auto-step-num">4</div>
+      <div class="auto-step-title">สร้างตารางเลย!</div>
+      <div class="auto-step-sub">ระบบเติมวิชา จากนั้นเลือกครูผู้สอนในแต่ละช่อง</div>
+    </div>
+  </div>
+
+  <div class="auto-config-grid">
+    <!-- Left: Subject quota -->
+    <div class="auto-config-card" style="grid-column: span 1;">
+      <div class="auto-config-title">📚 กำหนดโควต้าวิชา (คาบ/สัปดาห์)</div>
+      <div style="overflow-y:auto;max-height:340px">
+        <table class="auto-subj-table" id="autoSubjTable">
+          <thead><tr>
+            <th style="width:14px"></th>
+            <th>ชื่อวิชา</th>
+            <th style="text-align:center">คาบ/สัปดาห์</th>
+          </tr></thead>
+          <tbody id="autoSubjBody">
+            <tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px">
+              ยังไม่มีวิชา — ไปที่เมนู "วิชาเรียน" เพื่อเพิ่มวิชา
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="auto-total-bar">
+        <span style="color:var(--muted)">รวมโควต้า:</span>
+        <span class="auto-total-num" id="autoTotalHours">0</span>
+        <span style="color:var(--muted)">คาบ/สัปดาห์</span>
+        <span id="autoSlotInfo" style="margin-left:auto;font-size:11px"></span>
+      </div>
+    </div>
+
+    <!-- Right: Options -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <!-- Room selection -->
+      <div class="auto-config-card">
+        <div class="auto-config-title">🚪 เลือกห้องที่จะจัดตาราง</div>
+        <div class="auto-room-pills" id="autoRoomPills">
+          <div style="color:var(--muted);font-size:12px">ยังไม่มีห้องเรียน</div>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:4px">
+          <button class="btn btn-ghost btn-xs" onclick="autoSelectAllRooms(true)">เลือกทั้งหมด</button>
+          <button class="btn btn-ghost btn-xs" onclick="autoSelectAllRooms(false)">ยกเลิก</button>
+        </div>
+      </div>
+
+      <!-- Mode selection -->
+      <div class="auto-config-card">
+        <div class="auto-config-title">🎲 โหมดการจัดตาราง</div>
+        <div class="auto-mode-cards">
+          <div class="auto-mode-card selected" onclick="selectAutoMode('random',this)">
+            <div class="mode-icon">🎲</div>
+            <div class="mode-title">สุ่มทั้งหมด</div>
+            <div class="mode-desc">กระจายสุ่มทุกช่อง ผลต่างกันทุกครั้ง</div>
+          </div>
+          <div class="auto-mode-card" onclick="selectAutoMode('spread',this)">
+            <div class="mode-icon">📐</div>
+            <div class="mode-title">กระจายสม่ำเสมอ</div>
+            <div class="mode-desc">แต่ละวิชาไม่กองในวันเดียว</div>
+          </div>
+          <div class="auto-mode-card" onclick="selectAutoMode('cluster',this)">
+            <div class="mode-icon">📦</div>
+            <div class="mode-title">รวมกลุ่มตามวัน</div>
+            <div class="mode-desc">วิชาเดียวกันอยู่ต่อเนื่องกัน</div>
+          </div>
+        </div>
+        <input type="hidden" id="autoPageMode" value="random">
+      </div>
+
+      <!-- Options -->
+      <div class="auto-config-card">
+        <div class="auto-config-title">⚙️ ตัวเลือกเพิ่มเติม</div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-bottom:8px">
+          <input type="checkbox" id="autoClearOld" checked style="width:16px;height:16px">
+          ล้างตารางเดิมก่อนจัด
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-bottom:8px">
+          <input type="checkbox" id="autoApplyAll" checked style="width:16px;height:16px">
+          ใช้โควต้าเดียวกันกับทุกห้อง
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+          <input type="checkbox" id="autoKeepTeacher" style="width:16px;height:16px">
+          คงครูที่กำหนดไว้แล้ว (ถ้ามี)
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Generate button -->
+  <button class="auto-generate-btn" onclick="runAutoSchedulePage()">
+    <span style="font-size:24px">✨</span>
+    <span>สร้างตารางเรียนอัตโนมัติ!</span>
+  </button>
+
+  <!-- Result area -->
+  <div id="autoResultArea" style="margin-top:20px"></div>
+</div>
+
+<div class="page" id="page-builder">
+  <div class="ph builder-page-head"><div class="ph-left"><h1><span class="page-title-icon">🗓️</span> สร้างตาราง</h1><p>กรอกวิชาและครูผู้สอนในแต่ละช่วงเวลา</p></div>
+    <div class="ph-actions">
+      <button class="btn btn-ghost btn-sm" onclick="clearCurrentRoom()">🗑️ ล้างห้องนี้</button>
+      <button class="btn btn-out btn-sm" onclick="copyRoomSchedule()">📋 คัดลอกจากห้องอื่น</button>
+      <button class="btn btn-pri btn-sm" onclick="nav('export')">✨ ดูตัวอย่าง & ส่งออก</button>
+    </div>
+  </div>
+  <div id="quotaPanel" style="margin-bottom:12px"></div>
+  <div class="builder-room-panel">
+    <div class="builder-section-title">▣ เลือกห้องเรียน</div>
+    <div class="room-tabs" id="builderRoomTabs"></div>
+  </div>
+  <div class="builder-table-panel">
+    <div class="builder-table-titlebar"><span class="mini-icon">🗓️</span><span id="builderTableRoomTitle">ตารางเรียน</span></div>
+    <div class="card builder-grid-card">
+      <div id="builderGrid">
+        <div class="empty-state"><div class="empty-icon">🚪</div><div class="empty-text">ยังไม่มีห้องเรียน</div><div class="empty-sub">ไปที่เมนู "ห้องเรียน" เพื่อเพิ่มห้อง</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ PAGE: TEACHER-VIEW ═══════════ -->
+<div class="page" id="page-teacher-view">
+  <div class="ph">
+    <div class="ph-left"><h1>📖 ตารางสอนรายครู</h1><p>ดูตารางสอนของครูแต่ละคน (รวมทุกห้อง)</p></div>
+  </div>
+  <!-- Print header (hidden on screen) -->
+  <div id="tvPrintHeader" class="print-header"><h2></h2><p></p></div>
+
+  <div class="tv-page-layout" id="tvPageLayout">
+    <!-- LEFT: Teacher list sidebar -->
+    <div class="tv-sidebar card no-print" id="tvSidebar">
+      <div class="card-hd" style="padding-bottom:8px">
+        <div class="card-title" style="font-size:13px">👩‍🏫 รายชื่อครู</div>
+        <span id="tvTeacherCount" style="font-size:11px;color:var(--muted)"></span>
+      </div>
+      <input type="text" id="tvSearchBox" class="tv-search" placeholder="🔍 ค้นหาชื่อครู..." oninput="filterTeacherList(this.value)">
+      <div class="tv-teacher-list" id="tvTeacherList">
+        <div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">กำลังโหลด...</div>
+      </div>
+      <div style="padding:8px 10px;border-top:1px solid var(--border);display:flex;gap:6px" class="no-print">
+        <button class="btn btn-out btn-xs" onclick="exportTeacherViewDocxAll()">📚 ส่งออกทุกคน</button>
+      </div>
+    </div>
+
+    <!-- RIGHT: Timetable panel -->
+    <div class="tv-main-panel" id="tvMainPanel">
+      <div id="tvNoTeacher" class="tv-no-teacher">
+        <div class="tv-no-teacher-icon">📖</div>
+        <div class="tv-no-teacher-text">กดชื่อครูด้านซ้าย<br>เพื่อดูตารางสอน</div>
+      </div>
+      <!-- Action bar (hidden until teacher selected) -->
+      <div id="tvExportBar" style="display:none;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center" class="no-print">
+        <div id="tvTeacherTitle" class="tv-teacher-title"></div>
+        <div style="flex:1"></div>
+        <div id="tvStatsChips" class="tv-stats-chips"></div>
+        <button class="btn btn-pri btn-sm" onclick="exportTeacherViewDocx()">📄 Word</button>
+        <button class="btn btn-ghost btn-sm" onclick="printTeacherView()">🖨️ พิมพ์</button>
+        <button class="btn-airdrop sm" onclick="shareTeacherAirDrop()" title="AirDrop ภาพตารางสอน"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><path d="M4.5 12.5C3 11 2 9.1 2 7a5 5 0 0 1 10 0c0 2.1-1 4-2.5 5.5M8 14v4m-2 2h4M15.5 9C14 7.5 13 5.6 13 4a5 5 0 0 1 10 0c0 2.1-1 4-2.5 5.5M19 11v4m-2 2h4"/></svg> AirDrop</button>
+      </div>
+      <div id="teacherViewContent" style="overflow-x:auto"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ PAGE: WORKLOAD ═══════════ -->
+<div class="page" id="page-workload">
+  <div class="ph"><div class="ph-left"><h1>📊 ภาระงานสอน</h1><p>ตรวจสอบชั่วโมงสอนต่อสัปดาห์ของครูแต่ละคน</p></div></div>
+  <div class="alert a-info">📌 ภาระงานสอนมาตรฐาน: <strong>18–20 ชั่วโมง/สัปดาห์</strong> (ตามระเบียบกระทรวง) — แถบสีเขียว = ปกติ, เหลือง = มาก, แดง = เกิน</div>
+  <div class="card">
+    <div id="workloadContent">
+      <div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">ยังไม่มีข้อมูลครู</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ PAGE: EXPORT ═══════════ -->
+<div class="page" id="page-export">
+  <div class="ph"><div class="ph-left"><h1>✨ ดูตัวอย่าง & ส่งออก</h1><p>ตรวจสอบตารางและดาวน์โหลดไฟล์ Word ที่พร้อมใช้งาน</p></div></div>
+  <div class="card">
+    <div class="card-hd"><div class="card-title">📥 เลือกห้องที่ต้องการส่งออก</div></div>
+    <div id="exportRoomList"></div>
+    <div class="divider"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:4px">
+      <button class="btn btn-gold" style="font-size:15px;padding:13px 24px" onclick="doExportSelected('student')">🎒 ส่งออก ตารางเรียน</button>
+      <button class="btn btn-pri" style="font-size:15px;padding:13px 24px" onclick="doExportSelected('teacher')">📖 ส่งออก ตารางสอน</button>
+      <button class="btn btn-succ" style="font-size:15px;padding:13px 24px" onclick="doExportSelected('both')">📋 ส่งออก ทั้งสองแบบ</button>
+      <button class="btn-airdrop-lg" onclick="shareAirDropFromExport()" title="แชร์ภาพตารางเรียนผ่าน AirDrop"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><path d="M4.5 12.5C3 11 2 9.1 2 7a5 5 0 0 1 10 0c0 2.1-1 4-2.5 5.5M8 14v4m-2 2h4M15.5 9C14 7.5 13 5.6 13 4a5 5 0 0 1 10 0c0 2.1-1 4-2.5 5.5M19 11v4m-2 2h4"/></svg> AirDrop ภาพตาราง</button>
+    </div>
+    <div id="exportMsg" style="margin-top:12px"></div>
+  </div>
+  <div class="card">
+    <div class="card-hd"><div class="card-title">👁️ ดูตัวอย่างตาราง</div>
+      <select id="previewRoomSel" onchange="renderPreview()" style="max-width:200px"></select>
+    </div>
+    <div id="previewContent">
+      <div class="empty-state"><div class="empty-icon">🗓️</div><div class="empty-text">เลือกห้องเพื่อดูตัวอย่าง</div></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════ PAGE: STORAGE ═══════════ -->
+<div class="page" id="page-storage">
+  <div class="ph"><div class="ph-left"><h1>💾 บันทึก & สำรองข้อมูล</h1><p>ระบบบันทึกข้อมูลลงเครื่องผู้ใช้แบบ Offline โดยอัตโนมัติ</p></div></div>
+
+  <!-- PROFILES -->
+  <div class="card">
+    <div class="card-hd"><div class="card-title">🏫 โปรไฟล์โรงเรียน (Multi-School)</div>
+      <button class="btn btn-pri btn-sm" onclick="createNewProfile()">+ สร้างโรงเรียนใหม่</button>
+    </div>
+    <div class="alert a-info">💡 สามารถบันทึกข้อมูลหลายโรงเรียนไว้ในเครื่องเดียวกันได้ สลับโปรไฟล์เพื่อใช้งานได้ทันที</div>
+    <div id="profileList"></div>
+  </div>
+
+  <!-- STORAGE STATUS -->
+  <div class="storage-card">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:13px;opacity:.7;margin-bottom:4px">พื้นที่ใช้งาน (localStorage)</div>
+        <div class="storage-num" id="storageUsed">0 KB</div>
+        <div style="font-size:12px;opacity:.65;margin-top:4px">จาก 5 MB ที่รองรับ</div>
+        <div class="storage-bar-bg" style="width:280px"><div class="storage-bar-fill" id="storageBar" style="width:0%"></div></div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:12px;opacity:.65">บันทึกล่าสุด</div>
+        <div style="font-size:16px;font-weight:700;margin-top:4px" id="lastSavedTime">–</div>
+        <div style="font-size:12px;opacity:.65;margin-top:8px">โปรไฟล์ที่ใช้งาน</div>
+        <div style="font-size:14px;font-weight:700;color:var(--gold2)" id="activeProfileName">–</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SAVE NOW -->
+  <div class="card">
+    <div class="card-hd"><div class="card-title">⚡ บันทึกข้อมูลทันที</div></div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:14px">ข้อมูลจะถูกบันทึกอัตโนมัติทุกครั้งที่มีการเปลี่ยนแปลง แต่สามารถกด "บันทึกทันที" เพื่อยืนยันได้</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-succ" style="font-size:15px;padding:12px 24px" onclick="saveNow()">💾 บันทึกทันที</button>
+      <button class="btn btn-out" onclick="reloadFromStorage()">🔄 โหลดข้อมูลจากเครื่อง</button>
+    </div>
+    <div id="saveNowMsg" style="margin-top:10px"></div>
+  </div>
+
+  <!-- BACKUP / RESTORE -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+    <div class="card">
+      <div class="card-hd"><div class="card-title">📤 ส่งออก Backup</div></div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px">ส่งออกข้อมูลทั้งหมดเป็นไฟล์ <code>.json</code> เพื่อสำรองข้อมูลหรือย้ายไปใช้เครื่องอื่น</p>
+      <button class="btn btn-gold" onclick="exportBackup()">📤 ดาวน์โหลด Backup (.json)</button>
+    </div>
+    <div class="card">
+      <div class="card-hd"><div class="card-title">📥 นำเข้า Backup</div></div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px">นำเข้าไฟล์ <code>.json</code> ที่สำรองไว้ เพื่อกู้คืนข้อมูลหรือย้ายข้อมูลมาจากเครื่องอื่น</p>
+      <div class="backup-card" onclick="document.getElementById('backupFileInput').click()">
+        <div style="font-size:28px;margin-bottom:6px">📂</div>
+        <div style="font-size:13px;font-weight:700;color:var(--pri)">คลิกเพื่อเลือกไฟล์ .json</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">หรือลากไฟล์มาวางที่นี่</div>
+        <input type="file" id="backupFileInput" accept=".json" style="display:none" onchange="importBackup(event)">
+      </div>
+      <div id="importMsg" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <!-- DANGER ZONE -->
+  <div class="card" style="border:1.5px solid #ffcdd2">
+    <div class="card-hd"><div class="card-title" style="color:var(--err)">⚠️ โซนอันตราย</div></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-danger" onclick="clearCurrentProfile()">🗑️ ล้างข้อมูลโปรไฟล์นี้</button>
+      <button class="btn btn-danger" onclick="clearAllProfiles()">💥 ล้างข้อมูลทั้งหมดในเครื่อง</button>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- ═══════════ PAGE: SUBSTITUTE ═══════════ -->
+<div class="page" id="page-substitute">
+  <div class="ph">
+    <div class="ph-left">
+      <h1><span class="page-title-icon">🔄</span> ตารางสอนแทนรายวัน</h1>
+      <p>ดูตารางสอนรวม เลือกคาบที่ต้องจัดสอนแทน และเลือกครูที่ว่างได้จากหน้าเดียว</p>
+    </div>
+    <div class="ph-actions">
+      <button class="btn btn-out btn-sm" onclick="nav('sub-history')">📂 ประวัติการสอนแทน</button>
+      <button class="btn btn-gold" onclick="exportSubstituteDocx()">🖨️ พิมพ์ตารางสอนแทน</button>
+    </div>
+  </div>
+
+  <div class="sub-v2-toolbar">
+    <div class="sub-v2-date">
+      <span class="sub-v2-label">📅 วันที่จัดสอนแทน</span>
+      <input type="date" id="subDate" class="sub-v2-date-input" onchange="loadSubstituteDay()">
+      <div class="sub-v2-day" id="subDayName">–</div>
+    </div>
+    <div class="sub-v2-toolbar-actions">
+      <button class="btn btn-ghost btn-sm" onclick="setSubDateToday()">📌 วันนี้</button>
+      <button class="btn btn-out btn-sm" onclick="addAbsentTeacher()">+ เพิ่มครูที่ลา</button>
+    </div>
+  </div>
+<div class="sub-v2-stats" id="subSummaryBar">
+    <div class="sub-v2-stat blue">
+      <div class="sub-v2-stat-icon">👨‍🏫</div>
+      <div><div class="sub-v2-stat-num" id="sumTeachers">0</div><div class="sub-v2-stat-label">ครูทั้งหมด</div></div>
+    </div>
+    <div class="sub-v2-stat gray">
+      <div class="sub-v2-stat-icon">🚫</div>
+      <div><div class="sub-v2-stat-num" id="sumAbsent">0</div><div class="sub-v2-stat-label">ครูที่ลา</div></div>
+    </div>
+    <div class="sub-v2-stat orange">
+      <div class="sub-v2-stat-icon">⚠️</div>
+      <div><div class="sub-v2-stat-num" id="sumPeriods">0</div><div class="sub-v2-stat-label">คาบที่ต้องสอนแทน</div></div>
+    </div>
+    <div class="sub-v2-stat green">
+      <div class="sub-v2-stat-icon">✅</div>
+      <div><div class="sub-v2-stat-num" id="sumAssigned">0</div><div class="sub-v2-stat-label">จัดครูแทนแล้ว</div></div>
+    </div>
+  </div>
+
+  <div class="sub-v2-layout">
+    <section class="sub-v2-main-card">
+      <div class="sub-v2-card-head">
+        <div>
+          <div class="sub-v2-card-title">📋 ตารางสอนรวมรายวัน</div>
+          <div class="sub-v2-card-sub">แถวสีเทา = ครูลา • สีเขียว = ว่าง • สีส้ม = ต้องจัดสอนแทน</div>
+        </div>
+        <div class="sub-v2-legend">
+          <span><i class="lg-normal"></i> มีสอน</span>
+          <span><i class="lg-free"></i> ว่าง</span>
+          <span><i class="lg-absent"></i> ครูลา</span>
+          <span><i class="lg-need"></i> ต้องแทน</span>
+        </div>
+      </div>
+      <div id="subContent" class="sub-v2-grid-wrap">
+        <div class="sub-v2-empty">เลือกวันที่เพื่อแสดงตารางสอนรวม</div>
+      </div>
+    </section>
+
+    <aside class="sub-v2-side-card">
+      <div id="subSidePanel">
+        <div class="sub-v2-side-empty">
+          <div class="sub-v2-side-empty-icon">👆</div>
+          <strong>เลือกคาบจากตาราง</strong>
+          <span>รายละเอียดคาบและรายชื่อครูที่ว่างจะแสดงตรงนี้</span>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <section class="sub-v2-assigned-card">
+    <div class="sub-v2-card-head">
+      <div>
+        <div class="sub-v2-card-title">✅ รายการจัดสอนแทนวันนี้</div>
+        <div class="sub-v2-card-sub">รายการที่เลือกครูสอนแทนแล้ว สามารถเปลี่ยนหรือลบได้</div>
+      </div>
+    </div>
+    <div id="subAssignedList"></div>
+  </section>
+</div>
+
+<!-- ═══════════ PAGE: SUB HISTORY ═══════════ -->
+
+<div class="page" id="page-conflict">
+  <div class="ph">
+    <div class="ph-left">
+      <h1>⚠️ ตารางสอนชนกัน</h1>
+      <p>ตรวจสอบคาบสอนที่ซ้ำซ้อนของครูแต่ละคน</p>
+    </div>
+    <div class="ph-actions">
+      <button class="btn btn-out" onclick="_cfFilter='all';renderConflictPage()">🔄 รีเฟรช</button>
+    </div>
+  </div>
+  <div id="conflictContent"></div>
+</div>
+<div class="page" id="page-sub-history">
+  <div class="ph">
+    <div class="ph-left"><h1>📂 ประวัติตารางสอนแทน</h1><p>รายการสอนแทนทั้งหมดที่บันทึกไว้</p></div>
+    <div class="ph-actions"><button class="btn btn-out" onclick="nav('substitute')">‹ กลับ</button></div>
+  </div>
+  <div class="card">
+    <div id="subHistoryContent">
+      <div class="empty-state"><div class="empty-icon">📂</div><div class="empty-text">ยังไม่มีประวัติ</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MODAL: ADD ABSENT TEACHER ══════════ -->
+<div class="modal-bg" id="modalAbsent">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-hd">
+      <div class="modal-title">+ เพิ่มครูที่ลา</div>
+      <button class="modal-close" onclick="closeModal('modalAbsent')">✕</button>
+    </div>
+    <div class="fgrid">
+      <div class="fg s2">
+        <label>ครูที่ลา <span class="req">*</span></label>
+        <select id="absentTeacherSel" style="width:100%" onchange="loadAbsentPeriods()">
+          <option value="">-- เลือกครู --</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>ประเภทการลา</label>
+        <select id="absentType">
+          <option value="ลาป่วย">🤒 ลาป่วย</option>          <option value="ลากิจ">📋 ลากิจ</option>
+          <option value="ลาพักผ่อน">🌴 ลาพักผ่อน</option>
+          <option value="ราชการ">🏛️ ไปราชการ</option>
+          <option value="อบรม">📚 อบรม/สัมมนา</option>
+          <option value="อื่นๆ">📝 อื่นๆ</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>หมายเหตุ</label>
+        <input type="text" id="absentNote" placeholder="รายละเอียดเพิ่มเติม">
+      </div>
+    </div>
+    <div id="absentPeriodsPreview" style="margin-top:14px"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalAbsent')">ยกเลิก</button>
+      <button class="btn btn-warn" onclick="confirmAddAbsent()">✅ บันทึกครูที่ลา</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════ SETUP WIZARD ══════════ -->
+<div id="setupWizard" class="wizard-overlay" style="display:none">
+  <div class="wizard-box">
+    <div class="wz-header">
+      <div style="font-size:32px;margin-bottom:8px">🏫</div>
+      <div class="wz-title">ยินดีต้อนรับสู่ระบบตารางเรียน-ตารางสอน<br>ระดับประถมศึกษา</div>
+      <div class="wz-sub">ตั้งค่าข้อมูลโรงเรียนในไม่กี่ขั้นตอน พร้อมใช้งานได้เลย</div>
+      <div class="wz-steps" id="wzStepDots">
+        <div class="wz-step-dot"><div class="wz-dot active" id="wd1">1</div><div class="wz-step-lbl">โรงเรียน</div></div>
+        <div class="wz-step-dot"><div class="wz-dot" id="wd2">2</div><div class="wz-step-lbl">ห้องเรียน</div></div>
+        <div class="wz-step-dot"><div class="wz-dot" id="wd3">3</div><div class="wz-step-lbl">วิชาเรียน</div></div>
+        <div class="wz-step-dot"><div class="wz-dot" id="wd4">4</div><div class="wz-step-lbl">คาบ&วัน</div></div>
+        <div class="wz-step-dot"><div class="wz-dot" id="wd5">5</div><div class="wz-step-lbl">เสร็จสิ้น</div></div>
+      </div>
+    </div>
+    <div class="wz-body" id="wzBody"></div>
+    <div class="wz-footer">
+      <button class="btn btn-ghost btn-sm" id="wzBack" onclick="wzPrev()">‹ ย้อนกลับ</button>
+      <div style="font-size:12px;color:var(--muted)" id="wzProgress">ขั้นที่ 1 / 5</div>
+      <button class="btn btn-pri" id="wzNext" onclick="wzNext()">ถัดไป ›</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /app-shell -->
+
+<!-- ══════════ MODAL: ADD/EDIT TEACHER ══════════ -->
+<div class="modal-bg" id="modalTeacher">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-hd"><div class="modal-title" id="modalTeacherTitle">เพิ่มครู</div><button class="modal-close" onclick="closeModal('modalTeacher')">✕</button></div>
+    <div class="fgrid g3">
+      <div class="fg"><label>คำนำหน้า</label>
+        <select id="tPrefix"><option value="">-- เลือก --</option><optgroup label="ทั่วไป"><option>นาย</option><option>นาง</option><option>นางสาว</option><option>ว่าที่ ร.ต.</option></optgroup><optgroup label="พระสงฆ์ (พระปริยัติธรรม)"><option>พระ</option><option>สามเณร</option><option>พระครู</option><option>พระมหา</option><option>พระอาจารย์</option><option>พระวิทยากร</option></optgroup></select></div>
+      <div class="fg"><label>ชื่อ <span class="req">*</span></label><input type="text" id="tFirst" placeholder="ชื่อ"></div>
+      <div class="fg"><label>นามสกุล <span class="req">*</span></label><input type="text" id="tLast" placeholder="นามสกุล"></div>
+      <div class="fg"><label>วุฒิการศึกษา</label><input type="text" id="tEdu" placeholder="เช่น ค.บ., กศ.ม."></div>
+      <div class="fg"><label>วิทยฐานะ</label>
+        <select id="tRank"><option value="">ไม่มี</option><optgroup label="ผู้บริหาร"><option>ผู้อำนวยการสถานศึกษา</option><option>ผู้อำนวยการสถานศึกษา คศ.3</option><option>ผู้อำนวยการสถานศึกษา คศ.4</option><option>รองผู้อำนวยการสถานศึกษา</option><option>รองผู้อำนวยการสถานศึกษา คศ.3</option><option>รองผู้อำนวยการสถานศึกษา คศ.2</option></optgroup><optgroup label="ครู"><option>ครูผู้ช่วย</option><option>ครู</option><option>ครู คศ.1</option><option>ครู คศ.2</option><option>ครู คศ.3</option><option>ครูชำนาญการ</option><option>ครูชำนาญการพิเศษ</option><option>ครูเชี่ยวชาญ</option></optgroup></select></div>
+      <div class="fg"><label>กลุ่มสาระ</label>
+        <select id="tDept"><option value="">ไม่ระบุ</option></select></div>
+      <div class="fg"><label>เบอร์โทร</label><input type="text" id="tPhone" placeholder="0812345678"></div>
+      <div class="fg"><label>อีเมล</label><input type="text" id="tEmail" placeholder="teacher@school.ac.th"></div>
+      <div class="fg"><label>หมายเหตุ</label><input type="text" id="tNote" placeholder="ข้อมูลเพิ่มเติม"></div>
+    </div>
+    <div style="margin-top:14px">
+      <label>วิชาที่รับผิดชอบสอน (เลือกหลายวิชาได้)</label>
+      <div id="tSubjectsChk" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;min-height:32px">
+        <span style="font-size:13px;color:var(--muted)">กรุณาเพิ่มวิชาก่อน</span>
+      </div>
+    </div>
+    <input type="hidden" id="tEditId">
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalTeacher')">ยกเลิก</button>
+      <button class="btn btn-pri" onclick="saveTeacher()">💾 บันทึกครู</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MODAL: ADD SUBJECT ══════════ -->
+<div class="modal-bg" id="modalSubject">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-hd"><div class="modal-title" id="modalSubjectTitle">เพิ่มวิชา</div><button class="modal-close" onclick="closeModal('modalSubject')">✕</button></div>
+    <div class="fgrid">
+      <div class="fg s2"><label>ชื่อวิชา <span class="req">*</span></label><input type="text" id="sjName" placeholder="เช่น ภาษาไทย"></div>
+      <div class="fg"><label>รหัสวิชา</label><input type="text" id="sjCode" placeholder="เช่น ค21101" oninput="autoDetectSubjectGrade();autoDetectSubjectColor()"></div>
+      <div class="fg"><label>ระดับชั้น <span class="req">*</span></label>
+        <select id="sjGrade">
+          <option value="">-- เลือกระดับชั้น --</option>
+          <option value="ม.1">ม.1</option><option value="ม.2">ม.2</option><option value="ม.3">ม.3</option>
+          <option value="ม.4">ม.4</option><option value="ม.5">ม.5</option><option value="ม.6">ม.6</option>
+          <option value="ALL">ทุกระดับชั้น (ใช้ร่วมกัน)</option>
+        </select></div>
+      <div class="fg"><label>กลุ่มสาระ</label>
+        <select id="sjDept" onchange="autoDetectSubjectColor(true)"><option value="">ไม่ระบุ</option></select></div>
+      <div class="fg"><label>ชั่วโมง/สัปดาห์</label><input type="number" id="sjHours" value="1" min="1" max="40"></div>
+    </div>
+    <div style="margin-top:12px"><label>สีประจำวิชา <span style="font-weight:400;color:var(--muted);text-transform:none">(เลือกตามหมวดอัตโนมัติ — คลิกสีเพื่อเปลี่ยนเอง)</span></label>
+      <div class="subj-colors" id="colorPicker"></div></div>
+    <input type="hidden" id="sjEditId">
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalSubject')">ยกเลิก</button>
+      <button class="btn btn-pri" onclick="saveSubject()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MODAL: ADD ROOM ══════════ -->
+<div class="modal-bg" id="modalRoom">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-hd"><div class="modal-title" id="modalRoomTitle">เพิ่มห้องเรียน</div><button class="modal-close" onclick="closeModal('modalRoom')">✕</button></div>
+    <div class="fgrid">
+      <div class="fg"><label>ระดับการศึกษา</label>
+        <select id="rmLevel" onchange="updateRmGrade()">
+          <option value="มัธยมศึกษาตอนต้น" selected>มัธยมศึกษาตอนต้น (ม.1–ม.3)</option>
+          <option value="มัธยมศึกษาตอนปลาย">มัธยมศึกษาตอนปลาย (ม.4–ม.6)</option>
+          <option value="ห้องพิเศษ">ห้องพิเศษ / ห้องเรียนพิเศษ</option>
+        </select></div>
+      <div class="fg" id="rmGradeWrap">
+        <label>ชั้น</label>
+        <select id="rmGrade"></select>
+      </div>
+      <div class="fg" id="rmCustomGradeWrap" style="display:none">
+        <label>ชื่อห้องพิเศษ <span class="req">*</span></label>
+        <input type="text" id="rmCustomGrade" placeholder="เช่น ห้องพิเศษวิทย์-คณิต ม.ปลาย">
+      </div>
+      <div class="fg"><label>ห้อง / แผนการเรียน</label>
+        <input type="text" id="rmRoom" value="1" placeholder="1, ก, วิทย์, ศิลป์-คำนวณ ..."></div>
+      <div class="fg s2"><label>ครูที่ปรึกษา คนที่ 1</label>
+        <select id="rmHomeroom"><option value="">-- เลือกครู --</option></select></div>
+      <div class="fg s2"><label>ครูที่ปรึกษา คนที่ 2 <span style="color:var(--muted);font-weight:400;font-size:11px">(ถ้ามี)</span></label><select id="rmHomeroom2"><option value="">-- เลือก --</option></select></div>
+      <div class="fg s2"><label>ครูที่ปรึกษา คนที่ 3 <span style="color:var(--muted);font-weight:400;font-size:11px">(ถ้ามี)</span></label><select id="rmHomeroom3"><option value="">-- เลือก --</option></select></div>
+      <div class="fg s2" id="rmSpecialPlanWrap" style="display:none">
+        <label>แผนการเรียน</label>
+        <select id="rmSpecialPlan" onchange="syncSpecialPlan()">
+          <option value="">-- เลือกแผนการเรียน --</option>
+          <option value="วิทย์-คณิต">วิทย์-คณิต</option>
+          <option value="ศิลป์-คำนวณ">ศิลป์-คำนวณ</option>
+          <option value="ศิลป์-ภาษา">ศิลป์-ภาษา</option>
+          <option value="ศิลป์-ทั่วไป">ศิลป์-ทั่วไป</option>
+          <option value="ภาษา-จีน">ภาษา-จีน</option>
+          <option value="ภาษา-ญี่ปุ่น">ภาษา-ญี่ปุ่น</option>
+          <option value="ธุรกิจ">ธุรกิจ</option>
+          <option value="เกษตร-อาชีพ">เกษตร-อาชีพ</option>
+          <option value="ทั่วไป">ทั่วไป</option>
+          <option value="พิมพ์เอง">พิมพ์เอง...</option>
+        </select>
+      </div>
+      <div class="fg s2" id="rmPlanCustomWrap" style="display:none">
+        <label>พิมพ์แผนการเรียน</label>
+        <input type="text" id="rmPlanCustom" placeholder="พิมพ์ชื่อแผนการเรียน...">
+      </div>
+    </div>
+    <input type="hidden" id="rmEditId">
+    <div id="rmPreview" style="margin-top:10px"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalRoom')">ยกเลิก</button>
+      <button class="btn btn-pri" onclick="saveRoom()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MODAL: COPY ROOM ══════════ -->
+<div class="modal-bg" id="modalCopyRoom">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-hd"><div class="modal-title">📋 คัดลอกตารางจากห้องอื่น</div><button class="modal-close" onclick="closeModal('modalCopyRoom')">✕</button></div>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:14px">เลือกห้องต้นทางที่ต้องการคัดลอกตาราง (จะทับข้อมูลห้องปัจจุบัน)</p>
+    <div class="fg"><label>คัดลอกจากห้อง</label><select id="copyFromRoom" style="width:100%"></select></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalCopyRoom')">ยกเลิก</button>
+      <button class="btn btn-warn" onclick="doCopyRoom()">📋 คัดลอก</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* ── FILE-SAVER (inlined for offline use) ── */
+(function(a,b){if("function"==typeof define&&define.amd)define([],b);else if("undefined"!=typeof exports)b();else{b(),a.FileSaver={exports:{}}.exports}})(this,function(){"use strict";function b(a,b){return"undefined"==typeof b?b={autoBom:!1}:"object"!=typeof b&&(console.warn("Deprecated: Expected third argument to be a object"),b={autoBom:!b}),b.autoBom&&/^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(a.type)?new Blob(["\uFEFF",a],{type:a.type}):a}function c(a,b,c){var d=new XMLHttpRequest;d.open("GET",a),d.responseType="blob",d.onload=function(){g(d.response,b,c)},d.onerror=function(){console.error("could not download file")},d.send()}function d(a){var b=new XMLHttpRequest;b.open("HEAD",a,!1);try{b.send()}catch(a){}return 200<=b.status&&299>=b.status}function e(a){try{a.dispatchEvent(new MouseEvent("click"))}catch(c){var b=document.createEvent("MouseEvents");b.initMouseEvent("click",!0,!0,window,0,0,0,80,20,!1,!1,!1,!1,0,null),a.dispatchEvent(b)}}var f="object"==typeof window&&window.window===window?window:"object"==typeof self&&self.self===self?self:"object"==typeof global&&global.global===global?global:void 0,a=f.navigator&&/Macintosh/.test(navigator.userAgent)&&/AppleWebKit/.test(navigator.userAgent)&&!/Safari/.test(navigator.userAgent),g=f.saveAs||("object"!=typeof window||window!==f?function(){}:"download"in HTMLAnchorElement.prototype&&!a?function(b,g,h){var i=f.URL||f.webkitURL,j=document.createElement("a");g=g||b.name||"download",j.download=g,j.rel="noopener","string"==typeof b?(j.href=b,j.origin===location.origin?e(j):d(j.href)?c(b,g,h):e(j,j.target="_blank")):(j.href=i.createObjectURL(b),setTimeout(function(){i.revokeObjectURL(j.href)},4E4),setTimeout(function(){e(j)},0))}:"msSaveOrOpenBlob"in navigator?function(f,g,h){if(g=g||f.name||"download","string"!=typeof f)navigator.msSaveOrOpenBlob(b(f,h),g);else if(d(f))c(f,g,h);else{var i=document.createElement("a");i.href=f,i.target="_blank",setTimeout(function(){e(i)})}}:function(b,d,e,g){if(g=g||open("","_blank"),g&&(g.document.title=g.document.body.innerText="downloading..."),"string"==typeof b)return c(b,d,e);var h="application/octet-stream"===b.type,i=/constructor/i.test(f.HTMLElement)||f.safari,j=/CriOS\/[\d]+/.test(navigator.userAgent);if((j||h&&i||a)&&"undefined"!=typeof FileReader){var k=new FileReader;k.onloadend=function(){var a=k.result;a=j?a:a.replace(/^data:[^;]*;/,"data:attachment/file;"),g?g.location.href=a:location=a,g=null},k.readAsDataURL(b)}else{var l=f.URL||f.webkitURL,m=l.createObjectURL(b);g?g.location=m:location.href=m,g=null,setTimeout(function(){l.revokeObjectURL(m)},4E4)}});f.saveAs=g.saveAs=g,"undefined"!=typeof module&&(module.exports=g)});
+
+//# sourceMappingURL=FileSaver.min.js.map
+</script>
+<script>
+/* ── DOCX LIBRARY (inlined for offline use) ── */
+var docx = (function(exports) {
+  "use strict";var __defProp = Object.defineProperty;
+var __defProps = Object.defineProperties;
+var __getOwnPropDescs = Object.getOwnPropertyDescriptors;
+var __getOwnPropSymbols = Object.getOwnPropertySymbols;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __propIsEnum = Object.prototype.propertyIsEnumerable;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __spreadValues = (a, b) => {
+  for (var prop in b || (b = {}))
+    if (__hasOwnProp.call(b, prop))
+      __defNormalProp(a, prop, b[prop]);
+  if (__getOwnPropSymbols)
+    for (var prop of __getOwnPropSymbols(b)) {
+      if (__propIsEnum.call(b, prop))
+        __defNormalProp(a, prop, b[prop]);
+    }
+  return a;
+};
+var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
+var __objRest = (source, exclude) => {
+  var target = {};
+  for (var prop in source)
+    if (__hasOwnProp.call(source, prop) && exclude.indexOf(prop) < 0)
+      target[prop] = source[prop];
+  if (source != null && __getOwnPropSymbols)
+    for (var prop of __getOwnPropSymbols(source)) {
+      if (exclude.indexOf(prop) < 0 && __propIsEnum.call(source, prop))
+        target[prop] = source[prop];
+    }
+  return target;
+};
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+var __async = (__this, __arguments, generator) => {
+  return new Promise((resolve, reject) => {
+    var fulfilled = (value) => {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    var rejected = (value) => {
+      try {
+        step(generator.throw(value));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
+    step((generator = generator.apply(__this, __arguments)).next());
+  });
+};
+
+  class BaseXmlComponent {
+    /**
+     * Creates a new BaseXmlComponent with the specified XML element name.
+     *
+     * @param rootKey - The XML element name (e.g., "w:p", "w:r", "w:t")
+     */
+    constructor(rootKey) {
+      /** The XML element name for this component (e.g., "w:p" for paragraph). */
+      __publicField(this, "rootKey");
+      this.rootKey = rootKey;
+    }
+  }
+  const EMPTY_OBJECT = Object.seal({});
+  class XmlComponent extends BaseXmlComponent {
+    /**
+     * Creates a new XmlComponent.
+     *
+     * @param rootKey - The XML element name (e.g., "w:p", "w:r", "w:t")
+     */
+    constructor(rootKey) {
+      super(rootKey);
+      /**
+       * Array of child components, text nodes, and attributes.
+       *
+       * This array forms the content of the XML element. It can contain other
+       * XmlComponents, string values (text nodes), or attribute components.
+       */
+      // eslint-disable-next-line functional/prefer-readonly-type, @typescript-eslint/no-explicit-any
+      __publicField(this, "root");
+      this.root = new Array();
+    }
+    /**
+     * Prepares this component and its children for XML serialization.
+     *
+     * This method is called by the Formatter to convert the component tree into
+     * an object structure compatible with the xml library (https://www.npmjs.com/package/xml).
+     * It recursively processes all children and handles special cases like
+     * attribute-only elements and empty elements.
+     *
+     * The method can be overridden by subclasses to customize XML representation
+     * or execute side effects during serialization (e.g., creating relationships).
+     *
+     * @param context - The serialization context containing document state
+     * @returns The XML-serializable object, or undefined to exclude from output
+     *
+     * @example
+     * ```typescript
+     * // Override to add custom serialization logic
+     * prepForXml(context: IContext): IXmlableObject | undefined {
+     *   // Custom logic here
+     *   return super.prepForXml(context);
+     * }
+     * ```
+     */
+    prepForXml(context) {
+      var _a;
+      context.stack.push(this);
+      const children = this.root.map((comp) => {
+        if (comp instanceof BaseXmlComponent) {
+          return comp.prepForXml(context);
+        }
+        return comp;
+      }).filter((comp) => comp !== void 0);
+      context.stack.pop();
+      return {
+        [this.rootKey]: children.length ? children.length === 1 && ((_a = children[0]) == null ? void 0 : _a._attr) ? children[0] : children : EMPTY_OBJECT
+      };
+    }
+    /**
+     * Adds a child element to this component.
+     *
+     * @deprecated Do not use this method. It is only used internally by the library. It will be removed in a future version.
+     * @param child - The child component or text string to add
+     * @returns This component (for chaining)
+     */
+    addChildElement(child) {
+      this.root.push(child);
+      return this;
+    }
+  }
+  class IgnoreIfEmptyXmlComponent extends XmlComponent {
+    constructor(rootKey, includeIfEmpty) {
+      super(rootKey);
+      __publicField(this, "includeIfEmpty");
+      this.includeIfEmpty = includeIfEmpty;
+    }
+    /**
+     * Prepares the component for XML serialization, excluding it if empty.
+     *
+     * @param context - The serialization context
+     * @returns The XML-serializable object, or undefined if empty
+     */
+    prepForXml(context) {
+      const result = super.prepForXml(context);
+      if (this.includeIfEmpty) {
+        return result;
+      }
+      if (result && (typeof result[this.rootKey] !== "object" || Object.keys(result[this.rootKey]).length)) {
+        return result;
+      }
+      return void 0;
+    }
+  }
+  class XmlAttributeComponent extends BaseXmlComponent {
+    /**
+     * Creates a new attribute component.
+     *
+     * @param root - The attribute data object
+     */
+    constructor(root) {
+      super("_attr");
+      /** Optional mapping from property names to XML attribute names. */
+      __publicField(this, "xmlKeys");
+      this.root = root;
+    }
+    /**
+     * Converts the attribute data to an XML-serializable object.
+     *
+     * This method transforms the property names using xmlKeys (if defined)
+     * and filters out undefined values.
+     *
+     * @param _ - Context (unused for attributes)
+     * @returns Object with _attr key containing the mapped attributes
+     */
+    prepForXml(_) {
+      const attrs = {};
+      Object.entries(this.root).forEach(([key, value]) => {
+        if (value !== void 0) {
+          const newKey = this.xmlKeys && this.xmlKeys[key] || key;
+          attrs[newKey] = value;
+        }
+      });
+      return { _attr: attrs };
+    }
+  }
+  class NextAttributeComponent extends BaseXmlComponent {
+    /**
+     * Creates a new NextAttributeComponent.
+     *
+     * @param root - Attribute payload with explicit key-value mappings
+     */
+    constructor(root) {
+      super("_attr");
+      this.root = root;
+    }
+    /**
+     * Converts the attribute payload to an XML-serializable object.
+     *
+     * Extracts the key and value from each property and filters out
+     * undefined values.
+     *
+     * @param _ - Context (unused for attributes)
+     * @returns Object with _attr key containing the attributes
+     */
+    prepForXml(_) {
+      const attrs = Object.values(this.root).filter(({ value }) => value !== void 0).reduce((acc, { key, value }) => __spreadProps(__spreadValues({}, acc), { [key]: value }), {});
+      return { _attr: attrs };
+    }
+  }
+  class Attributes extends XmlAttributeComponent {
+    constructor() {
+      super(...arguments);
+      __publicField(this, "xmlKeys", {
+        val: "w:val",
+        color: "w:color",
+        fill: "w:fill",
+        space: "w:space",
+        sz: "w:sz",
+        type: "w:type",
+        rsidR: "w:rsidR",
+        rsidRPr: "w:rsidRPr",
+        rsidSect: "w:rsidSect",
+        w: "w:w",
+        h: "w:h",
+        top: "w:top",
+        right: "w:right",
+        bottom: "w:bottom",
+        left: "w:left",
+        header: "w:header",
+        footer: "w:footer",
+        gutter: "w:gutter",
+        linePitch: "w:linePitch",
+        pos: "w:pos"
+      });
+    }
+  }
+  var commonjsGlobal = typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : {};
+  function getDefaultExportFromCjs$1(x) {
+    return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
+  }
+  var sax = {};
+  var events = { exports: {} };
+  var hasRequiredEvents;
+  function requireEvents() {
+    if (hasRequiredEvents) return events.exports;
+    hasRequiredEvents = 1;
+    var R = typeof Reflect === "object" ? Reflect : null;
+    var ReflectApply = R && typeof R.apply === "function" ? R.apply : function ReflectApply2(target, receiver, args) {
+      return Function.prototype.apply.call(target, receiver, args);
+    };
+    var ReflectOwnKeys;
+    if (R && typeof R.ownKeys === "function") {
+      ReflectOwnKeys = R.ownKeys;
+    } else if (Object.getOwnPropertySymbols) {
+      ReflectOwnKeys = function ReflectOwnKeys2(target) {
+        return Object.getOwnPropertyNames(target).concat(Object.getOwnPropertySymbols(target));
+      };
+    } else {
+      ReflectOwnKeys = function ReflectOwnKeys2(target) {
+        return Object.getOwnPropertyNames(target);
+      };
+    }
+    function ProcessEmitWarning(warning) {
+      if (console && console.warn) console.warn(warning);
+    }
+    var NumberIsNaN = Number.isNaN || function NumberIsNaN2(value) {
+      return value !== value;
+    };
+    function EventEmitter() {
+      EventEmitter.init.call(this);
+    }
+    events.exports = EventEmitter;
+    events.exports.once = once;
+    EventEmitter.EventEmitter = EventEmitter;
+    EventEmitter.prototype._events = void 0;
+    EventEmitter.prototype._eventsCount = 0;
+    EventEmitter.prototype._maxListeners = void 0;
+    var defaultMaxListeners = 10;
+    function checkListener(listener) {
+      if (typeof listener !== "function") {
+        throw new TypeError('The "listener" argument must be of type Function. Received type ' + typeof listener);
+      }
+    }
+    Object.defineProperty(EventEmitter, "defaultMaxListeners", {
+      enumerable: true,
+      get: function() {
+        return defaultMaxListeners;
+      },
+      set: function(arg) {
+        if (typeof arg !== "number" || arg < 0 || NumberIsNaN(arg)) {
+          throw new RangeError('The value of "defaultMaxListeners" is out of range. It must be a non-negative number. Received ' + arg + ".");
+        }
+        defaultMaxListeners = arg;
+      }
+    });
+    EventEmitter.init = function() {
+      if (this._events === void 0 || this._events === Object.getPrototypeOf(this)._events) {
+        this._events = /* @__PURE__ */ Object.create(null);
+        this._eventsCount = 0;
+      }
+      this._maxListeners = this._maxListeners || void 0;
+    };
+    EventEmitter.prototype.setMaxListeners = function setMaxListeners(n) {
+      if (typeof n !== "number" || n < 0 || NumberIsNaN(n)) {
+        throw new RangeError('The value of "n" is out of range. It must be a non-negative number. Received ' + n + ".");
+      }
+      this._maxListeners = n;
+      return this;
+    };
+    function _getMaxListeners(that) {
+      if (that._maxListeners === void 0)
+        return EventEmitter.defaultMaxListeners;
+      return that._maxListeners;
+    }
+    EventEmitter.prototype.getMaxListeners = function getMaxListeners() {
+      return _getMaxListeners(this);
+    };
+    EventEmitter.prototype.emit = function emit(type2) {
+      var args = [];
+      for (var i = 1; i < arguments.length; i++) args.push(arguments[i]);
+      var doError = type2 === "error";
+      var events2 = this._events;
+      if (events2 !== void 0)
+        doError = doError && events2.error === void 0;
+      else if (!doError)
+        return false;
+      if (doError) {
+        var er;
+        if (args.length > 0)
+          er = args[0];
+        if (er instanceof Error) {
+          throw er;
+        }
+        var err = new Error("Unhandled error." + (er ? " (" + er.message + ")" : ""));
+        err.context = er;
+        throw err;
+      }
+      var handler = events2[type2];
+      if (handler === void 0)
+        return false;
+      if (typeof handler === "function") {
+        ReflectApply(handler, this, args);
+      } else {
+        var len = handler.length;
+        var listeners = arrayClone(handler, len);
+        for (var i = 0; i < len; ++i)
+          ReflectApply(listeners[i], this, args);
+      }
+      return true;
+    };
+    function _addListener(target, type2, listener, prepend) {
+      var m;
+      var events2;
+      var existing;
+      checkListener(listener);
+      events2 = target._events;
+      if (events2 === void 0) {
+        events2 = target._events = /* @__PURE__ */ Object.create(null);
+        target._eventsCount = 0;
+      } else {
+        if (events2.newListener !== void 0) {
+          target.emit(
+            "newListener",
+            type2,
+            listener.listener ? listener.listener : listener
+          );
+          events2 = target._events;
+        }
+        existing = events2[type2];
+      }
+      if (existing === void 0) {
+        existing = events2[type2] = listener;
+        ++target._eventsCount;
+      } else {
+        if (typeof existing === "function") {
+          existing = events2[type2] = prepend ? [listener, existing] : [existing, listener];
+        } else if (prepend) {
+          existing.unshift(listener);
+        } else {
+          existing.push(listener);
+        }
+        m = _getMaxListeners(target);
+        if (m > 0 && existing.length > m && !existing.warned) {
+          existing.warned = true;
+          var w = new Error("Possible EventEmitter memory leak detected. " + existing.length + " " + String(type2) + " listeners added. Use emitter.setMaxListeners() to increase limit");
+          w.name = "MaxListenersExceededWarning";
+          w.emitter = target;
+          w.type = type2;
+          w.count = existing.length;
+          ProcessEmitWarning(w);
+        }
+      }
+      return target;
+    }
+    EventEmitter.prototype.addListener = function addListener(type2, listener) {
+      return _addListener(this, type2, listener, false);
+    };
+    EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+    EventEmitter.prototype.prependListener = function prependListener(type2, listener) {
+      return _addListener(this, type2, listener, true);
+    };
+    function onceWrapper() {
+      if (!this.fired) {
+        this.target.removeListener(this.type, this.wrapFn);
+        this.fired = true;
+        if (arguments.length === 0)
+          return this.listener.call(this.target);
+        return this.listener.apply(this.target, arguments);
+      }
+    }
+    function _onceWrap(target, type2, listener) {
+      var state2 = { fired: false, wrapFn: void 0, target, type: type2, listener };
+      var wrapped = onceWrapper.bind(state2);
+      wrapped.listener = listener;
+      state2.wrapFn = wrapped;
+      return wrapped;
+    }
+    EventEmitter.prototype.once = function once2(type2, listener) {
+      checkListener(listener);
+      this.on(type2, _onceWrap(this, type2, listener));
+      return this;
+    };
+    EventEmitter.prototype.prependOnceListener = function prependOnceListener(type2, listener) {
+      checkListener(listener);
+      this.prependListener(type2, _onceWrap(this, type2, listener));
+      return this;
+    };
+    EventEmitter.prototype.removeListener = function removeListener(type2, listener) {
+      var list, events2, position, i, originalListener;
+      checkListener(listener);
+      events2 = this._events;
+      if (events2 === void 0)
+        return this;
+      list = events2[type2];
+      if (list === void 0)
+        return this;
+      if (list === listener || list.listener === listener) {
+        if (--this._eventsCount === 0)
+          this._events = /* @__PURE__ */ Object.create(null);
+        else {
+          delete events2[type2];
+          if (events2.removeListener)
+            this.emit("removeListener", type2, list.listener || listener);
+        }
+      } else if (typeof list !== "function") {
+        position = -1;
+        for (i = list.length - 1; i >= 0; i--) {
+          if (list[i] === listener || list[i].listener === listener) {
+            originalListener = list[i].listener;
+            position = i;
+            break;
+          }
+        }
+        if (position < 0)
+          return this;
+        if (position === 0)
+          list.shift();
+        else {
+          spliceOne(list, position);
+        }
+        if (list.length === 1)
+          events2[type2] = list[0];
+        if (events2.removeListener !== void 0)
+          this.emit("removeListener", type2, originalListener || listener);
+      }
+      return this;
+    };
+    EventEmitter.prototype.off = EventEmitter.prototype.removeListener;
+    EventEmitter.prototype.removeAllListeners = function removeAllListeners(type2) {
+      var listeners, events2, i;
+      events2 = this._events;
+      if (events2 === void 0)
+        return this;
+      if (events2.removeListener === void 0) {
+        if (arguments.length === 0) {
+          this._events = /* @__PURE__ */ Object.create(null);
+          this._eventsCount = 0;
+        } else if (events2[type2] !== void 0) {
+          if (--this._eventsCount === 0)
+            this._events = /* @__PURE__ */ Object.create(null);
+          else
+            delete events2[type2];
+        }
+        return this;
+      }
+      if (arguments.length === 0) {
+        var keys = Object.keys(events2);
+        var key;
+        for (i = 0; i < keys.length; ++i) {
+          key = keys[i];
+          if (key === "removeListener") continue;
+          this.removeAllListeners(key);
+        }
+        this.removeAllListeners("removeListener");
+        this._events = /* @__PURE__ */ Object.create(null);
+        this._eventsCount = 0;
+        return this;
+      }
+      listeners = events2[type2];
+      if (typeof listeners === "function") {
+        this.removeListener(type2, listeners);
+      } else if (listeners !== void 0) {
+        for (i = listeners.length - 1; i >= 0; i--) {
+          this.removeListener(type2, listeners[i]);
+        }
+      }
+      return this;
+    };
+    function _listeners(target, type2, unwrap) {
+      var events2 = target._events;
+      if (events2 === void 0)
+        return [];
+      var evlistener = events2[type2];
+      if (evlistener === void 0)
+        return [];
+      if (typeof evlistener === "function")
+        return unwrap ? [evlistener.listener || evlistener] : [evlistener];
+      return unwrap ? unwrapListeners(evlistener) : arrayClone(evlistener, evlistener.length);
+    }
+    EventEmitter.prototype.listeners = function listeners(type2) {
+      return _listeners(this, type2, true);
+    };
+    EventEmitter.prototype.rawListeners = function rawListeners(type2) {
+      return _listeners(this, type2, false);
+    };
+    EventEmitter.listenerCount = function(emitter, type2) {
+      if (typeof emitter.listenerCount === "function") {
+        return emitter.listenerCount(type2);
+      } else {
+        return listenerCount.call(emitter, type2);
+      }
+    };
+    EventEmitter.prototype.listenerCount = listenerCount;
+    function listenerCount(type2) {
+      var events2 = this._events;
+      if (events2 !== void 0) {
+        var evlistener = events2[type2];
+        if (typeof evlistener === "function") {
+          return 1;
+        } else if (evlistener !== void 0) {
+          return evlistener.length;
+        }
+      }
+      return 0;
+    }
+    EventEmitter.prototype.eventNames = function eventNames() {
+      return this._eventsCount > 0 ? ReflectOwnKeys(this._events) : [];
+    };
+    function arrayClone(arr, n) {
+      var copy = new Array(n);
+      for (var i = 0; i < n; ++i)
+        copy[i] = arr[i];
+      return copy;
+    }
+    function spliceOne(list, index) {
+      for (; index + 1 < list.length; index++)
+        list[index] = list[index + 1];
+      list.pop();
+    }
+    function unwrapListeners(arr) {
+      var ret = new Array(arr.length);
+      for (var i = 0; i < ret.length; ++i) {
+        ret[i] = arr[i].listener || arr[i];
+      }
+      return ret;
+    }
+    function once(emitter, name) {
+      return new Promise(function(resolve, reject) {
+        function errorListener(err) {
+          emitter.removeListener(name, resolver);
+          reject(err);
+        }
+        function resolver() {
+          if (typeof emitter.removeListener === "function") {
+            emitter.removeListener("error", errorListener);
+          }
+          resolve([].slice.call(arguments));
+        }
+        eventTargetAgnosticAddListener(emitter, name, resolver, { once: true });
+        if (name !== "error") {
+          addErrorHandlerIfEventEmitter(emitter, errorListener, { once: true });
+        }
+      });
+    }
+    function addErrorHandlerIfEventEmitter(emitter, handler, flags) {
+      if (typeof emitter.on === "function") {
+        eventTargetAgnosticAddListener(emitter, "error", handler, flags);
+      }
+    }
+    function eventTargetAgnosticAddListener(emitter, name, listener, flags) {
+      if (typeof emitter.on === "function") {
+        if (flags.once) {
+          emitter.once(name, listener);
+        } else {
+          emitter.on(name, listener);
+        }
+      } else if (typeof emitter.addEventListener === "function") {
+        emitter.addEventListener(name, function wrapListener(arg) {
+          if (flags.once) {
+            emitter.removeEventListener(name, wrapListener);
+          }
+          listener(arg);
+        });
+      } else {
+        throw new TypeError('The "emitter" argument must be of type EventEmitter. Received type ' + typeof emitter);
+      }
+    }
+    return events.exports;
+  }
+  var inherits_browser = { exports: {} };
+  var hasRequiredInherits_browser;
+  function requireInherits_browser() {
+    if (hasRequiredInherits_browser) return inherits_browser.exports;
+    hasRequiredInherits_browser = 1;
+    if (typeof Object.create === "function") {
+      inherits_browser.exports = function inherits(ctor, superCtor) {
+        if (superCtor) {
+          ctor.super_ = superCtor;
+          ctor.prototype = Object.create(superCtor.prototype, {
+            constructor: {
+              value: ctor,
+              enumerable: false,
+              writable: true,
+              configurable: true
+            }
+          });
+        }
+      };
+    } else {
+      inherits_browser.exports = function inherits(ctor, superCtor) {
+        if (superCtor) {
+          ctor.super_ = superCtor;
+          var TempCtor = function() {
+          };
+          TempCtor.prototype = superCtor.prototype;
+          ctor.prototype = new TempCtor();
+          ctor.prototype.constructor = ctor;
+        }
+      };
+    }
+    return inherits_browser.exports;
+  }
+  function getDefaultExportFromCjs(x) {
+    return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
+  }
+  var browser$1 = { exports: {} };
+  var process = browser$1.exports = {};
+  var cachedSetTimeout;
+  var cachedClearTimeout;
+  function defaultSetTimout() {
+    throw new Error("setTimeout has not been defined");
+  }
+  function defaultClearTimeout() {
+    throw new Error("clearTimeout has not been defined");
+  }
+  (function() {
+    try {
+      if (typeof setTimeout === "function") {
+        cachedSetTimeout = setTimeout;
+      } else {
+        cachedSetTimeout = defaultSetTimout;
+      }
+    } catch (e) {
+      cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+      if (typeof clearTimeout === "function") {
+        cachedClearTimeout = clearTimeout;
+      } else {
+        cachedClearTimeout = defaultClearTimeout;
+      }
+    } catch (e) {
+      cachedClearTimeout = defaultClearTimeout;
+    }
+  })();
+  function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+      return setTimeout(fun, 0);
+    }
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+      cachedSetTimeout = setTimeout;
+      return setTimeout(fun, 0);
+    }
+    try {
+      return cachedSetTimeout(fun, 0);
+    } catch (e) {
+      try {
+        return cachedSetTimeout.call(null, fun, 0);
+      } catch (e2) {
+        return cachedSetTimeout.call(this, fun, 0);
+      }
+    }
+  }
+  function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+      return clearTimeout(marker);
+    }
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+      cachedClearTimeout = clearTimeout;
+      return clearTimeout(marker);
+    }
+    try {
+      return cachedClearTimeout(marker);
+    } catch (e) {
+      try {
+        return cachedClearTimeout.call(null, marker);
+      } catch (e2) {
+        return cachedClearTimeout.call(this, marker);
+      }
+    }
+  }
+  var queue = [];
+  var draining = false;
+  var currentQueue;
+  var queueIndex = -1;
+  function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+      return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+      queue = currentQueue.concat(queue);
+    } else {
+      queueIndex = -1;
+    }
+    if (queue.length) {
+      drainQueue();
+    }
+  }
+  function drainQueue() {
+    if (draining) {
+      return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+    var len = queue.length;
+    while (len) {
+      currentQueue = queue;
+      queue = [];
+      while (++queueIndex < len) {
+        if (currentQueue) {
+          currentQueue[queueIndex].run();
+        }
+      }
+      queueIndex = -1;
+      len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+  }
+  process.nextTick = function(fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+      for (var i = 1; i < arguments.length; i++) {
+        args[i - 1] = arguments[i];
+      }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+      runTimeout(drainQueue);
+    }
+  };
+  function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+  }
+  Item.prototype.run = function() {
+    this.fun.apply(null, this.array);
+  };
+  process.title = "browser";
+  process.browser = true;
+  process.env = {};
+  process.argv = [];
+  process.version = "";
+  process.versions = {};
+  function noop() {
+  }
+  process.on = noop;
+  process.addListener = noop;
+  process.once = noop;
+  process.off = noop;
+  process.removeListener = noop;
+  process.removeAllListeners = noop;
+  process.emit = noop;
+  process.prependListener = noop;
+  process.prependOnceListener = noop;
+  process.listeners = function(name) {
+    return [];
+  };
+  process.binding = function(name) {
+    throw new Error("process.binding is not supported");
+  };
+  process.cwd = function() {
+    return "/";
+  };
+  process.chdir = function(dir) {
+    throw new Error("process.chdir is not supported");
+  };
+  process.umask = function() {
+    return 0;
+  };
+  var browserExports = browser$1.exports;
+  const process$1 = /* @__PURE__ */ getDefaultExportFromCjs(browserExports);
+  var streamBrowser;
+  var hasRequiredStreamBrowser;
+  function requireStreamBrowser() {
+    if (hasRequiredStreamBrowser) return streamBrowser;
+    hasRequiredStreamBrowser = 1;
+    streamBrowser = requireEvents().EventEmitter;
+    return streamBrowser;  }
+  var buffer = {};
+  var base64Js = {};
+  var hasRequiredBase64Js;
+  function requireBase64Js() {
+    if (hasRequiredBase64Js) return base64Js;
+    hasRequiredBase64Js = 1;
+    base64Js.byteLength = byteLength;
+    base64Js.toByteArray = toByteArray;
+    base64Js.fromByteArray = fromByteArray;
+    var lookup = [];
+    var revLookup = [];
+    var Arr = typeof Uint8Array !== "undefined" ? Uint8Array : Array;
+    var code = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    for (var i = 0, len = code.length; i < len; ++i) {
+      lookup[i] = code[i];
+      revLookup[code.charCodeAt(i)] = i;
+    }
+    revLookup["-".charCodeAt(0)] = 62;
+    revLookup["_".charCodeAt(0)] = 63;
+    function getLens(b64) {
+      var len2 = b64.length;
+      if (len2 % 4 > 0) {
+        throw new Error("Invalid string. Length must be a multiple of 4");
+      }
+      var validLen = b64.indexOf("=");
+      if (validLen === -1) validLen = len2;
+      var placeHoldersLen = validLen === len2 ? 0 : 4 - validLen % 4;
+      return [validLen, placeHoldersLen];
+    }
+    function byteLength(b64) {
+      var lens = getLens(b64);
+      var validLen = lens[0];
+      var placeHoldersLen = lens[1];
+      return (validLen + placeHoldersLen) * 3 / 4 - placeHoldersLen;
+    }
+    function _byteLength(b64, validLen, placeHoldersLen) {
+      return (validLen + placeHoldersLen) * 3 / 4 - placeHoldersLen;
+    }
+    function toByteArray(b64) {
+      var tmp;
+      var lens = getLens(b64);
+      var validLen = lens[0];
+      var placeHoldersLen = lens[1];
+      var arr = new Arr(_byteLength(b64, validLen, placeHoldersLen));
+      var curByte = 0;
+      var len2 = placeHoldersLen > 0 ? validLen - 4 : validLen;
+      var i2;
+      for (i2 = 0; i2 < len2; i2 += 4) {
+        tmp = revLookup[b64.charCodeAt(i2)] << 18 | revLookup[b64.charCodeAt(i2 + 1)] << 12 | revLookup[b64.charCodeAt(i2 + 2)] << 6 | revLookup[b64.charCodeAt(i2 + 3)];
+        arr[curByte++] = tmp >> 16 & 255;
+        arr[curByte++] = tmp >> 8 & 255;
+        arr[curByte++] = tmp & 255;
+      }
+      if (placeHoldersLen === 2) {
+        tmp = revLookup[b64.charCodeAt(i2)] << 2 | revLookup[b64.charCodeAt(i2 + 1)] >> 4;
+        arr[curByte++] = tmp & 255;
+      }
+      if (placeHoldersLen === 1) {
+        tmp = revLookup[b64.charCodeAt(i2)] << 10 | revLookup[b64.charCodeAt(i2 + 1)] << 4 | revLookup[b64.charCodeAt(i2 + 2)] >> 2;
+        arr[curByte++] = tmp >> 8 & 255;
+        arr[curByte++] = tmp & 255;
+      }
+      return arr;
+    }
+    function tripletToBase64(num) {
+      return lookup[num >> 18 & 63] + lookup[num >> 12 & 63] + lookup[num >> 6 & 63] + lookup[num & 63];
+    }
+    function encodeChunk(uint8, start, end) {
+      var tmp;
+      var output = [];
+      for (var i2 = start; i2 < end; i2 += 3) {
+        tmp = (uint8[i2] << 16 & 16711680) + (uint8[i2 + 1] << 8 & 65280) + (uint8[i2 + 2] & 255);
+        output.push(tripletToBase64(tmp));
+      }
+      return output.join("");
+    }
+    function fromByteArray(uint8) {
+      var tmp;
+      var len2 = uint8.length;
+      var extraBytes = len2 % 3;
+      var parts = [];
+      var maxChunkLength = 16383;
+      for (var i2 = 0, len22 = len2 - extraBytes; i2 < len22; i2 += maxChunkLength) {
+        parts.push(encodeChunk(uint8, i2, i2 + maxChunkLength > len22 ? len22 : i2 + maxChunkLength));
+      }
+      if (extraBytes === 1) {
+        tmp = uint8[len2 - 1];
+        parts.push(
+          lookup[tmp >> 2] + lookup[tmp << 4 & 63] + "=="
+        );
+      } else if (extraBytes === 2) {
+        tmp = (uint8[len2 - 2] << 8) + uint8[len2 - 1];
+        parts.push(
+          lookup[tmp >> 10] + lookup[tmp >> 4 & 63] + lookup[tmp << 2 & 63] + "="
+        );
+      }
+      return parts.join("");
+    }
+    return base64Js;
+  }
+  var ieee754 = {};
+  var hasRequiredIeee754;
+  function requireIeee754() {
+    if (hasRequiredIeee754) return ieee754;
+    hasRequiredIeee754 = 1;
+    ieee754.read = function(buffer2, offset, isLE, mLen, nBytes) {
+      var e, m;
+      var eLen = nBytes * 8 - mLen - 1;
+      var eMax = (1 << eLen) - 1;
+      var eBias = eMax >> 1;
+      var nBits = -7;
+      var i = isLE ? nBytes - 1 : 0;
+      var d = isLE ? -1 : 1;
+      var s = buffer2[offset + i];
+      i += d;
+      e = s & (1 << -nBits) - 1;
+      s >>= -nBits;
+      nBits += eLen;
+      for (; nBits > 0; e = e * 256 + buffer2[offset + i], i += d, nBits -= 8) {
+      }
+      m = e & (1 << -nBits) - 1;
+      e >>= -nBits;
+      nBits += mLen;
+      for (; nBits > 0; m = m * 256 + buffer2[offset + i], i += d, nBits -= 8) {
+      }
+      if (e === 0) {
+        e = 1 - eBias;
+      } else if (e === eMax) {
+        return m ? NaN : (s ? -1 : 1) * Infinity;
+      } else {
+        m = m + Math.pow(2, mLen);
+        e = e - eBias;
+      }
+      return (s ? -1 : 1) * m * Math.pow(2, e - mLen);
+    };
+    ieee754.write = function(buffer2, value, offset, isLE, mLen, nBytes) {
+      var e, m, c;
+      var eLen = nBytes * 8 - mLen - 1;
+      var eMax = (1 << eLen) - 1;
+      var eBias = eMax >> 1;
+      var rt = mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0;
+      var i = isLE ? 0 : nBytes - 1;
+      var d = isLE ? 1 : -1;
+      var s = value < 0 || value === 0 && 1 / value < 0 ? 1 : 0;
+      value = Math.abs(value);
+      if (isNaN(value) || value === Infinity) {
+        m = isNaN(value) ? 1 : 0;
+        e = eMax;
+      } else {
+        e = Math.floor(Math.log(value) / Math.LN2);
+        if (value * (c = Math.pow(2, -e)) < 1) {
+          e--;
+          c *= 2;
+        }
+        if (e + eBias >= 1) {
+          value += rt / c;
+        } else {
+          value += rt * Math.pow(2, 1 - eBias);
+        }
+        if (value * c >= 2) {
+          e++;
+          c /= 2;
+        }
+        if (e + eBias >= eMax) {
+          m = 0;
+          e = eMax;
+        } else if (e + eBias >= 1) {
+          m = (value * c - 1) * Math.pow(2, mLen);
+          e = e + eBias;
+        } else {
+          m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen);
+          e = 0;
+        }
+      }
+      for (; mLen >= 8; buffer2[offset + i] = m & 255, i += d, m /= 256, mLen -= 8) {
+      }
+      e = e << mLen | m;
+      eLen += mLen;
+      for (; eLen > 0; buffer2[offset + i] = e & 255, i += d, e /= 256, eLen -= 8) {
+      }
+      buffer2[offset + i - d] |= s * 128;
+    };
+    return ieee754;
+  }
+  var hasRequiredBuffer;
+  function requireBuffer() {
+    if (hasRequiredBuffer) return buffer;
+    hasRequiredBuffer = 1;
+    (function(exports$1) {
+      var base64 = requireBase64Js();
+      var ieee7542 = requireIeee754();
+      var customInspectSymbol = typeof Symbol === "function" && typeof Symbol["for"] === "function" ? Symbol["for"]("nodejs.util.inspect.custom") : null;
+      exports$1.Buffer = Buffer2;
+      exports$1.SlowBuffer = SlowBuffer;
+      exports$1.INSPECT_MAX_BYTES = 50;
+      var K_MAX_LENGTH = 2147483647;
+      exports$1.kMaxLength = K_MAX_LENGTH;
+      Buffer2.TYPED_ARRAY_SUPPORT = typedArraySupport();
+      if (!Buffer2.TYPED_ARRAY_SUPPORT && typeof console !== "undefined" && typeof console.error === "function") {
+        console.error(
+          "This browser lacks typed array (Uint8Array) support which is required by `buffer` v5.x. Use `buffer` v4.x if you require old browser support."
+        );
+      }
+      function typedArraySupport() {
+        try {
+          var arr = new Uint8Array(1);
+          var proto = { foo: function() {
+            return 42;
+          } };
+          Object.setPrototypeOf(proto, Uint8Array.prototype);
+          Object.setPrototypeOf(arr, proto);
+          return arr.foo() === 42;
+        } catch (e) {
+          return false;
+        }
+      }
+      Object.defineProperty(Buffer2.prototype, "parent", {
+        enumerable: true,
+        get: function() {
+          if (!Buffer2.isBuffer(this)) return void 0;
+          return this.buffer;
+        }
+      });
+      Object.defineProperty(Buffer2.prototype, "offset", {
+        enumerable: true,
+        get: function() {
+          if (!Buffer2.isBuffer(this)) return void 0;
+          return this.byteOffset;
+        }
+      });
+      function createBuffer(length) {
+        if (length > K_MAX_LENGTH) {
+          throw new RangeError('The value "' + length + '" is invalid for option "size"');
+        }
+        var buf = new Uint8Array(length);
+        Object.setPrototypeOf(buf, Buffer2.prototype);
+        return buf;
+      }
+      function Buffer2(arg, encodingOrOffset, length) {
+        if (typeof arg === "number") {
+          if (typeof encodingOrOffset === "string") {
+            throw new TypeError(
+              'The "string" argument must be of type string. Received type number'
+            );
+          }
+          return allocUnsafe(arg);
+        }
+        return from(arg, encodingOrOffset, length);
+      }
+      Buffer2.poolSize = 8192;
+      function from(value, encodingOrOffset, length) {
+        if (typeof value === "string") {
+          return fromString(value, encodingOrOffset);
+        }
+        if (ArrayBuffer.isView(value)) {
+          return fromArrayView(value);
+        }
+        if (value == null) {
+          throw new TypeError(
+            "The first argument must be one of type string, Buffer, ArrayBuffer, Array, or Array-like Object. Received type " + typeof value
+          );
+        }
+        if (isInstance(value, ArrayBuffer) || value && isInstance(value.buffer, ArrayBuffer)) {
+          return fromArrayBuffer(value, encodingOrOffset, length);
+        }
+        if (typeof SharedArrayBuffer !== "undefined" && (isInstance(value, SharedArrayBuffer) || value && isInstance(value.buffer, SharedArrayBuffer))) {
+          return fromArrayBuffer(value, encodingOrOffset, length);
+        }
+        if (typeof value === "number") {
+          throw new TypeError(
+            'The "value" argument must not be of type number. Received type number'
+          );
+        }
+        var valueOf = value.valueOf && value.valueOf();
+        if (valueOf != null && valueOf !== value) {
+          return Buffer2.from(valueOf, encodingOrOffset, length);
+        }
+        var b = fromObject(value);
+        if (b) return b;
+        if (typeof Symbol !== "undefined" && Symbol.toPrimitive != null && typeof value[Symbol.toPrimitive] === "function") {
+          return Buffer2.from(
+            value[Symbol.toPrimitive]("string"),
+            encodingOrOffset,
+            length
+          );
+        }
+        throw new TypeError(
+          "The first argument must be one of type string, Buffer, ArrayBuffer, Array, or Array-like Object. Received type " + typeof value
+        );
+      }
+      Buffer2.from = function(value, encodingOrOffset, length) {
+        return from(value, encodingOrOffset, length);
+      };
+      Object.setPrototypeOf(Buffer2.prototype, Uint8Array.prototype);
+      Object.setPrototypeOf(Buffer2, Uint8Array);
+      function assertSize(size) {
+        if (typeof size !== "number") {
+          throw new TypeError('"size" argument must be of type number');
+        } else if (size < 0) {
+          throw new RangeError('The value "' + size + '" is invalid for option "size"');
+        }
+      }
+      function alloc(size, fill, encoding) {
+        assertSize(size);
+        if (size <= 0) {
+          return createBuffer(size);
+        }
+        if (fill !== void 0) {
+          return typeof encoding === "string" ? createBuffer(size).fill(fill, encoding) : createBuffer(size).fill(fill);
+        }
+        return createBuffer(size);
+      }
+      Buffer2.alloc = function(size, fill, encoding) {
+        return alloc(size, fill, encoding);
+      };
+      function allocUnsafe(size) {
+        assertSize(size);
+        return createBuffer(size < 0 ? 0 : checked(size) | 0);
+      }
+      Buffer2.allocUnsafe = function(size) {
+        return allocUnsafe(size);
+      };
+      Buffer2.allocUnsafeSlow = function(size) {
+        return allocUnsafe(size);
+      };
+      function fromString(string, encoding) {
+        if (typeof encoding !== "string" || encoding === "") {
+          encoding = "utf8";
+        }
+        if (!Buffer2.isEncoding(encoding)) {
+          throw new TypeError("Unknown encoding: " + encoding);
+        }
+        var length = byteLength(string, encoding) | 0;
+        var buf = createBuffer(length);
+        var actual = buf.write(string, encoding);
+        if (actual !== length) {
+          buf = buf.slice(0, actual);
+        }
+        return buf;
+      }
+      function fromArrayLike(array) {
+        var length = array.length < 0 ? 0 : checked(array.length) | 0;
+        var buf = createBuffer(length);
+        for (var i = 0; i < length; i += 1) {
+          buf[i] = array[i] & 255;
+        }
+        return buf;
+      }
+      function fromArrayView(arrayView) {
+        if (isInstance(arrayView, Uint8Array)) {
+          var copy = new Uint8Array(arrayView);
+          return fromArrayBuffer(copy.buffer, copy.byteOffset, copy.byteLength);
+        }
+        return fromArrayLike(arrayView);
+      }
+      function fromArrayBuffer(array, byteOffset, length) {
+        if (byteOffset < 0 || array.byteLength < byteOffset) {
+          throw new RangeError('"offset" is outside of buffer bounds');
+        }
+        if (array.byteLength < byteOffset + (length || 0)) {
+          throw new RangeError('"length" is outside of buffer bounds');
+        }
+        var buf;
+        if (byteOffset === void 0 && length === void 0) {
+          buf = new Uint8Array(array);
+        } else if (length === void 0) {
+          buf = new Uint8Array(array, byteOffset);
+        } else {
+          buf = new Uint8Array(array, byteOffset, length);
+        }
+        Object.setPrototypeOf(buf, Buffer2.prototype);
+        return buf;
+      }
+      function fromObject(obj) {
+        if (Buffer2.isBuffer(obj)) {
+          var len = checked(obj.length) | 0;
+          var buf = createBuffer(len);
+          if (buf.length === 0) {
+            return buf;
+          }
+          obj.copy(buf, 0, 0, len);
+          return buf;
+        }
+        if (obj.length !== void 0) {
+          if (typeof obj.length !== "number" || numberIsNaN(obj.length)) {
+            return createBuffer(0);
+          }
+          return fromArrayLike(obj);
+        }
+        if (obj.type === "Buffer" && Array.isArray(obj.data)) {
+          return fromArrayLike(obj.data);
+        }
+      }
+      function checked(length) {
+        if (length >= K_MAX_LENGTH) {
+          throw new RangeError("Attempt to allocate Buffer larger than maximum size: 0x" + K_MAX_LENGTH.toString(16) + " bytes");
+        }
+        return length | 0;
+      }
+      function SlowBuffer(length) {
+        if (+length != length) {
+          length = 0;
+        }
+        return Buffer2.alloc(+length);
+      }
+      Buffer2.isBuffer = function isBuffer(b) {
+        return b != null && b._isBuffer === true && b !== Buffer2.prototype;
+      };
+      Buffer2.compare = function compare(a, b) {
+        if (isInstance(a, Uint8Array)) a = Buffer2.from(a, a.offset, a.byteLength);
+        if (isInstance(b, Uint8Array)) b = Buffer2.from(b, b.offset, b.byteLength);
+        if (!Buffer2.isBuffer(a) || !Buffer2.isBuffer(b)) {
+          throw new TypeError(
+            'The "buf1", "buf2" arguments must be one of type Buffer or Uint8Array'
+          );
+        }
+        if (a === b) return 0;
+        var x = a.length;
+        var y = b.length;
+        for (var i = 0, len = Math.min(x, y); i < len; ++i) {
+          if (a[i] !== b[i]) {
+            x = a[i];
+            y = b[i];
+            break;
+          }
+        }
+        if (x < y) return -1;
+        if (y < x) return 1;
+        return 0;
+      };
+      Buffer2.isEncoding = function isEncoding(encoding) {
+        switch (String(encoding).toLowerCase()) {
+          case "hex":
+          case "utf8":
+          case "utf-8":
+          case "ascii":
+          case "latin1":
+          case "binary":
+          case "base64":
+          case "ucs2":
+          case "ucs-2":
+          case "utf16le":
+          case "utf-16le":
+            return true;
+          default:
+            return false;
+        }
+      };
+      Buffer2.concat = function concat(list, length) {
+        if (!Array.isArray(list)) {
+          throw new TypeError('"list" argument must be an Array of Buffers');
+        }
+        if (list.length === 0) {
+          return Buffer2.alloc(0);
+        }
+        var i;
+        if (length === void 0) {
+          length = 0;
+          for (i = 0; i < list.length; ++i) {
+            length += list[i].length;
+          }
+        }
+        var buffer2 = Buffer2.allocUnsafe(length);
+        var pos = 0;
+        for (i = 0; i < list.length; ++i) {
+          var buf = list[i];
+          if (isInstance(buf, Uint8Array)) {
+            if (pos + buf.length > buffer2.length) {
+              Buffer2.from(buf).copy(buffer2, pos);
+            } else {
+              Uint8Array.prototype.set.call(
+                buffer2,
+                buf,
+                pos
+              );
+            }
+          } else if (!Buffer2.isBuffer(buf)) {
+            throw new TypeError('"list" argument must be an Array of Buffers');
+          } else {
+            buf.copy(buffer2, pos);
+          }
+          pos += buf.length;
+        }
+        return buffer2;
+      };
+      function byteLength(string, encoding) {
+        if (Buffer2.isBuffer(string)) {
+          return string.length;
+        }
+        if (ArrayBuffer.isView(string) || isInstance(string, ArrayBuffer)) {
+          return string.byteLength;
+        }
+        if (typeof string !== "string") {
+          throw new TypeError(
+            'The "string" argument must be one of type string, Buffer, or ArrayBuffer. Received type ' + typeof string
+          );
+        }
+        var len = string.length;
+        var mustMatch = arguments.length > 2 && arguments[2] === true;
+        if (!mustMatch && len === 0) return 0;
+        var loweredCase = false;
+        for (; ; ) {
+          switch (encoding) {
+            case "ascii":
+            case "latin1":
+            case "binary":
+              return len;
+            case "utf8":
+            case "utf-8":
+              return utf8ToBytes(string).length;
+            case "ucs2":
+            case "ucs-2":
+            case "utf16le":
+            case "utf-16le":
+              return len * 2;
+            case "hex":
+              return len >>> 1;
+            case "base64":
+              return base64ToBytes(string).length;
+            default:
+              if (loweredCase) {
+                return mustMatch ? -1 : utf8ToBytes(string).length;
+              }
+              encoding = ("" + encoding).toLowerCase();
+              loweredCase = true;
+          }
+        }
+      }
+      Buffer2.byteLength = byteLength;
+      function slowToString(encoding, start, end) {
+        var loweredCase = false;
+        if (start === void 0 || start < 0) {
+          start = 0;
+        }
+        if (start > this.length) {
+          return "";
+        }
+        if (end === void 0 || end > this.length) {
+          end = this.length;
+        }
+        if (end <= 0) {
+          return "";
+        }
+        end >>>= 0;
+        start >>>= 0;
+        if (end <= start) {
+          return "";
+        }
+        if (!encoding) encoding = "utf8";
+        while (true) {
+          switch (encoding) {
+            case "hex":
+              return hexSlice(this, start, end);
+            case "utf8":
+            case "utf-8":
+              return utf8Slice(this, start, end);
+            case "ascii":
+              return asciiSlice(this, start, end);
+            case "latin1":
+            case "binary":
+              return latin1Slice(this, start, end);
+            case "base64":
+              return base64Slice(this, start, end);
+            case "ucs2":
+            case "ucs-2":
+            case "utf16le":
+            case "utf-16le":
+              return utf16leSlice(this, start, end);
+            default:
+              if (loweredCase) throw new TypeError("Unknown encoding: " + encoding);
+              encoding = (encoding + "").toLowerCase();
+              loweredCase = true;
+          }
+        }
+      }
+      Buffer2.prototype._isBuffer = true;
+      function swap(b, n, m) {
+        var i = b[n];
+        b[n] = b[m];
+        b[m] = i;
+      }
+      Buffer2.prototype.swap16 = function swap16() {
+        var len = this.length;
+        if (len % 2 !== 0) {
+          throw new RangeError("Buffer size must be a multiple of 16-bits");
+        }
+        for (var i = 0; i < len; i += 2) {
+          swap(this, i, i + 1);
+        }
+        return this;
+      };
+      Buffer2.prototype.swap32 = function swap32() {
+        var len = this.length;
+        if (len % 4 !== 0) {
+          throw new RangeError("Buffer size must be a multiple of 32-bits");
+        }
+        for (var i = 0; i < len; i += 4) {
+          swap(this, i, i + 3);
+          swap(this, i + 1, i + 2);
+        }
+        return this;
+      };
+      Buffer2.prototype.swap64 = function swap64() {
+        var len = this.length;
+        if (len % 8 !== 0) {
+          throw new RangeError("Buffer size must be a multiple of 64-bits");
+        }
+        for (var i = 0; i < len; i += 8) {
+          swap(this, i, i + 7);
+          swap(this, i + 1, i + 6);
+          swap(this, i + 2, i + 5);
+          swap(this, i + 3, i + 4);
+        }
+        return this;
+      };
+      Buffer2.prototype.toString = function toString() {
+        var length = this.length;
+        if (length === 0) return "";
+        if (arguments.length === 0) return utf8Slice(this, 0, length);
+        return slowToString.apply(this, arguments);
+      };
+      Buffer2.prototype.toLocaleString = Buffer2.prototype.toString;
+      Buffer2.prototype.equals = function equals(b) {
+        if (!Buffer2.isBuffer(b)) throw new TypeError("Argument must be a Buffer");
+        if (this === b) return true;
+        return Buffer2.compare(this, b) === 0;
+      };
+      Buffer2.prototype.inspect = function inspect() {
+        var str = "";
+        var max2 = exports$1.INSPECT_MAX_BYTES;
+        str = this.toString("hex", 0, max2).replace(/(.{2})/g, "$1 ").trim();
+        if (this.length > max2) str += " ... ";
+        return "<Buffer " + str + ">";
+      };
+      if (customInspectSymbol) {
+        Buffer2.prototype[customInspectSymbol] = Buffer2.prototype.inspect;
+      }
+      Buffer2.prototype.compare = function compare(target, start, end, thisStart, thisEnd) {
+        if (isInstance(target, Uint8Array)) {
+          target = Buffer2.from(target, target.offset, target.byteLength);
+        }
+        if (!Buffer2.isBuffer(target)) {
+          throw new TypeError(
+            'The "target" argument must be one of type Buffer or Uint8Array. Received type ' + typeof target
+          );
+        }
+        if (start === void 0) {
+          start = 0;
+        }
+        if (end === void 0) {
+          end = target ? target.length : 0;
+        }
+        if (thisStart === void 0) {
+          thisStart = 0;
+        }
+        if (thisEnd === void 0) {
+          thisEnd = this.length;
+        }
+        if (start < 0 || end > target.length || thisStart < 0 || thisEnd > this.length) {
+          throw new RangeError("out of range index");
+        }
+        if (thisStart >= thisEnd && start >= end) {
+          return 0;
+        }
+        if (thisStart >= thisEnd) {
+          return -1;
+        }
+        if (start >= end) {
+          return 1;
+        }
+        start >>>= 0;
+        end >>>= 0;
+        thisStart >>>= 0;
+        thisEnd >>>= 0;
+        if (this === target) return 0;
+        var x = thisEnd - thisStart;
+        var y = end - start;
+        var len = Math.min(x, y);
+        var thisCopy = this.slice(thisStart, thisEnd);
+        var targetCopy = target.slice(start, end);
+        for (var i = 0; i < len; ++i) {
+          if (thisCopy[i] !== targetCopy[i]) {
+            x = thisCopy[i];
+            y = targetCopy[i];
+            break;
+          }
+        }
+        if (x < y) return -1;
+        if (y < x) return 1;
+        return 0;
+      };
+      function bidirectionalIndexOf(buffer2, val, byteOffset, encoding, dir) {
+        if (buffer2.length === 0) return -1;
+        if (typeof byteOffset === "string") {
+          encoding = byteOffset;
+          byteOffset = 0;
+        } else if (byteOffset > 2147483647) {
+          byteOffset = 2147483647;
+        } else if (byteOffset < -2147483648) {
+          byteOffset = -2147483648;
+        }
+        byteOffset = +byteOffset;
+        if (numberIsNaN(byteOffset)) {
+          byteOffset = dir ? 0 : buffer2.length - 1;
+        }
+        if (byteOffset < 0) byteOffset = buffer2.length + byteOffset;
+        if (byteOffset >= buffer2.length) {
+          if (dir) return -1;
+          else byteOffset = buffer2.length - 1;
+        } else if (byteOffset < 0) {
+          if (dir) byteOffset = 0;
+          else return -1;
+        }
+        if (typeof val === "string") {
+          val = Buffer2.from(val, encoding);
+        }
+        if (Buffer2.isBuffer(val)) {
+          if (val.length === 0) {
+            return -1;
+          }
+          return arrayIndexOf(buffer2, val, byteOffset, encoding, dir);
+        } else if (typeof val === "number") {
+          val = val & 255;
+          if (typeof Uint8Array.prototype.indexOf === "function") {
+            if (dir) {
+              return Uint8Array.prototype.indexOf.call(buffer2, val, byteOffset);
+            } else {
+              return Uint8Array.prototype.lastIndexOf.call(buffer2, val, byteOffset);
+            }
+          }
+          return arrayIndexOf(buffer2, [val], byteOffset, encoding, dir);
+        }
+        throw new TypeError("val must be string, number or Buffer");
+      }
+      function arrayIndexOf(arr, val, byteOffset, encoding, dir) {
+        var indexSize = 1;
+        var arrLength = arr.length;
+        var valLength = val.length;
+        if (encoding !== void 0) {
+          encoding = String(encoding).toLowerCase();
+          if (encoding === "ucs2" || encoding === "ucs-2" || encoding === "utf16le" || encoding === "utf-16le") {
+            if (arr.length < 2 || val.length < 2) {
+              return -1;
+            }
+            indexSize = 2;
+            arrLength /= 2;
+            valLength /= 2;
+            byteOffset /= 2;
+          }
+        }
+        function read(buf, i2) {
+          if (indexSize === 1) {
+            return buf[i2];
+          } else {
+            return buf.readUInt16BE(i2 * indexSize);
+          }
+        }
+        var i;
+        if (dir) {
+          var foundIndex = -1;
+          for (i = byteOffset; i < arrLength; i++) {
+            if (read(arr, i) === read(val, foundIndex === -1 ? 0 : i - foundIndex)) {
+              if (foundIndex === -1) foundIndex = i;
+              if (i - foundIndex + 1 === valLength) return foundIndex * indexSize;
+            } else {
+              if (foundIndex !== -1) i -= i - foundIndex;
+              foundIndex = -1;
+            }
+          }
+        } else {
+          if (byteOffset + valLength > arrLength) byteOffset = arrLength - valLength;
+          for (i = byteOffset; i >= 0; i--) {
+            var found = true;
+            for (var j = 0; j < valLength; j++) {
+              if (read(arr, i + j) !== read(val, j)) {
+                found = false;
+                break;
+              }
+            }
+            if (found) return i;
+          }
+        }
+        return -1;
+      }
+      Buffer2.prototype.includes = function includes(val, byteOffset, encoding) {
+        return this.indexOf(val, byteOffset, encoding) !== -1;
+      };
+      Buffer2.prototype.indexOf = function indexOf(val, byteOffset, encoding) {
+        return bidirectionalIndexOf(this, val, byteOffset, encoding, true);
+      };
+      Buffer2.prototype.lastIndexOf = function lastIndexOf(val, byteOffset, encoding) {
+        return bidirectionalIndexOf(this, val, byteOffset, encoding, false);
+      };
+      function hexWrite(buf, string, offset, length) {
+        offset = Number(offset) || 0;
+        var remaining = buf.length - offset;
+        if (!length) {
+          length = remaining;
+        } else {
+          length = Number(length);
+          if (length > remaining) {
+            length = remaining;
+          }
+        }
+        var strLen = string.length;
+        if (length > strLen / 2) {
+          length = strLen / 2;
+        }
+        for (var i = 0; i < length; ++i) {
+          var parsed = parseInt(string.substr(i * 2, 2), 16);
+          if (numberIsNaN(parsed)) return i;
+          buf[offset + i] = parsed;
+        }
+        return i;
+      }
+      function utf8Write(buf, string, offset, length) {
+        return blitBuffer(utf8ToBytes(string, buf.length - offset), buf, offset, length);
+      }
+      function asciiWrite(buf, string, offset, length) {
+        return blitBuffer(asciiToBytes(string), buf, offset, length);
+      }
+      function base64Write(buf, string, offset, length) {
+        return blitBuffer(base64ToBytes(string), buf, offset, length);
+      }
+      function ucs2Write(buf, string, offset, length) {
+        return blitBuffer(utf16leToBytes(string, buf.length - offset), buf, offset, length);
+      }
+      Buffer2.prototype.write = function write(string, offset, length, encoding) {
+        if (offset === void 0) {
+          encoding = "utf8";
+          length = this.length;
+          offset = 0;
+        } else if (length === void 0 && typeof offset === "string") {
+          encoding = offset;
+          length = this.length;
+          offset = 0;
+        } else if (isFinite(offset)) {
+          offset = offset >>> 0;
+          if (isFinite(length)) {
+            length = length >>> 0;
+            if (encoding === void 0) encoding = "utf8";
+          } else {
+            encoding = length;
+            length = void 0;
+          }
+        } else {
+          throw new Error(
+            "Buffer.write(string, encoding, offset[, length]) is no longer supported"
+          );
+        }
+        var remaining = this.length - offset;
+        if (length === void 0 || length > remaining) length = remaining;
+        if (string.length > 0 && (length < 0 || offset < 0) || offset > this.length) {
+          throw new RangeError("Attempt to write outside buffer bounds");
+        }
+        if (!encoding) encoding = "utf8";
+        var loweredCase = false;
+        for (; ; ) {
+          switch (encoding) {
+            case "hex":
+              return hexWrite(this, string, offset, length);
+            case "utf8":
+            case "utf-8":
+              return utf8Write(this, string, offset, length);
+            case "ascii":
+            case "latin1":
+            case "binary":
+              return asciiWrite(this, string, offset, length);
+            case "base64":
+              return base64Write(this, string, offset, length);
+            case "ucs2":
+            case "ucs-2":
+            case "utf16le":
+            case "utf-16le":
+              return ucs2Write(this, string, offset, length);
+            default:
+              if (loweredCase) throw new TypeError("Unknown encoding: " + encoding);
+              encoding = ("" + encoding).toLowerCase();
+              loweredCase = true;
+          }
+        }
+      };
+      Buffer2.prototype.toJSON = function toJSON() {
+        return {
+          type: "Buffer",
+          data: Array.prototype.slice.call(this._arr || this, 0)
+        };
+      };
+      function base64Slice(buf, start, end) {
+        if (start === 0 && end === buf.length) {
+          return base64.fromByteArray(buf);
+        } else {
+          return base64.fromByteArray(buf.slice(start, end));
+        }
+      }
+      function utf8Slice(buf, start, end) {
+        end = Math.min(buf.length, end);
+        var res = [];
+        var i = start;
+        while (i < end) {
+          var firstByte = buf[i];
+          var codePoint = null;
+          var bytesPerSequence = firstByte > 239 ? 4 : firstByte > 223 ? 3 : firstByte > 191 ? 2 : 1;
+          if (i + bytesPerSequence <= end) {
+            var secondByte, thirdByte, fourthByte, tempCodePoint;
+            switch (bytesPerSequence) {
+              case 1:
+                if (firstByte < 128) {
+                  codePoint = firstByte;
+                }
+                break;
+              case 2:
+                secondByte = buf[i + 1];
+                if ((secondByte & 192) === 128) {
+                  tempCodePoint = (firstByte & 31) << 6 | secondByte & 63;
+                  if (tempCodePoint > 127) {
+                    codePoint = tempCodePoint;
+                  }
+                }
+                break;
+              case 3:
+                secondByte = buf[i + 1];
+                thirdByte = buf[i + 2];
+                if ((secondByte & 192) === 128 && (thirdByte & 192) === 128) {
+                  tempCodePoint = (firstByte & 15) << 12 | (secondByte & 63) << 6 | thirdByte & 63;
+                  if (tempCodePoint > 2047 && (tempCodePoint < 55296 || tempCodePoint > 57343)) {
+                    codePoint = tempCodePoint;
+                  }
+                }
+                break;
+              case 4:
+                secondByte = buf[i + 1];
+                thirdByte = buf[i + 2];
+                fourthByte = buf[i + 3];
+                if ((secondByte & 192) === 128 && (thirdByte & 192) === 128 && (fourthByte & 192) === 128) {
+                  tempCodePoint = (firstByte & 15) << 18 | (secondByte & 63) << 12 | (thirdByte & 63) << 6 | fourthByte & 63;
+                  if (tempCodePoint > 65535 && tempCodePoint < 1114112) {
+                    codePoint = tempCodePoint;
+                  }
+                }
+            }
+          }
+          if (codePoint === null) {
+            codePoint = 65533;
+            bytesPerSequence = 1;
+          } else if (codePoint > 65535) {
+            codePoint -= 65536;
+            res.push(codePoint >>> 10 & 1023 | 55296);
+            codePoint = 56320 | codePoint & 1023;
+          }
+          res.push(codePoint);
+          i += bytesPerSequence;
+        }
+        return decodeCodePointsArray(res);
+      }
+      var MAX_ARGUMENTS_LENGTH = 4096;
+      function decodeCodePointsArray(codePoints) {
+        var len = codePoints.length;
+        if (len <= MAX_ARGUMENTS_LENGTH) {
+          return String.fromCharCode.apply(String, codePoints);
+        }
+        var res = "";
+        var i = 0;
+        while (i < len) {
+          res += String.fromCharCode.apply(
+            String,
+            codePoints.slice(i, i += MAX_ARGUMENTS_LENGTH)
+          );
+        }
+        return res;
+      }
+      function asciiSlice(buf, start, end) {
+        var ret = "";
+        end = Math.min(buf.length, end);
+        for (var i = start; i < end; ++i) {
+          ret += String.fromCharCode(buf[i] & 127);
+        }
+        return ret;
+      }
+      function latin1Slice(buf, start, end) {
+        var ret = "";
+        end = Math.min(buf.length, end);
+        for (var i = start; i < end; ++i) {
+          ret += String.fromCharCode(buf[i]);
+        }
+        return ret;
+      }
+      function hexSlice(buf, start, end) {
+        var len = buf.length;
+        if (!start || start < 0) start = 0;
+        if (!end || end < 0 || end > len) end = len;
+        var out = "";
+        for (var i = start; i < end; ++i) {
+          out += hexSliceLookupTable[buf[i]];
+        }
+        return out;
+      }
+      function utf16leSlice(buf, start, end) {
+        var bytes = buf.slice(start, end);
