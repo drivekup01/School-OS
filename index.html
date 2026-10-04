@@ -1204,6 +1204,30 @@ body.guest-mode #page-export .export-actions-card{display:none!important}
 .dashboard-card-head{padding-bottom:14px;margin-bottom:16px;border-bottom:1px solid #e6ebf3}
 .dashboard-card-sub{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5}
 .dashboard-shortcuts{display:grid;grid-template-columns:1fr 1fr;gap:10px;flex:1}
+.guest-shortcut-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;flex:1}
+.guest-shortcut-card{position:relative;min-height:132px;border:1px solid #dce6f2;border-radius:14px;padding:18px;display:flex;align-items:center;gap:13px;text-align:left;cursor:pointer;font-family:inherit;transition:.16s ease;box-shadow:0 3px 10px rgba(24,52,94,.045)}
+.guest-shortcut-card:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(24,52,94,.10)}
+.guest-shortcut-card.blue{background:#f2f7ff;color:#205da6}.guest-shortcut-card.purple{background:#f7f3ff;color:#7049a8}.guest-shortcut-card.green{background:#f0faf5;color:#18835a}.guest-shortcut-card.gold{background:#fff9ea;color:#9a6d13}
+.guest-shortcut-icon{width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,.78);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(30,60,100,.05)}
+.guest-shortcut-card strong{display:block;font-size:14px;font-weight:900;color:inherit}.guest-shortcut-card small{display:block;font-size:10.5px;line-height:1.5;margin-top:4px;color:#71809a}
+.guest-shortcut-arrow{position:absolute;right:14px;bottom:12px;font-size:18px;opacity:.45}
+.admin-shortcut-grid,.admin-dashboard-title{display:none}
+body.admin-mode .guest-shortcut-grid,body.admin-mode .guest-dashboard-title{display:none!important}
+body.admin-mode .admin-shortcut-grid{display:grid!important}
+body.admin-mode .admin-dashboard-title{display:block!important}
+body.guest-mode .announcement-admin-only{display:none!important}
+body.guest-mode #page-teacher-view .no-print{display:none!important}
+.announcement-list{display:flex;flex-direction:column;gap:12px}
+.announcement-item{background:#fff;border:1px solid #e1e7f0;border-radius:14px;padding:17px 18px;box-shadow:0 3px 12px rgba(20,50,90,.045)}
+.announcement-item-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:8px}
+.announcement-item-title{font-size:15px;font-weight:900;color:var(--pri);line-height:1.4}
+.announcement-item-date{font-size:10.5px;color:var(--muted);white-space:nowrap}
+.announcement-item-body{font-size:12.5px;line-height:1.75;color:#53627a;white-space:pre-wrap}
+.announcement-badge{display:inline-flex;align-items:center;border-radius:999px;padding:3px 9px;font-size:10px;font-weight:800;margin-bottom:7px}
+.announcement-badge.general{background:#edf4ff;color:#3166a6}.announcement-badge.important{background:#fff4d7;color:#946b12}.announcement-badge.urgent{background:#ffebed;color:#be3e4d}
+.announcement-actions{display:flex;gap:6px;justify-content:flex-end;margin-top:12px}
+.announcement-empty{text-align:center;padding:54px 20px;color:var(--muted);background:#fff;border:1px dashed #d7dfeb;border-radius:14px}
+
 .dashboard-shortcut{border:1.5px solid #dce4f1;background:#fff;border-radius:12px;padding:13px 14px;display:flex;align-items:center;gap:11px;text-align:left;cursor:pointer;font-family:inherit;color:var(--text);transition:.16s ease;min-height:88px}
 .dashboard-shortcut:hover{border-color:var(--pri2);background:#f7f9ff;transform:translateY(-1px);box-shadow:0 4px 13px rgba(26,58,110,.08)}
 .dashboard-shortcut.primary{background:#eef4ff;border-color:#cbd9f0}
@@ -1275,6 +1299,7 @@ body.admin-mode.daily-mode #nav-storage{display:none!important}
 
 @media(max-width:1100px){
   .dashboard-action-grid{grid-template-columns:1fr}
+  .guest-shortcut-grid{grid-template-columns:1fr 1fr}
   .dashboard-action-card{min-height:auto}
   .public-menu-grid{grid-template-columns:1fr}
   .public-menu-card{min-height:128px}
@@ -1283,6 +1308,7 @@ body.admin-mode.daily-mode #nav-storage{display:none!important}
   .topbar{min-height:72px;height:auto;padding:8px 10px;align-items:flex-start}
   .school-system-name,.tb-tag.school-year{display:none!important}
   .dashboard-shortcuts{grid-template-columns:1fr}
+  .guest-shortcut-grid{grid-template-columns:1fr}
   .dashboard-shortcut.wide{grid-column:auto}
   .public-home{padding:12px!important}.public-hero{padding:20px;min-height:150px;display:block}.public-hero h1{font-size:22px}.public-lock-note{margin-top:14px;min-width:0}
   .public-info-grid{grid-template-columns:1fr}
@@ -1353,6 +1379,7 @@ background:#eef3fa;color:#49627f;border:1px solid #d7e1ef}
     <div class="sb-label">รายงานและส่งออก</div>
     <div class="sb-item" onclick="nav('export')" id="nav-export"><span class="icon">✨</span>ดูตัวอย่าง & ส่งออก</div>
     <div class="sb-item" onclick="nav('substitute')" id="nav-substitute"><span class="icon">🔄</span>ตารางสอนแทนรายวัน</div>
+    <div class="sb-item" onclick="nav('announcements')" id="nav-announcements"><span class="icon">📢</span>ประกาศ</div>
   </div>
   <hr class="sb-divider">
   <div class="sb-section">
@@ -1389,11 +1416,37 @@ background:#eef3fa;color:#49627f;border:1px solid #d7e1ef}
     <section class="card dashboard-action-card">
       <div class="dashboard-card-head">
         <div>
-          <div class="card-title">⚡ เมนูลัด</div>
-          <div class="dashboard-card-sub">เลือกเมนูที่ใช้งานบ่อย เพื่อเข้าถึงงานได้รวดเร็ว</div>
+          <div class="card-title guest-dashboard-title">⚡ เมนูสำหรับคุณครู</div>
+          <div class="card-title admin-dashboard-title">⚙️ เมนูลัดฝ่ายวิชาการ</div>
+          <div class="dashboard-card-sub guest-dashboard-title">ดูข้อมูลที่ใช้ประจำวันได้ทันที โดยไม่ต้องเข้าสู่ระบบ</div>
+          <div class="dashboard-card-sub admin-dashboard-title">จัดการข้อมูลและตารางเรียนของโรงเรียน</div>
         </div>
       </div>
-      <div class="dashboard-shortcuts">
+
+      <div class="guest-shortcut-grid">
+        <button class="guest-shortcut-card blue" onclick="nav('export')">
+          <span class="guest-shortcut-icon">🏫</span>
+          <span><strong>ตารางสอนแต่ละห้องเรียน</strong><small>เลือกห้องเรียนเพื่อดูตารางประจำสัปดาห์</small></span>
+          <span class="guest-shortcut-arrow">→</span>
+        </button>
+        <button class="guest-shortcut-card purple" onclick="nav('teacher-view')">
+          <span class="guest-shortcut-icon">👨‍🏫</span>
+          <span><strong>ตารางสอนรายครู</strong><small>ค้นหาครูและดูตารางสอนรายบุคคล</small></span>
+          <span class="guest-shortcut-arrow">→</span>
+        </button>
+        <button class="guest-shortcut-card green" onclick="nav('substitute')">
+          <span class="guest-shortcut-icon">🔄</span>
+          <span><strong>ตารางสอนแทน</strong><small>ดูครูลาและผู้สอนแทนประจำวัน</small></span>
+          <span class="guest-shortcut-arrow">→</span>
+        </button>
+        <button class="guest-shortcut-card gold" onclick="nav('announcements')">
+          <span class="guest-shortcut-icon">📢</span>
+          <span><strong>ประกาศ</strong><small>อ่านข่าวสารและประกาศจากฝ่ายวิชาการ</small></span>
+          <span class="guest-shortcut-arrow">→</span>
+        </button>
+      </div>
+
+      <div class="dashboard-shortcuts admin-shortcut-grid">
         <button class="dashboard-shortcut primary" data-page="builder" onclick="nav('builder')">
           <span class="dashboard-shortcut-icon">🗓️</span>
           <span><strong>สร้าง / แก้ไขตาราง</strong><small>จัดการตารางเรียนของแต่ละห้อง</small></span>
@@ -1410,11 +1463,11 @@ background:#eef3fa;color:#49627f;border:1px solid #d7e1ef}
           <span class="dashboard-shortcut-icon">🚪</span>
           <span><strong>ห้องเรียน</strong><small>จัดการข้อมูลห้องเรียน</small></span>
         </button>
-        <button class="dashboard-shortcut" data-page="export" onclick="nav('export')">
-          <span class="dashboard-shortcut-icon">🏫</span>
-          <span><strong>ตารางสอนแต่ละห้อง</strong><small>เลือกห้องเรียนเพื่อดูตารางประจำสัปดาห์</small></span>
+        <button class="dashboard-shortcut" data-page="announcements" onclick="nav('announcements')">
+          <span class="dashboard-shortcut-icon">📢</span>
+          <span><strong>จัดการประกาศ</strong><small>เพิ่ม แก้ไข หรือลบประกาศสำหรับคุณครู</small></span>
         </button>
-        <button class="dashboard-shortcut wide" data-page="substitute" onclick="nav('substitute')">
+        <button class="dashboard-shortcut" data-page="substitute" onclick="nav('substitute')">
           <span class="dashboard-shortcut-icon">🔄</span>
           <span><strong>ตารางสอนแทนรายวัน</strong><small>จัดการครูลาและตารางสอนแทนประจำวัน</small></span>
         </button>
@@ -1446,6 +1499,43 @@ background:#eef3fa;color:#49627f;border:1px solid #d7e1ef}
       </div>
     </section>
   </div>
+  </div>
+</div>
+
+<!-- ═══════════ PAGE: ANNOUNCEMENTS ═══════════ -->
+<div class="page" id="page-announcements">
+  <div class="ph">
+    <div class="ph-left"><h1>📢 ประกาศ</h1><p>ข่าวสารและประกาศจากฝ่ายวิชาการ</p></div>
+    <div class="ph-actions announcement-admin-only">
+      <button class="btn btn-pri" onclick="openAnnouncementEditor()">+ เพิ่มประกาศ</button>
+    </div>
+  </div>
+
+  <div class="announcement-editor card announcement-admin-only" id="announcementEditor" style="display:none">
+    <div class="card-hd">
+      <div class="card-title" id="announcementEditorTitle">📢 เพิ่มประกาศ</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeAnnouncementEditor()">ยกเลิก</button>
+    </div>
+    <div class="fgrid">
+      <div class="fg s2"><label>หัวข้อประกาศ <span class="req">*</span></label><input id="announcementTitle" type="text" placeholder="เช่น แจ้งเปลี่ยนแปลงตารางเรียนวันศุกร์"></div>
+      <div class="fg"><label>ประเภท</label>
+        <select id="announcementType">
+          <option value="ทั่วไป">ทั่วไป</option>
+          <option value="สำคัญ">สำคัญ</option>
+          <option value="ด่วน">ด่วน</option>
+        </select>
+      </div>
+      <div class="fg"><label>วันที่แสดง</label><input id="announcementDate" type="date"></div>
+      <div class="fg s2"><label>รายละเอียด <span class="req">*</span></label><textarea id="announcementBody" rows="5" placeholder="พิมพ์รายละเอียดประกาศ..."></textarea></div>
+    </div>
+    <input type="hidden" id="announcementEditId">
+    <div class="modal-footer" style="padding:14px 0 0">
+      <button class="btn btn-ghost" onclick="closeAnnouncementEditor()">ยกเลิก</button>
+      <button class="btn btn-pri" onclick="saveAnnouncement()">💾 บันทึกประกาศ</button>
+    </div>
+  </div>
+
+  <div id="announcementList" class="announcement-list"></div>
 </div>
 
 <!-- ═══════════ PAGE: SCHOOL ═══════════ -->
@@ -25580,7 +25670,7 @@ function emptyDB(){
     teachers:[],subjects:[],rooms:[],
     slots:DEF_SLOTS.map(s=>({...s})),
     days:['จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์'],
-    sched:{}, substitute:{}, customDepts:[], subjectColorSchemeVersion:2
+    sched:{}, substitute:{}, announcements:[], customDepts:[], subjectColorSchemeVersion:2
   };
 }
 let DB = emptyDB();
@@ -25743,6 +25833,7 @@ function nav(p){
   else if(p==='export') renderExportPage();
   else if(p==='storage') renderStoragePage();
   else if(p==='substitute'){ if(currentSubDate) renderSubContent(); }
+  else if(p==='announcements') renderAnnouncements();
   else if(p==='sub-history') renderSubHistoryPage();
   else if(p==='conflict') renderConflictPage();
   updateTopbar();
@@ -25800,6 +25891,70 @@ function renderProfileSidebar(){
 //  DASHBOARD
 // ════════════════════════════════════════════
 
+
+// ════════════════════════════════════════════
+//  ANNOUNCEMENTS
+// ════════════════════════════════════════════
+function escHtml_(v){
+  return String(v==null?'':v).replace(/[&<>"']/g,function(ch){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+  });
+}
+function renderAnnouncements(){
+  const el=document.getElementById('announcementList'); if(!el) return;
+  const list=Array.isArray(DB.announcements)?DB.announcements.slice():[];
+  list.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')) || Number(b.updatedAt||0)-Number(a.updatedAt||0));
+  if(!list.length){
+    el.innerHTML='<div class="announcement-empty"><div style="font-size:34px;margin-bottom:8px">📢</div><div style="font-weight:800;color:var(--pri)">ยังไม่มีประกาศ</div><div style="font-size:11px;margin-top:4px">เมื่อฝ่ายวิชาการเพิ่มประกาศ จะแสดงที่หน้านี้</div></div>';
+    return;
+  }
+  el.innerHTML=list.map(function(a){
+    const cls=a.type==='ด่วน'?'urgent':a.type==='สำคัญ'?'important':'general';
+    const actions=(window.SCHOOL_AUTH&&SCHOOL_AUTH.loggedIn)
+      ?'<div class="announcement-actions"><button class="btn btn-out btn-xs" onclick="openAnnouncementEditor(\''+escHtml_(a.id)+'\')">✏️ แก้ไข</button><button class="btn btn-danger btn-xs" onclick="deleteAnnouncement(\''+escHtml_(a.id)+'\')">🗑️ ลบ</button></div>'
+      :'';
+    return '<article class="announcement-item">'+
+      '<div class="announcement-item-head"><div><span class="announcement-badge '+cls+'">'+escHtml_(a.type||'ทั่วไป')+'</span><div class="announcement-item-title">'+escHtml_(a.title)+'</div></div><div class="announcement-item-date">'+escHtml_(a.date||'')+'</div></div>'+
+      '<div class="announcement-item-body">'+escHtml_(a.body)+'</div>'+actions+'</article>';
+  }).join('');
+}
+function openAnnouncementEditor(id){
+  if(!window.SCHOOL_AUTH||!SCHOOL_AUTH.loggedIn){toast('กรุณาเข้าสู่ระบบฝ่ายวิชาการ','warn');return;}
+  const box=document.getElementById('announcementEditor'); if(!box) return;
+  const item=id?(DB.announcements||[]).find(x=>x.id===id):null;
+  document.getElementById('announcementEditorTitle').textContent=item?'✏️ แก้ไขประกาศ':'📢 เพิ่มประกาศ';
+  document.getElementById('announcementEditId').value=item?item.id:'';
+  document.getElementById('announcementTitle').value=item?item.title:'';
+  document.getElementById('announcementType').value=item?item.type:'ทั่วไป';
+  document.getElementById('announcementDate').value=item?item.date:new Date().toISOString().slice(0,10);
+  document.getElementById('announcementBody').value=item?item.body:'';
+  box.style.display='block';
+  box.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function closeAnnouncementEditor(){
+  const box=document.getElementById('announcementEditor'); if(box) box.style.display='none';
+}
+function saveAnnouncement(){
+  if(!window.SCHOOL_AUTH||!SCHOOL_AUTH.loggedIn){toast('กรุณาเข้าสู่ระบบฝ่ายวิชาการ','warn');return;}
+  const title=gv('announcementTitle').trim(),body=gv('announcementBody').trim();
+  if(!title||!body){toast('กรุณากรอกหัวข้อและรายละเอียดประกาศ','warn');return;}
+  if(!Array.isArray(DB.announcements)) DB.announcements=[];
+  const id=gv('announcementEditId');
+  const data={title:title,body:body,type:gv('announcementType')||'ทั่วไป',date:gv('announcementDate')||new Date().toISOString().slice(0,10),updatedAt:Date.now()};
+  if(id){
+    const i=DB.announcements.findIndex(x=>x.id===id);
+    if(i>=0) DB.announcements[i]={...DB.announcements[i],...data};
+  }else{
+    DB.announcements.push({id:uid(),createdAt:Date.now(),...data});
+  }
+  closeAnnouncementEditor();renderAnnouncements();markDirty();toast('✅ บันทึกประกาศแล้ว','succ');
+}
+function deleteAnnouncement(id){
+  if(!window.SCHOOL_AUTH||!SCHOOL_AUTH.loggedIn) return;
+  if(!confirm('ลบประกาศนี้?')) return;
+  DB.announcements=(DB.announcements||[]).filter(x=>x.id!==id);
+  renderAnnouncements();markDirty();toast('ลบประกาศแล้ว','info');
+}
 
 // ════════════════════════════════════════════
 //  SCHOOL
@@ -28694,6 +28849,7 @@ function renderAllUI(){
   else if(p==='workload') renderWorkload();
   else if(p==='export') renderExportPage();
   else if(p==='substitute'){ if(currentSubDate) renderSubContent(); }
+  else if(p==='announcements') renderAnnouncements();
   else if(p==='sub-history') renderSubHistoryPage();
   else if(p==='conflict') renderConflictPage();
   updateConflictBadge();
@@ -30630,8 +30786,8 @@ function setModeButtons(){
   if(d) d.classList.toggle('active',SCHOOL_AUTH.mode==='DAILY');
 }
 function canAccessPage(p){
-  var guestAllowed=['dashboard','teacher-view','teacher-all','substitute','export'];
-  var dailyAllowed=['dashboard','teacher-view','teacher-all','substitute','sub-history'];
+  var guestAllowed=['dashboard','teacher-view','teacher-all','substitute','export','announcements'];
+  var dailyAllowed=['dashboard','teacher-view','teacher-all','substitute','sub-history','announcements'];
   if(!SCHOOL_AUTH.loggedIn) return guestAllowed.indexOf(p)>=0;
   if(SCHOOL_AUTH.mode==='DAILY') return dailyAllowed.indexOf(p)>=0;
   return true;
@@ -30650,6 +30806,7 @@ function applyAccessUI(){
     btn.style.display=canAccessPage(btn.getAttribute('data-page'))?'flex':'none';
   });
 
+  if(currentPage==='announcements') renderAnnouncements();
   setModeButtons();
   var title=document.getElementById('publicSchoolTitle');
   if(title&&window.DB&&DB.school&&DB.school.name) title.textContent=DB.school.name;
