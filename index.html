@@ -1248,335 +1248,265 @@ body.admin-mode.daily-mode #nav-storage{display:none!important}
 .home-back-btn:hover{border-color:var(--pri);background:#eef3ff;transform:translateX(-1px)}
 @media(max-width:760px){.home-back-wrap{margin-bottom:10px}.home-back-btn{padding:7px 11px;font-size:12px}}
 </style>
-<style id="login-visibility-tune">
-/* Make the academic login fields easier to notice without changing the overall topbar layout. */
-.academic-login-box input{
-  background:#fff !important;
-  border:1.5px solid #cfd9e8 !important;
-  box-shadow:0 4px 14px rgba(26,58,110,.16),0 1px 3px rgba(0,0,0,.08) !important;
-}
-.academic-login-box input:focus{
-  border-color:var(--pri2) !important;
-  box-shadow:0 0 0 3px rgba(42,82,152,.13),0 6px 18px rgba(26,58,110,.22) !important;
-}
-</style>
-<style id="school-header-clean-reset">
-/* ===== School-OS header — top mockup direction ===== */
-.school-topbar{
-  position:relative!important;
-  height:118px!important;
-  min-height:118px!important;
-  padding:0 28px!important;
-  margin:0!important;
-  gap:0!important;
-  overflow:hidden!important;
+<style id="os-header-v1">
+.os-header{
+  height:118px;
+  min-height:118px;
+  display:flex;
+  align-items:center;
+  position:relative;
+  padding:0 30px;
+  margin:0;
+  overflow:hidden;
   background:
-    radial-gradient(circle at 82% 12%,rgba(255,255,255,.22),transparent 28%),
-    linear-gradient(110deg,#0d376d 0%,#0f4f8f 38%,#2d87c5 66%,#cfe5f6 100%)!important;
-  border:0!important;
-  border-bottom:1px solid rgba(255,255,255,.45)!important;
-  box-shadow:0 3px 14px rgba(18,58,104,.14)!important;
+    radial-gradient(circle at 84% 8%,rgba(255,255,255,.25),transparent 30%),
+    linear-gradient(110deg,#0c356a 0%,#0f4f8f 40%,#2b86c4 70%,#cfe5f5 100%);
+  box-shadow:0 3px 14px rgba(18,58,104,.14);
+  z-index:300;
 }
-.school-topbar::before{
-  display:none!important;
-  content:none!important;
-}
-.school-topbar::after{
+.os-header::after{
   content:"";
   position:absolute;
   inset:0;
   pointer-events:none;
   background:
-    linear-gradient(132deg,transparent 0 42%,rgba(255,255,255,.055) 42.2% 48%,transparent 48.2%),
-    linear-gradient(155deg,transparent 0 58%,rgba(255,255,255,.04) 58.2% 66%,transparent 66.2%);
+    linear-gradient(132deg,transparent 0 43%,rgba(255,255,255,.055) 43.2% 49%,transparent 49.2%),
+    linear-gradient(157deg,transparent 0 61%,rgba(255,255,255,.04) 61.2% 68%,transparent 68.2%);
 }
-
-/* no photo while using clean gradient header */
-.school-header-photo{display:none!important}
-
-/* Brand */
-.school-brand{
-  position:relative!important;
-  z-index:2!important;
-  display:flex!important;
-  align-items:center!important;
-  gap:18px!important;
-  width:auto!important;
-  min-width:0!important;
-  height:100%!important;
-  padding:0!important;
-  background:transparent!important;
-  clip-path:none!important;
-  overflow:visible!important;
+.os-brand{
+  position:relative;
+  z-index:2;
+  display:flex;
+  align-items:center;
+  gap:18px;
+  min-width:0;
 }
-.school-brand::before,
-.school-brand::after{
-  display:none!important;
-  content:none!important;
+.os-logo{
+  width:84px;
+  height:84px;
+  flex:0 0 84px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:transparent;
+  border:0;
+  overflow:visible;
 }
-.school-brand>*{position:relative;z-index:2}
-
-.school-logo-shell{
-  width:84px!important;
-  height:84px!important;
-  border:0!important;
-  border-radius:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  overflow:visible!important;
-  flex-shrink:0!important;
+.os-logo img{
+  width:92px;
+  height:92px;
+  object-fit:contain;
+  padding:0;
+  filter:drop-shadow(0 5px 8px rgba(0,0,0,.30));
 }
-.school-logo-shell img{
-  width:92px!important;
-  height:92px!important;
-  object-fit:contain!important;
-  padding:0!important;
-  filter:drop-shadow(0 5px 8px rgba(0,0,0,.30))!important;
+.os-brand-copy{min-width:0}
+.os-school-name{
+  color:#ffd45b;
+  font-size:27px;
+  font-weight:900;
+  line-height:1.08;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:520px;
+  text-shadow:0 2px 4px rgba(0,0,0,.16);
 }
-.school-logo-fallback{font-size:38px!important}
-
-.school-brand-text{min-width:0!important}
-.school-name{
-  color:#ffd45b!important;
-  font-size:27px!important;
-  font-weight:900!important;
-  line-height:1.1!important;
-  white-space:nowrap!important;
-  overflow:hidden!important;
-  text-overflow:ellipsis!important;
-  max-width:520px!important;
-  text-shadow:0 2px 4px rgba(0,0,0,.16)!important;
+.os-system-name{
+  margin-top:7px;
+  color:rgba(255,255,255,.96);
+  font-size:15px;
+  font-weight:700;
+  white-space:nowrap;
+  text-shadow:0 1px 2px rgba(0,0,0,.12);
 }
-.school-system-name{
-  margin-top:7px!important;
-  color:rgba(255,255,255,.96)!important;
-  font-size:15px!important;
-  font-weight:700!important;
-  white-space:nowrap!important;
-  text-shadow:0 1px 2px rgba(0,0,0,.12)!important;
+.os-header-actions{
+  position:relative;
+  z-index:2;
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  gap:10px;
 }
-
-/* Right tool row */
-.public-topbar-tools{
-  position:absolute!important;
-  right:28px!important;
-  top:50%!important;
-  transform:translateY(-50%)!important;
-  z-index:3!important;
-  display:flex!important;
-  align-items:center!important;
-  gap:10px!important;
-  margin:0!important;
-  padding:0!important;
-  background:transparent!important;
-  border:0!important;
-  box-shadow:none!important;
-  backdrop-filter:none!important;
+.os-year{
+  height:40px;
+  display:flex;
+  align-items:center;
+  padding:0 16px;
+  border-radius:12px;
+  background:#fff3bf;
+  border:1px solid #efd066;
+  color:#72520c;
+  font-size:12px;
+  font-weight:800;
+  box-shadow:0 4px 10px rgba(17,57,99,.12);
 }
-
-.school-year,
-.school-save,
-.top-icon-btn,
-.admin-user-chip,
-.logout-top-btn,
-.academic-login-box input,
-.academic-login-box button{
-  height:40px!important;
+.os-login{
+  display:flex;
+  align-items:center;
+  gap:8px;
 }
-
-.school-year{
-  display:flex!important;
-  align-items:center!important;
-  padding:0 16px!important;
-  border-radius:12px!important;
-  font-size:12px!important;
-  font-weight:800!important;
-  background:#fff3bf!important;
-  border:1px solid #efd066!important;
-  color:#72520c!important;
-  box-shadow:0 4px 10px rgba(17,57,99,.12)!important;
+.os-login input{
+  width:122px;
+  height:40px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.95);
+  background:rgba(255,255,255,.92);
+  padding:0 12px;
+  font-family:'Sarabun',sans-serif;
+  font-size:12px;
+  outline:none;
+  box-shadow:0 4px 10px rgba(17,57,99,.12);
 }
-
-.admin-user-chip{
-  display:flex!important;
-  align-items:center!important;
-  color:#173c67!important;
-  font-size:12px!important;
-  font-weight:800!important;
-  background:rgba(255,255,255,.72)!important;
-  padding:0 12px!important;
-  border-radius:12px!important;
-  box-shadow:0 4px 10px rgba(17,57,99,.10)!important;
+.os-login input:focus{
+  border-color:#6e9dcc;
+  box-shadow:0 0 0 3px rgba(255,255,255,.20),0 5px 12px rgba(17,57,99,.16);
 }
-
-.logout-top-btn{
-  border:0!important;
-  border-radius:12px!important;
-  padding:0 16px!important;
-  font-size:12px!important;
-  font-weight:800!important;
-  background:#ef4f5f!important;
-  color:#fff!important;
-  box-shadow:0 4px 10px rgba(239,79,95,.20)!important;
+.os-login button{
+  height:40px;
+  border:0;
+  border-radius:12px;
+  padding:0 16px;
+  background:#0f4f8f;
+  color:#fff;
+  font-family:'Sarabun',sans-serif;
+  font-size:12px;
+  font-weight:800;
+  cursor:pointer;
+  box-shadow:0 4px 10px rgba(15,79,143,.22);
 }
-
-.school-save{
-  display:flex!important;
-  align-items:center!important;
-  gap:7px!important;
-  background:rgba(255,255,255,.78)!important;
-  border:1px solid rgba(255,255,255,.92)!important;
-  color:#51657f!important;
-  border-radius:12px!important;
-  padding:0 14px!important;
-  box-shadow:0 4px 10px rgba(17,57,99,.10)!important;
+.os-admin{
+  align-items:center;
+  gap:8px;
 }
-
-.top-icon-btn{
-  padding:0 14px!important;
-  border-radius:12px!important;
-  border:1px solid rgba(255,255,255,.92)!important;
-  background:rgba(255,255,255,.88)!important;
-  color:#173f73!important;
-  font-size:12px!important;
-  font-weight:800!important;
-  box-shadow:0 4px 10px rgba(17,57,99,.10)!important;
+.os-admin-user{
+  height:40px;
+  display:flex;
+  align-items:center;
+  padding:0 12px;
+  border-radius:12px;
+  background:rgba(255,255,255,.72);
+  color:#173c67;
+  font-size:12px;
+  font-weight:800;
+  box-shadow:0 4px 10px rgba(17,57,99,.10);
 }
-.top-icon-btn:hover{
-  background:#fff!important;
-  transform:translateY(-1px);
+.os-logout{
+  height:40px;
+  border:0;
+  border-radius:12px;
+  padding:0 16px;
+  background:#ef4f5f;
+  color:#fff;
+  font-family:'Sarabun',sans-serif;
+  font-size:12px;
+  font-weight:800;
+  cursor:pointer;
+  box-shadow:0 4px 10px rgba(239,79,95,.20);
 }
-
-/* Guest login */
-body.guest-mode .public-topbar-tools{
-  background:transparent!important;
-  border:0!important;
-  padding:0!important;
-  box-shadow:none!important;
+.os-save{
+  height:40px;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:0 14px;
+  border-radius:12px;
+  background:rgba(255,255,255,.78);
+  border:1px solid rgba(255,255,255,.92);
+  color:#51657f;
+  font-size:11px;
+  box-shadow:0 4px 10px rgba(17,57,99,.10);
 }
-.academic-login-box{
-  display:flex!important;
-  align-items:center!important;
-  gap:8px!important;
-  background:transparent!important;
-  border:0!important;
-  padding:0!important;
+.os-tool{
+  height:40px;
+  padding:0 14px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.92);
+  background:rgba(255,255,255,.88);
+  color:#173f73;
+  font-family:'Sarabun',sans-serif;
+  font-size:12px;
+  font-weight:800;
+  cursor:pointer;
+  box-shadow:0 4px 10px rgba(17,57,99,.10);
 }
-.academic-login-box input{
-  width:122px!important;
-  border-radius:12px!important;
-  border:1px solid rgba(255,255,255,.95)!important;
-  background:rgba(255,255,255,.92)!important;
-  padding:0 12px!important;
-  font-size:12px!important;
-  box-shadow:0 4px 10px rgba(17,57,99,.12)!important;
-}
-.academic-login-box input:focus{
-  border-color:#6e9dcc!important;
-  box-shadow:0 0 0 3px rgba(255,255,255,.20),0 5px 12px rgba(17,57,99,.16)!important;
-}
-.academic-login-box button{
-  border:0!important;
-  border-radius:12px!important;
-  padding:0 16px!important;
-  font-size:12px!important;
-  font-weight:800!important;
-  background:#0f4f8f!important;
-  color:#fff!important;
-  box-shadow:0 4px 10px rgba(15,79,143,.22)!important;
-}
-
-/* Header joins sidebar/content directly */
-.app-shell{margin:0!important;padding:0!important}
-.sidebar{
-  margin:0!important;
-  padding-top:0!important;
-  border-top:0!important;
-  background:linear-gradient(180deg,#0d376d 0%,#0b2b55 100%)!important;
-}
-.main{margin:0!important;padding-top:0!important}
-.sb-collapse-wrap{
-  margin:0!important;
-  border-top:0!important;
-  background:#0d376d!important;
-}
-body.admin-mode .main>.page.active{padding-top:18px!important}
-body.admin-mode .sidebar{min-height:calc(100vh - 118px)!important}
-
-/* correct visibility */
-body.admin-mode .academic-login-box{display:none!important}
+.os-tool:hover{background:#fff}
+body.admin-mode .os-login{display:none!important}
 body.guest-mode #adminTopBox{display:none!important}
 
+/* make shell join header directly */
+.app-shell{margin:0!important;padding:0!important}
+.sidebar{margin:0!important;border-top:0!important}
+.main{margin:0!important;padding-top:0!important}
+.sb-collapse-wrap{margin-top:0!important;border-top:0!important}
+
 @media(max-width:1180px){
-  .school-name{font-size:23px!important;max-width:390px!important}
-  .school-system-name{font-size:13px!important}
-  .school-logo-shell{width:76px!important;height:76px!important}
-  .school-logo-shell img{width:84px!important;height:84px!important}
-  .public-topbar-tools{right:16px!important;gap:7px!important}
-  .school-year,.school-save,.top-icon-btn,.admin-user-chip,.logout-top-btn,.academic-login-box input,.academic-login-box button{height:36px!important}
-  .academic-login-box input{width:108px!important}
+  .os-header{padding:0 18px}
+  .os-school-name{font-size:23px;max-width:380px}
+  .os-system-name{font-size:13px}
+  .os-logo{width:74px;height:74px;flex-basis:74px}
+  .os-logo img{width:82px;height:82px}
+  .os-header-actions{gap:7px}
+  .os-year,.os-login input,.os-login button,.os-admin-user,.os-logout,.os-save,.os-tool{height:36px}
+  .os-login input{width:105px}
 }
 @media(max-width:900px){
-  .school-topbar{
-    height:154px!important;
-    min-height:154px!important;
-    padding:0 14px!important;
+  .os-header{
+    height:154px;
+    min-height:154px;
+    padding:0 14px;
+    align-items:flex-start;
   }
-  .school-brand{
-    height:82px!important;
-    align-items:center!important;
+  .os-brand{height:82px}
+  .os-school-name{font-size:19px;max-width:270px}
+  .os-system-name{font-size:11px}
+  .os-logo{width:64px;height:64px;flex-basis:64px}
+  .os-logo img{width:72px;height:72px}
+  .os-header-actions{
+    position:absolute;
+    left:14px;
+    right:14px;
+    bottom:10px;
+    margin:0;
+    justify-content:center;
+    flex-wrap:wrap;
   }
-  .school-name{font-size:19px!important;max-width:270px!important}
-  .school-system-name{font-size:11px!important}
-  .school-logo-shell{width:64px!important;height:64px!important}
-  .school-logo-shell img{width:72px!important;height:72px!important}
-  .public-topbar-tools{
-    left:14px!important;
-    right:14px!important;
-    top:auto!important;
-    bottom:10px!important;
-    transform:none!important;
-    justify-content:center!important;
-    flex-wrap:wrap!important;
-  }
-  body.admin-mode .sidebar{min-height:calc(100vh - 154px)!important}
 }
-
-.topbar::before{display:none!important;content:none!important;}
 </style>
 </head>
 <body class="guest-mode">
 <!-- TOPBAR -->
-<div class="topbar school-topbar">
-  <div class="school-header-photo" aria-hidden="true"></div>
-  <div class="school-brand">
-    <div class="school-logo-shell" id="tbBrandLogo"><span class="school-logo-fallback">🏫</span></div>
-    <div class="school-brand-text">
-      <div class="school-name" id="tbBrandName">ยังไม่ตั้งค่าโรงเรียน</div>
-      <div class="school-system-name">ระบบจัดตารางเรียน - ตารางสอน</div>
+<header class="os-header">
+  <div class="os-brand">
+    <div class="os-logo" id="tbBrandLogo"><span class="school-logo-fallback">🏫</span></div>
+    <div class="os-brand-copy">
+      <div class="os-school-name" id="tbBrandName">ยังไม่ตั้งค่าโรงเรียน</div>
+      <div class="os-system-name">ระบบจัดตารางเรียน - ตารางสอน</div>
     </div>
   </div>
-  <div class="tb-spacer"></div>
-  <div class="topbar-tools public-topbar-tools">
-    <div class="tb-tag school-year" id="tbYear">ปีการศึกษา –</div>
-    <div id="guestLoginBox" class="academic-login-box">
+
+  <div class="os-header-actions">
+    <div class="os-year" id="tbYear">ปีการศึกษา –</div>
+
+    <div id="guestLoginBox" class="os-login">
       <input id="academicLoginId" type="text" autocomplete="username" placeholder="ID" aria-label="ID ฝ่ายวิชาการ">
       <input id="academicLoginPass" type="password" autocomplete="current-password" placeholder="Password" aria-label="Password ฝ่ายวิชาการ" onkeydown="if(event.key==='Enter') academicLogin()">
       <button type="button" onclick="academicLogin()">เข้าสู่ระบบ</button>
     </div>
-    <div id="adminTopBox" class="admin-top-box" style="display:none">
-      <span class="admin-user-chip">👤 ฝ่ายวิชาการ</span>
-      <button class="logout-top-btn" onclick="academicLogout()">ออกจากระบบ</button>
+
+    <div id="adminTopBox" class="os-admin" style="display:none">
+      <span class="os-admin-user">👤 ฝ่ายวิชาการ</span>
+      <button class="os-logout" onclick="academicLogout()">ออกจากระบบ</button>
     </div>
-    <div class="save-ind school-save admin-only-top" id="saveIndicator" title="สถานะการบันทึก"><div class="save-dot" id="saveDot"></div><span id="saveLabel">–</span></div>
-    <button class="top-icon-btn admin-only-top" onclick="nav('storage')" title="ข้อมูลและสำรองข้อมูล">💾 <span>ข้อมูล</span></button>
-    <button class="top-icon-btn admin-only-top" onclick="exportAllDocx()" title="ส่งออก Word">📄 <span>Word</span></button>
+
+    <div class="os-save admin-only-top" id="saveIndicator" title="สถานะการบันทึก">
+      <div class="save-dot" id="saveDot"></div><span id="saveLabel">–</span>
+    </div>
+    <button class="os-tool admin-only-top" onclick="nav('storage')" title="ข้อมูลและสำรองข้อมูล">💾 <span>ข้อมูล</span></button>
+    <button class="os-tool admin-only-top" onclick="exportAllDocx()" title="ส่งออก Word">📄 <span>Word</span></button>
   </div>
+
   <div id="tbSchool" style="display:none"></div>
-</div>
+</header>
 
 <div class="app-shell">
 <!-- SIDEBAR -->
