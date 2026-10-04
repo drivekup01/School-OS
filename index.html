@@ -25872,7 +25872,7 @@ function nav(p){
   else if(p==='workload') renderWorkload();
   else if(p==='export') renderExportPage();
   else if(p==='storage') renderStoragePage();
-  else if(p==='substitute'){ if(currentSubDate) renderSubContent(); }
+  else if(p==='substitute'){ if(currentSubDate){ renderSubContent(); } else { setSubDateToday(); } }
   else if(p==='announcements') renderAnnouncements();
   else if(p==='sub-history') renderSubHistoryPage();
   else if(p==='conflict') renderConflictPage();
@@ -28914,7 +28914,7 @@ function renderAllUI(){
   else if(p==='teacher-view') renderTeacherViewPage();
   else if(p==='workload') renderWorkload();
   else if(p==='export') renderExportPage();
-  else if(p==='substitute'){ if(currentSubDate) renderSubContent(); }
+  else if(p==='substitute'){ if(currentSubDate){ renderSubContent(); } else { setSubDateToday(); } }
   else if(p==='announcements') renderAnnouncements();
   else if(p==='sub-history') renderSubHistoryPage();
   else if(p==='conflict') renderConflictPage();
