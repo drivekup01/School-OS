@@ -1195,6 +1195,7 @@ body.guest-mode #page-substitute .sub-group-select{display:none!important}
 body.guest-mode #page-substitute .sub-v2-layout{grid-template-columns:1fr!important}
 body.guest-mode #page-substitute .sub-v2-main-card{width:100%}
 body.guest-mode #page-substitute .sub-v2-card-sub{max-width:none}
+body.guest-mode #page-export .export-actions-card{display:none!important}
 
 .public-topbar-tools{gap:8px;flex-wrap:nowrap}
 
@@ -1408,6 +1409,10 @@ background:#eef3fa;color:#49627f;border:1px solid #d7e1ef}
         <button class="dashboard-shortcut" data-page="rooms" onclick="nav('rooms')">
           <span class="dashboard-shortcut-icon">🚪</span>
           <span><strong>ห้องเรียน</strong><small>จัดการข้อมูลห้องเรียน</small></span>
+        </button>
+        <button class="dashboard-shortcut" data-page="export" onclick="nav('export')">
+          <span class="dashboard-shortcut-icon">🏫</span>
+          <span><strong>ตารางสอนแต่ละห้อง</strong><small>เลือกห้องเรียนเพื่อดูตารางประจำสัปดาห์</small></span>
         </button>
         <button class="dashboard-shortcut wide" data-page="substitute" onclick="nav('substitute')">
           <span class="dashboard-shortcut-icon">🔄</span>
@@ -1808,8 +1813,8 @@ background:#eef3fa;color:#49627f;border:1px solid #d7e1ef}
 
 <!-- ═══════════ PAGE: EXPORT ═══════════ -->
 <div class="page" id="page-export">
-  <div class="ph"><div class="ph-left"><h1>✨ ดูตัวอย่าง & ส่งออก</h1><p>ตรวจสอบตารางและดาวน์โหลดไฟล์ Word ที่พร้อมใช้งาน</p></div></div>
-  <div class="card">
+  <div class="ph"><div class="ph-left"><h1>🏫 ตารางสอนแต่ละห้องเรียน</h1><p>เลือกห้องเรียนเพื่อดูตารางประจำสัปดาห์ และส่งออกเมื่อมีสิทธิ์ใช้งาน</p></div></div>
+  <div class="card export-actions-card">
     <div class="card-hd"><div class="card-title">📥 เลือกห้องที่ต้องการส่งออก</div></div>
     <div id="exportRoomList"></div>
     <div class="divider"></div>
@@ -30585,7 +30590,7 @@ function setModeButtons(){
   if(d) d.classList.toggle('active',SCHOOL_AUTH.mode==='DAILY');
 }
 function canAccessPage(p){
-  var guestAllowed=['dashboard','teacher-view','teacher-all','substitute'];
+  var guestAllowed=['dashboard','teacher-view','teacher-all','substitute','export'];
   var dailyAllowed=['dashboard','teacher-view','teacher-all','substitute','sub-history'];
   if(!SCHOOL_AUTH.loggedIn) return guestAllowed.indexOf(p)>=0;
   if(SCHOOL_AUTH.mode==='DAILY') return dailyAllowed.indexOf(p)>=0;
