@@ -1393,23 +1393,23 @@ background:#eef3fa;color:#49627f;border:1px solid #d7e1ef}
         </div>
       </div>
       <div class="dashboard-shortcuts">
-        <button class="dashboard-shortcut primary" onclick="nav('builder')">
+        <button class="dashboard-shortcut primary" data-page="builder" onclick="nav('builder')">
           <span class="dashboard-shortcut-icon">🗓️</span>
           <span><strong>สร้าง / แก้ไขตาราง</strong><small>จัดการตารางเรียนของแต่ละห้อง</small></span>
         </button>
-        <button class="dashboard-shortcut" onclick="nav('teachers')">
+        <button class="dashboard-shortcut" data-page="teachers" onclick="nav('teachers')">
           <span class="dashboard-shortcut-icon">👨‍🏫</span>
           <span><strong>ครูผู้สอน</strong><small>จัดการรายชื่อครูและข้อมูลผู้สอน</small></span>
         </button>
-        <button class="dashboard-shortcut" onclick="nav('subjects')">
+        <button class="dashboard-shortcut" data-page="subjects" onclick="nav('subjects')">
           <span class="dashboard-shortcut-icon">📚</span>
           <span><strong>รายวิชา</strong><small>จัดการข้อมูลรายวิชา</small></span>
         </button>
-        <button class="dashboard-shortcut" onclick="nav('rooms')">
+        <button class="dashboard-shortcut" data-page="rooms" onclick="nav('rooms')">
           <span class="dashboard-shortcut-icon">🚪</span>
           <span><strong>ห้องเรียน</strong><small>จัดการข้อมูลห้องเรียน</small></span>
         </button>
-        <button class="dashboard-shortcut wide" onclick="nav('substitute')">
+        <button class="dashboard-shortcut wide" data-page="substitute" onclick="nav('substitute')">
           <span class="dashboard-shortcut-icon">🔄</span>
           <span><strong>ตารางสอนแทนรายวัน</strong><small>จัดการครูลาและตารางสอนแทนประจำวัน</small></span>
         </button>
@@ -30584,6 +30584,13 @@ function setModeButtons(){
   if(s) s.classList.toggle('active',SCHOOL_AUTH.mode==='SETUP');
   if(d) d.classList.toggle('active',SCHOOL_AUTH.mode==='DAILY');
 }
+function canAccessPage(p){
+  var guestAllowed=['dashboard','teacher-view','teacher-all','substitute'];
+  var dailyAllowed=['dashboard','teacher-view','teacher-all','substitute','sub-history'];
+  if(!SCHOOL_AUTH.loggedIn) return guestAllowed.indexOf(p)>=0;
+  if(SCHOOL_AUTH.mode==='DAILY') return dailyAllowed.indexOf(p)>=0;
+  return true;
+}
 function applyAccessUI(){
   var b=document.body;
   b.classList.toggle('guest-mode',!SCHOOL_AUTH.loggedIn);
@@ -30593,6 +30600,11 @@ function applyAccessUI(){
   var g=document.getElementById('guestLoginBox'),a=document.getElementById('adminTopBox');
   if(g) g.style.display=SCHOOL_AUTH.loggedIn?'none':'flex';
   if(a) a.style.display=SCHOOL_AUTH.loggedIn?'flex':'none';
+
+  document.querySelectorAll('.dashboard-shortcut[data-page]').forEach(function(btn){
+    btn.style.display=canAccessPage(btn.getAttribute('data-page'))?'flex':'none';
+  });
+
   setModeButtons();
   var title=document.getElementById('publicSchoolTitle');
   if(title&&window.DB&&DB.school&&DB.school.name) title.textContent=DB.school.name;
@@ -30677,13 +30689,10 @@ function renderTeacherAll(query){
   var oldNav=window.nav;
   if(typeof oldNav==='function'){
     window.nav=function(p){
-      var guestAllowed=['dashboard','teacher-view','teacher-all','substitute'];
-      var dailyAllowed=['dashboard','teacher-view','teacher-all','substitute','sub-history'];
-      if(!SCHOOL_AUTH.loggedIn && guestAllowed.indexOf(p)<0){
-        toast('เมนูนี้สำหรับฝ่ายวิชาการ กรุณาเข้าสู่ระบบ','warn');return oldNav('dashboard');
-      }
-      if(SCHOOL_AUTH.loggedIn && SCHOOL_AUTH.mode==='DAILY' && dailyAllowed.indexOf(p)<0){
-        toast('ขณะนี้อยู่โหมด DAILY ข้อมูลหลักถูกล็อก','info');return oldNav('dashboard');
+      if(!canAccessPage(p)){
+        if(!SCHOOL_AUTH.loggedIn) toast('เมนูนี้สำหรับฝ่ายวิชาการ กรุณาเข้าสู่ระบบ','warn');
+        else toast('ขณะนี้อยู่โหมด DAILY ข้อมูลหลักถูกล็อก','info');
+        return oldNav('dashboard');
       }
       var r=oldNav(p);
       if(p==='teacher-all') renderTeacherAll();
