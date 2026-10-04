@@ -57,6 +57,9 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
 .ph-left h1{font-family:'Noto Serif Thai',serif;font-size:22px;font-weight:700;color:var(--pri)}
 .ph-left p{font-size:13px;color:var(--muted);margin-top:3px}
 .ph-actions{display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap}
+.page-back-bar{display:none;margin:0 0 12px}
+.page-back-btn{height:36px;padding:0 14px;border:1.5px solid var(--border);border-radius:8px;background:#fff;color:var(--pri);font-family:'Sarabun',sans-serif;font-size:13px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:7px;box-shadow:0 2px 8px rgba(26,58,110,.06);transition:all .15s}
+.page-back-btn:hover{border-color:var(--pri2);background:#f5f8ff;transform:translateX(-1px)}
 
 /* ── CARDS ── */
 .card{background:var(--card);border-radius:var(--rad);box-shadow:var(--sh);padding:24px;margin-bottom:18px}
@@ -1360,6 +1363,9 @@ background:#eef3fa;color:#49627f;border:1px solid #d7e1ef}
 
 <!-- MAIN CONTENT -->
 <div class="main" id="mainContent">
+<div class="page-back-bar" id="pageBackBar">
+  <button type="button" class="page-back-btn" onclick="goBackPage()">← ย้อนกลับ</button>
+</div>
 
 <!-- ═══════════ PAGE: DASHBOARD ═══════════ -->
 <div class="page active" id="page-dashboard">
@@ -25660,7 +25666,15 @@ function toast(msg,type='info'){
 // ════════════════════════════════════════════
 //  NAVIGATION
 // ════════════════════════════════════════════
+let previousPage='dashboard';
+
+function goBackPage(){
+  const target=(previousPage && previousPage!==currentPage)?previousPage:'dashboard';
+  nav(target);
+}
+
 function nav(p){
+  if(p!==currentPage) previousPage=currentPage||'dashboard';
   if(typeof refreshAllDeptDropdowns==='function') refreshAllDeptDropdowns();
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.sb-item').forEach(x=>x.classList.remove('active'));
@@ -25688,6 +25702,8 @@ function nav(p){
   else if(p==='conflict') renderConflictPage();
   updateTopbar();
   updateSidebarCounts();
+  const backBar=document.getElementById('pageBackBar');
+  if(backBar) backBar.style.display=p==='dashboard'?'none':'block';
   document.querySelector('.main').scrollTop=0;
 }
 
