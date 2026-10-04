@@ -1254,7 +1254,7 @@ body.admin-mode.daily-mode #nav-storage{display:none!important}
   height:130px;
   min-height:130px;
   display:grid;
-  grid-template-columns:390px minmax(0,1fr);
+  grid-template-columns:450px minmax(0,1fr);
   align-items:stretch;
   position:relative;
   padding:0;
@@ -1293,16 +1293,16 @@ body.admin-mode.daily-mode #nav-storage{display:none!important}
   padding:0;
   filter:drop-shadow(0 5px 8px rgba(0,0,0,.28));
 }
-.os-brand-copy{min-width:0}
+.os-brand-copy{min-width:0;overflow:visible;}
 .os-school-name{
   color:#ffd45b;
   font-size:24px;
   font-weight:900;
-  line-height:1.08;
+  line-height:1.38;
   white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  max-width:245px;
+  overflow:visible;
+  text-overflow:clip;
+  max-width:290px;
   text-shadow:0 2px 4px rgba(0,0,0,.16);
 }
 .os-system-name{
@@ -1318,15 +1318,15 @@ body.admin-mode.daily-mode #nav-storage{display:none!important}
 .os-header::before{
   content:"";
   position:absolute;
-  left:390px;
+  left:450px;
   right:0;
   top:0;
   bottom:0;
   background:
-    linear-gradient(90deg,rgba(11,58,107,.16),rgba(255,255,255,.04) 30%,rgba(255,255,255,.02) 100%),
+    linear-gradient(90deg,rgba(11,58,107,.10),rgba(232,240,247,.94) 26%,rgba(238,245,250,.96) 100%),
     url('assets/school-header.jpg');
-  background-size:cover;
-  background-position:center 57%;
+  background-size:contain;
+  background-position:center center;
   background-repeat:no-repeat;
   filter:saturate(.78) contrast(.96) brightness(.98);
   z-index:0;
@@ -1334,7 +1334,7 @@ body.admin-mode.daily-mode #nav-storage{display:none!important}
 .os-header::after{
   content:"";
   position:absolute;
-  left:390px;
+  left:450px;
   right:0;
   top:0;
   bottom:0;
@@ -1491,9 +1491,9 @@ body.guest-mode #adminTopBox{display:none!important}
 .sb-collapse-wrap{margin-top:0!important;border-top:0!important}
 
 @media(max-width:1100px){
-  .os-header{grid-template-columns:350px minmax(0,1fr)}
-  .os-header::before,.os-header::after{left:350px}
-  .os-school-name{font-size:21px;max-width:215px}
+  .os-header{grid-template-columns:410px minmax(0,1fr)}
+  .os-header::before,.os-header::after{left:410px}
+  .os-school-name{font-size:21px;max-width:260px}
   .os-logo{width:76px;height:76px;flex-basis:76px}
   .os-logo img{width:84px;height:84px}
 }
