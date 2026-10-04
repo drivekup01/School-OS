@@ -25599,6 +25599,8 @@ const LS_KEY    = 'timetable_v3_profiles';
 const LS_ACTIVE = 'timetable_v3_active';
 let activeProfileId = null;
 let saveTimer = null;
+let onlineSaveInFlight = false;
+let onlineSavePending = false;
 
 function lsGet(key){ try{ return JSON.parse(localStorage.getItem(key)||'null'); }catch(e){ return null; } }
 function lsSet(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); }catch(e){ toast('⚠️ พื้นที่เก็บข้อมูลเต็ม กรุณา Backup แล้วล้างข้อมูล','err'); } }
@@ -25620,9 +25622,52 @@ function persistNow(){
   profiles[activeProfileId].name     = DB.school.name || profiles[activeProfileId].name || 'ไม่ระบุ';
   profiles[activeProfileId].year     = DB.school.year || '2568';
   saveProfiles(profiles);
-  setSaveInd('saved','บันทึกแล้ว · '+fmtTime(Date.now()));
+
+  if(window.SCHOOL_AUTH && SCHOOL_AUTH.loggedIn){
+    setSaveInd('saving','บันทึกในเครื่องแล้ว · กำลังส่งออนไลน์...');
+    persistOnlineNow();
+  }else{
+    setSaveInd('saved','บันทึกในเครื่องแล้ว · '+fmtTime(Date.now()));
+  }
+
   if(currentPage==='storage') updateStorageUI();
   renderProfileSidebar();
+}
+
+async function persistOnlineNow(){
+  if(!window.SCHOOL_AUTH || !SCHOOL_AUTH.loggedIn) return;
+  if(typeof postSchoolApi!=='function') return;
+
+  if(SCHOOL_AUTH.token==='local-admin'){
+    setSaveInd('unsaved','ยังไม่บันทึกออนไลน์ · กรุณาใช้บัญชีฝ่ายวิชาการ');
+    return;
+  }
+
+  if(onlineSaveInFlight){
+    onlineSavePending=true;
+    return;
+  }
+
+  onlineSaveInFlight=true;
+  try{
+    await postSchoolApi({
+      action:'saveDatabase',
+      token:SCHOOL_AUTH.token,
+      data:JSON.stringify(DB)
+    });
+    setSaveInd('saved','บันทึกออนไลน์แล้ว · '+fmtTime(Date.now()));
+  }catch(e){
+    console.error('School-OS online save:',e);
+    setSaveInd('unsaved','บันทึกออนไลน์ไม่สำเร็จ');
+    toast('บันทึกออนไลน์ไม่สำเร็จ: '+e.message,'err');
+    if(/Session หมดอายุ/.test(String(e.message||''))) academicLogout();
+  }finally{
+    onlineSaveInFlight=false;
+    if(onlineSavePending){
+      onlineSavePending=false;
+      setTimeout(persistOnlineNow,0);
+    }
+  }
 }
 function setSaveInd(status,label){
   const dot=document.getElementById('saveDot'),lbl=document.getElementById('saveLabel');
@@ -30618,21 +30663,6 @@ async function academicLogin(){
   var id=(document.getElementById('academicLoginId')||{}).value||'';
   var pass=(document.getElementById('academicLoginPass')||{}).value||'';
   if(!id||!pass){toast('กรุณากรอก ID และ Password','warn');return;}
-
-  // Local admin fallback for the current school deployment.
-  if(id==='admin' && pass==='admin'){
-    SCHOOL_AUTH.loggedIn=true;
-    SCHOOL_AUTH.token='local-admin';
-    SCHOOL_AUTH.role='admin';
-    SCHOOL_AUTH.mode='SETUP';
-    sessionStorage.setItem('school_os_admin_token',SCHOOL_AUTH.token);
-    sessionStorage.setItem('school_os_admin_mode',SCHOOL_AUTH.mode);
-    document.getElementById('academicLoginPass').value='';
-    applyAccessUI();
-    nav('dashboard');
-    toast('✅ เข้าสู่ระบบผู้ดูแลแล้ว','succ');
-    return;
-  }
 
   try{
     var out=await postSchoolApi({action:'login',id:id,password:pass});
