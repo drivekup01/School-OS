@@ -881,8 +881,8 @@ textarea{resize:vertical;min-height:64px}
 body{background:var(--bg)}
 .school-topbar{height:72px;background:#fff;border-bottom:1px solid #E5EAF2;box-shadow:0 2px 12px rgba(15,46,93,.08);padding:0 22px;gap:18px}
 .school-brand{display:flex;align-items:center;gap:12px;min-width:280px}
-.school-logo-shell{width:48px;height:48px;border-radius:50%;background:#fff;border:2px solid #E4C878;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 2px 8px rgba(15,46,93,.10);flex-shrink:0}
-.school-logo-shell img{width:70px;height:70px;object-fit:contain;padding:0;filter:drop-shadow(0 2px 6px rgba(0,0,0,.18))}
+.school-logo-shell{width:70px;height:70px;border-radius:0;background:transparent;border:none;display:flex;align-items:center;justify-content:center;overflow:visible;box-shadow:none;flex-shrink:0}
+.school-logo-shell img{width:100%;height:100%;object-fit:contain;padding:0;display:block;filter:drop-shadow(0 2px 6px rgba(0,0,0,.18))}
 .school-logo-fallback{font-size:24px}
 .school-brand-text{min-width:0}
 .school-name{font-family:'Noto Serif Thai',serif;font-size:18px;font-weight:800;color:var(--pri);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:460px}
@@ -953,6 +953,82 @@ body{background:var(--bg)}
   .sidebar.sidebar-collapsed{width:58px!important}
 }
 </style>
+
+<style id="after-mockup-ui-v14">
+:root{
+  --pri:#0C2F5D;--pri2:#174B86;--pri3:#2A67A8;
+  --gold:#E7B64A;--gold2:#F3D27A;--gold-soft:#FFF5D8;
+  --bg:#F4F7FB;--card:#FFFFFF;--border:#E3EAF4;
+  --text:#17345F;--muted:#73839D;--sidebar:228px;
+  --sh:0 8px 24px rgba(22,54,96,.07);
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:#20324B}
+.school-topbar{
+  height:78px!important;padding:0 24px 0 0!important;background:#fff!important;
+  border-bottom:1px solid #E9EEF6!important;box-shadow:0 2px 14px rgba(20,50,90,.07)!important;
+  position:relative;overflow:visible;gap:0!important;
+}
+.school-topbar:before{
+  content:'';position:absolute;left:0;top:0;width:430px;height:78px;
+  background:linear-gradient(135deg,#0B2C57 0%,#133F73 76%,#E4B548 76.5%,#F2D47B 79%,transparent 79.5%);
+  border-bottom-right-radius:52px;z-index:0;pointer-events:none;
+}
+.school-brand{position:relative;z-index:1;min-width:440px!important;padding-left:24px;gap:13px!important}
+.school-logo-shell{width:70px!important;height:70px!important;border:none!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;overflow:visible!important}
+.school-name{color:#F7D36D!important;font-size:17px!important;max-width:315px!important;font-family:'Sarabun',sans-serif!important;line-height:1.15!important}
+.school-system-name{color:rgba(255,255,255,.88)!important;font-size:10px!important;letter-spacing:.1px}
+.tb-spacer{flex:1}
+.topbar-tools{position:relative;z-index:1;padding-right:22px;gap:8px!important}
+.school-year,.school-save{height:34px;display:flex;align-items:center;border-radius:18px!important;background:#F7F9FC!important;border:1px solid #DEE6F1!important;color:#3A5377!important;padding:0 12px!important}
+.school-year{background:#FFF9EA!important;border-color:#E8CC76!important;color:#7B5B13!important}
+.top-icon-btn{height:36px!important;border-radius:10px!important;background:#fff!important;border:1px solid #DDE6F2!important;box-shadow:0 2px 8px rgba(20,50,90,.035)}
+.top-icon-btn:hover{background:#F7FAFE!important;border-color:#C9D6E7!important}
+
+.app-shell{height:calc(100vh - 78px)!important}
+.sidebar{width:228px!important;background:linear-gradient(180deg,#0C2D57 0%,#082443 100%)!important;padding-top:0!important;box-shadow:4px 0 14px rgba(7,33,65,.08)}
+.sb-collapse-wrap{padding:10px 10px 8px!important;background:rgba(255,255,255,.025)!important}
+.sb-collapse-btn{height:36px!important;border-radius:9px!important;border-color:rgba(255,255,255,.18)!important;background:rgba(255,255,255,.07)!important}
+.sb-section{padding:12px 0 5px!important}
+.sb-label{text-transform:none!important;font-size:9px!important;letter-spacing:1.35px!important;color:rgba(255,255,255,.37)!important;padding:0 16px 7px!important}
+.sb-item{min-height:40px;margin:2px 8px!important;padding:9px 11px!important;border-radius:9px!important;color:rgba(255,255,255,.80)!important;font-size:13px!important;gap:9px!important}
+.sb-item .icon{font-size:16px!important;width:21px!important}
+.sb-item:hover{background:rgba(255,255,255,.075)!important;color:#fff!important}
+.sb-item.active{background:linear-gradient(90deg,#F3D06E,#E9B74B)!important;color:#12335D!important;box-shadow:0 5px 14px rgba(0,0,0,.16)!important}
+.sb-divider{margin:5px 14px!important;border-top-color:rgba(255,255,255,.07)!important}
+.sb-badge{margin-left:auto!important;background:rgba(255,255,255,.14)!important;border-radius:12px!important;min-width:25px!important;padding:2px 7px!important;text-align:center!important}
+.main{background:linear-gradient(180deg,#F7F9FC 0%,#F3F6FA 100%)!important}.page{padding:24px 28px 34px!important}
+.ph{margin-bottom:18px!important}
+.ph-left h1{font-size:27px!important;color:#17345F!important;display:flex;align-items:center;gap:8px}
+.ph-left p{font-size:12px!important;color:#71809A!important;margin-top:5px!important}
+.page-title-icon{width:40px!important;height:40px!important;background:#FFF1BE!important;border:1px solid #F2D57D!important;border-radius:11px!important}
+.ph-actions{gap:8px!important}
+.ph-actions .btn{height:36px!important;padding:0 14px!important;border-radius:9px!important;box-shadow:0 2px 7px rgba(20,50,90,.04)}
+.ph-actions .btn-pri{background:linear-gradient(135deg,#F2CC65,#E6AC36)!important;color:#17345F!important;border:none!important}
+.card{background:#fff!important;border:1px solid #E8EDF5!important;border-radius:16px!important;box-shadow:0 6px 20px rgba(20,50,90,.055)!important}
+
+/* Builder page from reference mockup */
+#page-builder .builder-page-head{padding:0 2px 2px}
+.builder-room-panel{background:#fff;border:1px solid #E7EDF5;border-radius:15px;padding:13px 14px 14px;margin-bottom:13px;box-shadow:0 5px 17px rgba(20,50,90,.05)}
+.builder-section-title{font-size:13px;font-weight:800;color:#17345F;display:flex;align-items:center;gap:7px;margin-bottom:10px}
+#page-builder .room-tabs{box-shadow:none!important;border:none!important;padding:0!important;margin:0!important;background:transparent!important;border-radius:0!important}
+#page-builder .room-tab{height:34px!important;padding:0 14px!important;font-size:11px!important;border-radius:8px!important;box-shadow:none!important}
+#page-builder .room-tab.active{background:#0F3767!important;box-shadow:0 3px 8px rgba(15,55,103,.18)!important}
+.builder-table-panel{background:#fff;border:1px solid #E7EDF5;border-radius:15px;padding:12px 14px 15px;box-shadow:0 6px 20px rgba(20,50,90,.055)}
+.builder-table-titlebar{height:38px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:800;color:#17345F;margin-bottom:8px}
+.builder-table-titlebar .mini-icon{width:28px;height:28px;border-radius:8px;background:#FFF1BE;border:1px solid #F2D57D;display:flex;align-items:center;justify-content:center}
+#page-builder .card.builder-grid-card{padding:0!important;border:none!important;box-shadow:none!important;border-radius:10px!important;overflow:auto}
+#page-builder .sched-tbl{border-radius:10px;overflow:hidden}
+#page-builder .sched-tbl th{background:#103B70!important}
+#page-builder .sched-tbl th[style*="E65100"],#page-builder .sched-tbl th[style*="#E65100"]{background:#E2AD35!important;color:#17345F!important}
+#page-builder .builder-break-cell{background:#FFF7DE!important;color:#A66A00!important}
+#page-builder .cell-subj-sel,#page-builder .cell-tchr-sel,#page-builder .cell-room-inp{border-radius:6px!important}
+
+@media(max-width:1100px){
+ .school-topbar:before{width:360px}.school-brand{min-width:360px!important}.school-name{max-width:250px!important}
+}
+</style>
+
 
 <style id="substitute-v2-style">
 /* ══ SUBSTITUTE V2 — daily all-teacher overview ═══════════ */
@@ -1103,58 +1179,6 @@ body{background:var(--bg)}
   .sub-v2-date,.sub-v2-toolbar-actions{width:100%}
 }
 </style>
-
-
-
-<style id="quick-menu-modern-style">
-.quick-menu-card{padding-bottom:18px}
-.quick-menu-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding-top:2px}
-.quick-menu-item{min-height:78px;border:1px solid #dbe4ef;border-radius:14px;background:#fff;display:flex;align-items:center;gap:14px;padding:14px 16px;cursor:pointer;text-align:left;box-shadow:0 2px 8px rgba(15,46,93,.04);transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease,background .16s ease;color:#123766}
-.quick-menu-item:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(15,46,93,.10);border-color:#b8c9df;background:#fbfdff}
-.quick-menu-item.primary{background:linear-gradient(135deg,#17457f,#123565);border-color:#17457f;color:#fff;box-shadow:0 7px 18px rgba(18,53,101,.18)}
-.quick-menu-item.wizard{background:linear-gradient(135deg,#ffe79a,#f0c24f);border-color:#efc650;color:#153a6d}
-.quick-menu-icon{width:46px;height:46px;border-radius:13px;background:#eef4fb;display:flex;align-items:center;justify-content:center;font-size:24px;flex:0 0 46px}
-.quick-menu-item.primary .quick-menu-icon{background:rgba(255,255,255,.13)}
-.quick-menu-item.wizard .quick-menu-icon{background:rgba(255,255,255,.32)}
-.quick-menu-label{font-size:16px;font-weight:800;line-height:1.2;flex:1}
-.quick-menu-arrow{width:34px;height:34px;border-radius:50%;background:#eef4fb;display:flex;align-items:center;justify-content:center;font-size:28px;line-height:1;color:#184477;flex:0 0 34px}
-.quick-menu-item.primary .quick-menu-arrow{background:rgba(255,255,255,.13);color:#fff}
-.quick-menu-item.wizard .quick-menu-arrow{background:rgba(255,255,255,.38)}
-@media(max-width:900px){.quick-menu-grid{grid-template-columns:1fr}}
-
-.sub-share-actions{flex-wrap:wrap}
-.sub-group-wrap{display:flex;flex-direction:column;gap:12px}
-.sub-group-card{border:1px solid #dce5f1;border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 3px 12px rgba(15,46,93,.05)}
-.sub-group-head{display:flex;align-items:center;gap:12px;padding:11px 13px;background:linear-gradient(90deg,#f5e4fb,#fbf7fd);border-bottom:1px solid #e2d4ea}
-.sub-group-avatar{width:34px;height:34px;border-radius:50%;background:#7e57c2;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;flex:0 0 34px}
-.sub-group-main{min-width:0;flex:1}
-.sub-group-name{font-size:14px;font-weight:900;color:#243e63}
-.sub-group-meta{font-size:11px;color:#6d7280;margin-top:2px}
-.sub-group-table-wrap{overflow:auto}
-.sub-group-table{width:100%;border-collapse:collapse;min-width:980px}
-.sub-group-table th,.sub-group-table td{padding:8px;border-bottom:1px solid #e7edf5;font-size:12px;vertical-align:middle}
-.sub-group-table th{background:#f7f9fc;color:#4d607b;font-size:11px;text-align:left}
-.sub-group-table tr:last-child td{border-bottom:0}
-.sub-group-table tr.pending{background:#fffaf0}
-.sub-group-table tr.done{background:#f6fcf8}
-.sub-group-select,.sub-group-note{width:100%;min-width:110px;border:1px solid #d6e0ec;border-radius:7px;padding:6px 7px;background:#fff;font-size:11px}
-.sub-group-note{min-width:120px}
-.sub-status-pill{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:900;white-space:nowrap}
-.sub-status-pill.done{background:#dff4e7;color:#17763f}
-.sub-status-pill.pending{background:#fff1bd;color:#8a6500}
-.sub-group-edit{border:0;background:#edf3fb;color:#17457f;border-radius:7px;padding:6px 8px;font-size:11px;font-weight:800;cursor:pointer}
-.sub-export-canvas{position:fixed;left:-10000px;top:0;width:1200px;background:#fff;padding:20px;font-family:Tahoma,'Sarabun',sans-serif;color:#1a2e4a}
-.sub-export-title{text-align:center;background:#173f73;color:#fff;padding:12px;border-radius:10px 10px 0 0;font-size:18px;font-weight:900}
-.sub-export-date{text-align:center;background:#f0c24f;color:#5e4300;padding:7px;font-size:13px;font-weight:800}
-.sub-export-group{border:1px solid #ccd7e5;margin-top:10px;border-radius:9px;overflow:hidden}
-.sub-export-group-head{background:#f1e2fa;padding:8px 10px;font-size:12px;font-weight:900}
-.sub-export-table{width:100%;border-collapse:collapse}
-.sub-export-table th,.sub-export-table td{border:1px solid #d7e0eb;padding:6px 7px;font-size:11px}
-.sub-export-table th{background:#f3f6fa}
-.sub-export-done{background:#eaf8ef}.sub-export-pending{background:#fff5d1}
-@media(max-width:760px){.sub-share-actions .btn{font-size:10px;padding:7px 8px}}
-</style>
-
 <style id="public-home-auth-style">
 body.guest-mode .sidebar{display:none!important}
 body.guest-mode .main{width:100%;max-width:none}
@@ -1241,45 +1265,12 @@ body.admin-mode.daily-mode #nav-storage{display:none!important}
   .admin-top-box{flex-wrap:wrap;justify-content:flex-end}
 }
 </style>
-
-<style id="home-back-button-style">
-.home-back-wrap{margin:0 0 14px 0}
-.home-back-btn{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border:1.5px solid var(--border);border-radius:9px;background:#fff;color:var(--pri);font-family:'Sarabun',sans-serif;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 1px 5px rgba(26,58,110,.06);transition:all .15s}
-.home-back-btn:hover{border-color:var(--pri);background:#eef3ff;transform:translateX(-1px)}
-@media(max-width:760px){.home-back-wrap{margin-bottom:10px}.home-back-btn{padding:7px 11px;font-size:12px}}
-</style>
-<style id="header-from-uploaded-file">
-.school-topbar{
-  height:78px!important;padding:0 24px 0 0!important;background:#fff!important;
-  border-bottom:1px solid #E9EEF6!important;box-shadow:0 2px 14px rgba(20,50,90,.07)!important;
-  position:relative;overflow:visible;gap:0!important;
-}
-.school-topbar:before{
-  content:'';position:absolute;left:0;top:0;width:430px;height:78px;
-  background:linear-gradient(135deg,#0B2C57 0%,#133F73 76%,#E4B548 76.5%,#F2D47B 79%,transparent 79.5%);
-  border-bottom-right-radius:52px;z-index:0;pointer-events:none;
-}
-.school-brand{display:flex;align-items:center;position:relative;z-index:1;min-width:440px!important;padding-left:24px;gap:13px!important}
-.school-logo-shell{width:70px!important;height:70px!important;border:none!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;overflow:visible!important;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.school-logo-shell img{width:100%;height:100%;object-fit:contain;padding:0;display:block;filter:drop-shadow(0 2px 6px rgba(0,0,0,.18))}
-.school-logo-fallback{font-size:24px}
-.school-brand-text{min-width:0}
-.school-name{color:#F7D36D!important;font-size:17px!important;max-width:315px!important;font-family:'Sarabun',sans-serif!important;line-height:1.15!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:800}
-.school-system-name{color:rgba(255,255,255,.88)!important;font-size:10px!important;letter-spacing:.1px;margin-top:3px;font-weight:600}
-.tb-spacer{flex:1}
-.topbar-tools{display:flex;align-items:center;position:relative;z-index:1;padding-right:22px;gap:8px!important}
-.school-year,.school-save{height:34px;display:flex;align-items:center;border-radius:18px!important;background:#F7F9FC!important;border:1px solid #DEE6F1!important;color:#3A5377!important;padding:0 12px!important}
-.school-year{background:#FFF9EA!important;border-color:#E8CC76!important;color:#7B5B13!important;font-size:11px}
-.school-save{font-size:11px;gap:6px}
-.top-icon-btn{height:36px!important;padding:0 12px;border-radius:10px!important;background:#fff!important;border:1px solid #DDE6F2!important;box-shadow:0 2px 8px rgba(20,50,90,.035);color:var(--pri);font-family:'Sarabun',sans-serif;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.15s}
-.top-icon-btn:hover{background:#F7FAFE!important;border-color:#C9D6E7!important}
-.app-shell{height:calc(100vh - 78px)!important}
-@media(max-width:1100px){
- .school-topbar:before{width:360px}.school-brand{min-width:360px!important}.school-name{max-width:250px!important}
-}
-@media(max-width:900px){
- .school-system-name{display:none}.school-name{max-width:240px!important}.top-icon-btn span{display:none}.school-brand{min-width:0!important}.school-topbar{padding-right:12px!important}
-}
+<style id="school-os-online-style">
+#onlineDbBadge{position:fixed;right:16px;bottom:16px;z-index:5000;padding:8px 12px;border-radius:999px;
+font-family:'Sarabun',sans-serif;font-size:11px;font-weight:800;box-shadow:0 4px 18px rgba(0,0,0,.14);
+background:#eef3fa;color:#49627f;border:1px solid #d7e1ef}
+#onlineDbBadge.ok{background:#e8f6ed;color:#237a43;border-color:#bfe4cb}
+#onlineDbBadge.err{background:#fff0f0;color:#a43d3d;border-color:#f0caca}
 </style>
 </head>
 <body class="guest-mode">
@@ -1293,11 +1284,20 @@ body.admin-mode.daily-mode #nav-storage{display:none!important}
     </div>
   </div>
   <div class="tb-spacer"></div>
-  <div class="topbar-tools">
+  <div class="topbar-tools public-topbar-tools">
     <div class="tb-tag school-year" id="tbYear">ปีการศึกษา –</div>
-    <div class="save-ind school-save" id="saveIndicator" title="สถานะการบันทึก"><div class="save-dot" id="saveDot"></div><span id="saveLabel">–</span></div>
-    <button class="top-icon-btn" onclick="nav('storage')" title="ข้อมูลและสำรองข้อมูล">💾 <span>ข้อมูล</span></button>
-    <button class="top-icon-btn" onclick="exportAllDocx()" title="ส่งออก Word">📄 <span>Word</span></button>
+    <div id="guestLoginBox" class="academic-login-box">
+      <input id="academicLoginId" type="text" autocomplete="username" placeholder="ID" aria-label="ID ฝ่ายวิชาการ">
+      <input id="academicLoginPass" type="password" autocomplete="current-password" placeholder="Password" aria-label="Password ฝ่ายวิชาการ" onkeydown="if(event.key==='Enter') academicLogin()">
+      <button type="button" onclick="academicLogin()">เข้าสู่ระบบ</button>
+    </div>
+    <div id="adminTopBox" class="admin-top-box" style="display:none">
+      <span class="admin-user-chip">👤 ฝ่ายวิชาการ</span>
+      <button class="logout-top-btn" onclick="academicLogout()">ออกจากระบบ</button>
+    </div>
+    <div class="save-ind school-save admin-only-top" id="saveIndicator" title="สถานะการบันทึก"><div class="save-dot" id="saveDot"></div><span id="saveLabel">–</span></div>
+    <button class="top-icon-btn admin-only-top" onclick="nav('storage')" title="ข้อมูลและสำรองข้อมูล">💾 <span>ข้อมูล</span></button>
+    <button class="top-icon-btn admin-only-top" onclick="exportAllDocx()" title="ส่งออก Word">📄 <span>Word</span></button>
   </div>
   <div id="tbSchool" style="display:none"></div>
 </div>
@@ -1351,47 +1351,64 @@ body.admin-mode.daily-mode #nav-storage{display:none!important}
 <div class="main" id="mainContent">
 
 <!-- ═══════════ PAGE: DASHBOARD ═══════════ -->
-<div class="page active public-home" id="page-dashboard">
-  <section class="public-hero">
-    <div class="public-hero-copy">
-      <div class="public-kicker">School-OS</div>
-      <h1 id="publicSchoolTitle">ระบบตารางสอนโรงเรียน</h1>
-      <p>ดูตารางสอนได้ทันทีโดยไม่ต้องเข้าสู่ระบบ • การแก้ไขข้อมูลสำหรับฝ่ายวิชาการเท่านั้น</p>
+<div class="page active" id="page-dashboard">
+  <div class="ph">
+    <div class="ph-left"><h1>🏠 ภาพรวมระบบ</h1><p>ระบบตารางเรียน-ตารางสอน มัธยมศึกษาตอนต้น–ตอนปลาย</p></div>
+    <div class="ph-actions">
+      <button class="btn btn-out btn-sm" onclick="loadDemoData()">🧪 โหลดข้อมูลตัวอย่าง</button>
+      <button class="btn btn-gold" onclick="showWizard()">🚀 ตั้งค่าโรงเรียน Wizard</button>
     </div>
-    <div class="public-lock-note">
-      <span class="public-lock-icon">🔒</span>
-      <div><strong>โหมดดูข้อมูล</strong><small>เข้าสู่ระบบมุมขวาบนเมื่อต้องการแก้ไข</small></div>
+  </div>
+  <!-- stat row -->
+  <div class="stats-row" id="statsRow">
+    <div class="stat-card c1"><div class="stat-num" id="stTeacher">0</div><div class="stat-label">👨‍🏫 ครูทั้งหมด</div></div>
+    <div class="stat-card c2"><div class="stat-num" id="stSubject">0</div><div class="stat-label">📚 วิชาทั้งหมด</div></div>
+    <div class="stat-card c3"><div class="stat-num" id="stRoom">0</div><div class="stat-label">🚪 ห้องเรียน</div></div>
+    <div class="stat-card c4"><div class="stat-num" id="stFilled">0</div><div class="stat-label">📋 ช่องที่กรอกแล้ว</div></div>
+  </div>
+  <!-- main grid -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px">
+    <!-- quick links -->
+    <div class="card">
+      <div class="card-hd"><div class="card-title">🚀 เมนูลัด</div></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn btn-pri" onclick="nav('builder')">🗓️ สร้าง/แก้ไขตาราง</button>
+        <button class="btn btn-out" onclick="nav('substitute')">🔄 บันทึกสอนแทนวันนี้</button>
+        <button class="btn btn-out" onclick="nav('teachers')">👨‍🏫 จัดการรายชื่อครู</button>
+        <button class="btn btn-out" onclick="nav('workload')">📊 ตรวจภาระงานสอน</button>
+        <button class="btn btn-out" onclick="nav('export')">📥 ส่งออกไฟล์ Word</button>
+        <button class="btn btn-gold" onclick="showWizard()">⚙️ ตั้งค่าใหม่ด้วย Wizard</button>
+      </div>
     </div>
-  </section>
-
-  <section class="public-menu-grid">
-    <button class="public-menu-card blue" onclick="nav('teacher-view')">
-      <span class="public-card-icon">📅</span>
-      <span class="public-card-copy"><strong>ดูตารางสอนครูรายคน</strong><small>ค้นหาชื่อครู แล้วดูตารางสอนรายบุคคล</small></span>
-      <span class="public-card-arrow">›</span>
-    </button>
-    <button class="public-menu-card green" onclick="nav('teacher-all')">
-      <span class="public-card-icon">👥</span>
-      <span class="public-card-copy"><strong>ดูตารางสอนครูทุกคน</strong><small>ดูตารางสอนรวมของครูทั้งโรงเรียน</small></span>
-      <span class="public-card-arrow">›</span>
-    </button>
-    <button class="public-menu-card pink" onclick="nav('substitute')">
-      <span class="public-card-icon">🔄</span>
-      <span class="public-card-copy"><strong>ตารางสอนแทนรายวัน</strong><small>ตรวจสอบครูลา ครูสอนแทน และสถานะรายวัน</small></span>
-      <span class="public-card-arrow">›</span>
-    </button>
-  </section>
-
-  <section class="public-info-grid">
-    <div class="public-info-card">
-      <h3>📌 การใช้งานสำหรับครู</h3>
-      <p>สามารถดูตารางสอนรายคน ตารางของครูทุกคน และตารางสอนแทนรายวันได้โดยไม่ต้อง Login</p>
+    <!-- grade progress -->
+    <div class="card">
+      <div class="card-hd"><div class="card-title">📈 ความคืบหน้าตารางแต่ละชั้น</div></div>
+      <div id="dashGradeProgress">
+        <div class="empty-state" style="padding:16px"><div class="empty-icon">🚪</div><div class="empty-text">ยังไม่มีห้องเรียน</div></div>
+      </div>
     </div>
-    <div class="public-info-card">
-      <h3>🔐 สำหรับฝ่ายวิชาการ</h3>
-      <p>กรอก ID / Password ที่มุมขวาบนเพื่อเปิดเมนูจัดการ และสลับโหมด SETUP / DAILY</p>
+  </div>
+  <!-- lower grid -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+    <!-- workload -->
+    <div class="card">
+      <div class="card-hd"><div class="card-title">📊 ภาระงานสอนสูงสุด</div></div>
+      <div id="dashWorkload">
+        <div class="empty-state" style="padding:20px"><div class="empty-icon">👨‍🏫</div><div class="empty-text">ยังไม่มีข้อมูล</div></div>
+      </div>
     </div>
-  </section>
+    <!-- curriculum check -->
+    <div class="card">
+      <div class="card-hd"><div class="card-title">📋 ตรวจหลักสูตรแกนกลาง 2551</div>
+        <select id="currGradeSel" onchange="updateCurrCheck()" style="font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:5px;max-width:100px">
+          <option value="">ชั้น</option>
+        </select>
+      </div>
+      <div id="dashCurrCheck">
+        <div style="font-size:13px;color:var(--muted);padding:8px">เพิ่มห้องเรียนก่อนเพื่อดูสรุปหลักสูตร</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ═══════════ PAGE: SCHOOL ═══════════ -->
@@ -1404,41 +1421,27 @@ body.admin-mode.daily-mode #nav-storage{display:none!important}
     <!-- Logo card -->
     <div class="card" style="padding:20px">
       <div class="card-title" style="margin-bottom:14px;font-size:15px">🏫 โลโก้โรงเรียน</div>
-      <div id="logoDropZone" class="logo-upload-zone"
-        onclick="document.getElementById('logoFileInput').click()"
-        ondragover="event.preventDefault();this.classList.add('drag')"
-        ondragleave="this.classList.remove('drag')"
-        ondrop="handleLogoDrop(event)">
-        <input type="file" id="logoFileInput" accept="image/*" style="display:none" onchange="handleLogoFile(event)">
-        <div id="logoPlaceholder">
-          <div style="font-size:36px;margin-bottom:8px">🖼️</div>
-          <div style="font-size:13px;font-weight:700;color:var(--pri)">คลิกหรือลากรูปมาวาง</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:4px">PNG, JPG, SVG · แนะนำ 200×200px ขึ้นไป</div>
-        </div>
-      </div>
-      <div id="logoPreviewArea" style="display:none;margin-top:10px">
-        <div class="logo-preview-wrap">
-          <img id="logoPreviewImg" class="logo-preview-img" src="" alt="โลโก้">
-          <div class="logo-info">
-            <div class="lname" id="logoFileName">–</div>
-            <div class="lsub" id="logoFileSize">–</div>
-            <div style="margin-top:8px">
-              <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px">ขนาดในเอกสาร Word</div>
-              <div class="logo-size-btns">
-                <div class="logo-size-btn on" data-size="small" onclick="setLogoSize('small')">เล็ก</div>
-                <div class="logo-size-btn" data-size="medium" onclick="setLogoSize('medium')">กลาง</div>
-                <div class="logo-size-btn" data-size="large" onclick="setLogoSize('large')">ใหญ่</div>
-              </div>
-            </div>
+      <input type="file" id="logoFileInput" accept="image/*" style="display:none" onchange="handleLogoFile(event)">
+      <div id="logoPreviewArea" style="display:block">
+        <div id="logoDropZone" class="logo-unified-dropzone"
+          onclick="document.getElementById('logoFileInput').click()"
+          ondragover="event.preventDefault();this.classList.add('drag')"
+          ondragleave="this.classList.remove('drag')"
+          ondrop="handleLogoDrop(event)">
+          <div id="logoPlaceholder" class="logo-unified-placeholder">
+            <div style="font-size:36px;line-height:1">🏫</div>
+            <div style="font-size:13px;font-weight:800;color:var(--pri);margin-top:10px">ลากรูปมาวาง หรือคลิกเพื่อเลือก</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px">PNG, JPG, SVG</div>
           </div>
+          <img id="logoPreviewImg" class="logo-unified-image" src="" alt="โลโก้" style="display:none">
         </div>
-        <div style="display:flex;gap:8px;margin-top:10px">
-          <button class="btn btn-out btn-sm" onclick="document.getElementById('logoFileInput').click()">🔄 เปลี่ยนรูป</button>
-          <button class="btn btn-danger btn-sm" onclick="removeLogo()">🗑️ ลบโลโก้</button>
+        <div class="logo-info" style="width:100%;text-align:center;margin-top:10px">
+          <div class="lname" id="logoFileName">ยังไม่ได้อัปโหลดโลโก้</div>
+          <div class="lsub" id="logoFileSize"></div>
         </div>
-      </div>
-      <div id="logoSaveNote" style="display:none;margin-top:8px" class="alert a-info" style="font-size:11px">
-        💾 โลโก้จะบันทึกพร้อมกับข้อมูลโรงเรียน
+        <div style="display:flex;gap:8px;margin-top:12px;justify-content:center;flex-wrap:wrap">
+          <button class="btn btn-danger btn-sm" id="logoRemoveBtn" onclick="removeLogo()" style="display:none">🗑️ ลบโลโก้</button>
+        </div>
       </div>
     </div>
     <!-- Basic info -->
@@ -1575,18 +1578,6 @@ body.admin-mode.daily-mode #nav-storage{display:none!important}
 <div class="page" id="page-auto-schedule">
   <div class="ph">
     <div class="ph-left"><h1>✨ จัดตารางอัตโนมัติ</h1><p>ระบบช่วยจัดตารางเรียนตามโควต้าวิชา แล้วค่อยกำหนดครูผู้สอน</p></div>
-  </div>
-
-  <!-- Hero -->
-  <div class="auto-page-hero">
-    <div class="auto-page-hero-icon">🎲</div>
-    <div>
-      <div class="auto-page-hero-title">ระบบจัดตารางอัตโนมัติ Pro</div>
-      <div class="auto-page-hero-sub">
-        กำหนดจำนวนคาบ/สัปดาห์ของแต่ละวิชา → เลือกโหมดการจัด → กดสร้างตาราง<br>
-        จากนั้นเลือกครูผู้สอนในแต่ละช่องได้ทันที
-      </div>
-    </div>
   </div>
 
   <!-- Steps -->
@@ -1772,17 +1763,6 @@ body.admin-mode.daily-mode #nav-storage{display:none!important}
   </div>
 </div>
 
-<!-- ═══════════ PAGE: TEACHER-ALL ═══════════ -->
-<div class="page" id="page-teacher-all">
-  <div class="ph">
-    <div class="ph-left"><h1>👥 ตารางสอนครูทุกคน</h1><p>ดูตารางสอนรายสัปดาห์ของครูทั้งโรงเรียน</p></div>
-    <div class="ph-actions no-print">
-      <input id="teacherAllSearch" type="text" placeholder="🔍 ค้นหาชื่อครู..." oninput="renderTeacherAll(this.value)" style="min-width:220px;padding:8px 10px;border:1px solid var(--border);border-radius:8px">
-    </div>
-  </div>
-  <div id="teacherAllContent"></div>
-</div>
-
 <!-- ═══════════ PAGE: WORKLOAD ═══════════ -->
 <div class="page" id="page-workload">
   <div class="ph"><div class="ph-left"><h1>📊 ภาระงานสอน</h1><p>ตรวจสอบชั่วโมงสอนต่อสัปดาห์ของครูแต่ละคน</p></div></div>
@@ -1891,7 +1871,6 @@ body.admin-mode.daily-mode #nav-storage{display:none!important}
     </div>
   </div>
 </div>
-
 
 
 <!-- ═══════════ PAGE: SUBSTITUTE ═══════════ -->
@@ -2024,7 +2003,8 @@ body.admin-mode.daily-mode #nav-storage{display:none!important}
       <div class="fg">
         <label>ประเภทการลา</label>
         <select id="absentType">
-          <option value="ลาป่วย">🤒 ลาป่วย</option>          <option value="ลากิจ">📋 ลากิจ</option>
+          <option value="ลาป่วย">🤒 ลาป่วย</option>
+          <option value="ลากิจ">📋 ลากิจ</option>
           <option value="ลาพักผ่อน">🌴 ลาพักผ่อน</option>
           <option value="ราชการ">🏛️ ไปราชการ</option>
           <option value="อบรม">📚 อบรม/สัมมนา</option>
@@ -2312,8 +2292,7 @@ var __async = (__this, __arguments, generator) => {
      * ```typescript
      * // Override to add custom serialization logic
      * prepForXml(context: IContext): IXmlableObject | undefined {
-     *   // Custom logic here
-     *   return super.prepForXml(context);
+     *   // Custom logic here     *   return super.prepForXml(context);
      * }
      * ```
      */
@@ -3023,7 +3002,8 @@ var __async = (__this, __arguments, generator) => {
     if (hasRequiredStreamBrowser) return streamBrowser;
     hasRequiredStreamBrowser = 1;
     streamBrowser = requireEvents().EventEmitter;
-    return streamBrowser;  }
+    return streamBrowser;
+  }
   var buffer = {};
   var base64Js = {};
   var hasRequiredBase64Js;
@@ -3311,8 +3291,7 @@ var __async = (__this, __arguments, generator) => {
           );
         }
         throw new TypeError(
-          "The first argument must be one of type string, Buffer, ArrayBuffer, Array, or Array-like Object. Received type " + typeof value
-        );
+          "The first argument must be one of type string, Buffer, ArrayBuffer, Array, or Array-like Object. Received type " + typeof value        );
       }
       Buffer2.from = function(value, encodingOrOffset, length) {
         return from(value, encodingOrOffset, length);
@@ -4022,7 +4001,8 @@ var __async = (__this, __arguments, generator) => {
         return out;
       }
       function utf16leSlice(buf, start, end) {
-        var bytes = buf.slice(start, end);        var res = "";
+        var bytes = buf.slice(start, end);
+        var res = "";
         for (var i = 0; i < bytes.length - 1; i += 2) {
           res += String.fromCharCode(bytes[i] + bytes[i + 1] * 256);
         }
@@ -4310,8 +4290,7 @@ var __async = (__this, __arguments, generator) => {
         offset = offset >>> 0;
         if (!noAssert) checkInt(this, value, offset, 2, 32767, -32768);
         this[offset] = value & 255;
-        this[offset + 1] = value >>> 8;
-        return offset + 2;
+        this[offset + 1] = value >>> 8;        return offset + 2;
       };
       Buffer2.prototype.writeInt16BE = function writeInt16BE(value, offset, noAssert) {
         value = +value;
@@ -5021,7 +5000,8 @@ var __async = (__this, __arguments, generator) => {
     var desc = !!hasProtoAccessor && gOPD2 && gOPD2(
       Object.prototype,
       /** @type {keyof typeof Object.prototype} */
-      "__proto__"    );
+      "__proto__"
+    );
     var $Object = Object;
     var $getPrototypeOf = $Object.getPrototypeOf;
     get = desc && typeof desc.get === "function" ? callBind2([desc.get]) : typeof $getPrototypeOf === "function" ? (
@@ -5309,8 +5289,7 @@ var __async = (__this, __arguments, generator) => {
     };
     var getBaseIntrinsic = function getBaseIntrinsic2(name, allowMissing) {
       var intrinsicName = name;
-      var alias;
-      if (hasOwn(LEGACY_ALIASES, intrinsicName)) {
+      var alias;      if (hasOwn(LEGACY_ALIASES, intrinsicName)) {
         alias = LEGACY_ALIASES[intrinsicName];
         intrinsicName = "%" + alias[0] + "%";
       }
@@ -6020,7 +5999,8 @@ var __async = (__this, __arguments, generator) => {
         } catch (e) {
           return false;
         }
-      }      exports$1.isArgumentsObject = isArgumentsObject;
+      }
+      exports$1.isArgumentsObject = isArgumentsObject;
       exports$1.isGeneratorFunction = isGeneratorFunction2;
       exports$1.isTypedArray = isTypedArray2;
       function isPromise(input) {
@@ -6308,8 +6288,7 @@ var __async = (__this, __arguments, generator) => {
         debugEnv = debugEnv.replace(/[|\\{}()[\]^$+?.]/g, "\\$&").replace(/\*/g, ".*").replace(/,/g, "$|^").toUpperCase();
         debugEnvRegex = new RegExp("^" + debugEnv + "$", "i");
       }
-      exports$1.debuglog = function(set) {
-        set = set.toUpperCase();
+      exports$1.debuglog = function(set) {        set = set.toUpperCase();
         if (!debugs[set]) {
           if (debugEnvRegex.test(set)) {
             var pid = process$1.pid;
@@ -7019,7 +6998,8 @@ var __async = (__this, __arguments, generator) => {
       }]);
       return BufferList;
     })();
-    return buffer_list;  }
+    return buffer_list;
+  }
   var destroy_1;
   var hasRequiredDestroy;
   function requireDestroy() {
@@ -7307,8 +7287,7 @@ var __async = (__this, __arguments, generator) => {
     function _uint8ArrayToBuffer(chunk) {
       return Buffer2.from(chunk);
     }
-    function _isUint8Array(obj) {
-      return Buffer2.isBuffer(obj) || obj instanceof OurUint8Array;
+    function _isUint8Array(obj) {      return Buffer2.isBuffer(obj) || obj instanceof OurUint8Array;
     }
     var destroyImpl = requireDestroy();
     var _require = requireState(), getHighWaterMark = _require.getHighWaterMark;
@@ -8018,7 +7997,8 @@ var __async = (__this, __arguments, generator) => {
         if (nb > 0) self2.lastNeed = nb - 1;
         return nb;
       }
-      if (--j < i || nb === -2) return 0;      nb = utf8CheckByte(buf[j]);
+      if (--j < i || nb === -2) return 0;
+      nb = utf8CheckByte(buf[j]);
       if (nb >= 0) {
         if (nb > 0) self2.lastNeed = nb - 2;
         return nb;
@@ -8306,8 +8286,7 @@ var __async = (__this, __arguments, generator) => {
         if (this[kStream].destroyed) {
           return new Promise(function(resolve, reject) {
             process$1.nextTick(function() {
-              if (_this[kError]) {
-                reject(_this[kError]);
+              if (_this[kError]) {                reject(_this[kError]);
               } else {
                 resolve(createIterResult(void 0, true));
               }
@@ -9017,7 +8996,8 @@ var __async = (__this, __arguments, generator) => {
           stream.pause();
         }
       });
-      for (var i in stream) {        if (this[i] === void 0 && typeof stream[i] === "function") {
+      for (var i in stream) {
+        if (this[i] === void 0 && typeof stream[i] === "function") {
           this[i] = /* @__PURE__ */ (function methodWrap(method) {
             return function methodWrapReturnFunction() {
               return stream[method].apply(stream, arguments);
@@ -9305,8 +9285,7 @@ var __async = (__this, __arguments, generator) => {
     function pipe(from, to) {
       return from.pipe(to);
     }
-    function popCallback(streams) {
-      if (!streams.length) return noop2;
+    function popCallback(streams) {      if (!streams.length) return noop2;
       if (typeof streams[streams.length - 1] !== "function") return noop2;
       return streams.pop();
     }
@@ -10016,7 +9995,8 @@ var __async = (__this, __arguments, generator) => {
         });
         for (var s in sax2.STATE) {
           sax2.STATE[sax2.STATE[s]] = s;
-        }        S = sax2.STATE;
+        }
+        S = sax2.STATE;
         function emit(parser, event, data) {
           parser[event] && parser[event](data);
         }
@@ -10304,8 +10284,7 @@ var __async = (__this, __arguments, generator) => {
               parser,
               "Cannot write after close. Assign an onready handler."
             );
-          }
-          if (chunk === null) {
+          }          if (chunk === null) {
             return end(parser);
           }
           if (typeof chunk === "object") {
@@ -11015,7 +10994,8 @@ var __async = (__this, __arguments, generator) => {
           if (options.instructionHasAttributes) {
             element[options.attributesKey] = value[key][options.attributesKey];
             if ("instructionFn" in options) {
-              element[options.attributesKey] = options.instructionFn(element[options.attributesKey], key, currentElement);            }
+              element[options.attributesKey] = options.instructionFn(element[options.attributesKey], key, currentElement);
+            }
           } else {
             if ("instructionFn" in options) {
               value[key] = options.instructionFn(value[key], key, currentElement);
@@ -11303,8 +11283,7 @@ var __async = (__this, __arguments, generator) => {
       helper.checkFnExists("text", options);
       helper.checkFnExists("instructionName", options);
       helper.checkFnExists("elementName", options);
-      helper.checkFnExists("attributeName", options);
-      helper.checkFnExists("attributeValue", options);
+      helper.checkFnExists("attributeName", options);      helper.checkFnExists("attributeValue", options);
       helper.checkFnExists("attributes", options);
       helper.checkFnExists("fullTagEmptyElement", options);
       return options;
@@ -12014,7 +11993,8 @@ var __async = (__this, __arguments, generator) => {
         this.root.push(createBorderElement("w:top", options.top));
       }
       if (options.bottom) {
-        this.root.push(createBorderElement("w:bottom", options.bottom));      }
+        this.root.push(createBorderElement("w:bottom", options.bottom));
+      }
       if (options.left) {
         this.root.push(createBorderElement("w:left", options.left));
       }
@@ -12302,8 +12282,7 @@ var __async = (__this, __arguments, generator) => {
       super("w:color");
       this.root.push(
         new Attributes({
-          val: hexColorValue(color)
-        })
+          val: hexColorValue(color)        })
       );
     }
   }
@@ -13013,7 +12992,8 @@ var __async = (__this, __arguments, generator) => {
       this._delta32 = this.blockSize / 32;
     }
     common$1.BlockHash = BlockHash;
-    BlockHash.prototype.update = function update(msg, enc) {      msg = utils2.toArray(msg, enc);
+    BlockHash.prototype.update = function update(msg, enc) {
+      msg = utils2.toArray(msg, enc);
       if (!this.pending)
         this.pending = msg;
       else
@@ -13301,8 +13281,7 @@ var __async = (__this, __arguments, generator) => {
     SHA256.padLength = 64;
     SHA256.prototype._update = function _update(msg, start) {
       var W = this.W;
-      for (var i = 0; i < 16; i++)
-        W[i] = msg[start + i];
+      for (var i = 0; i < 16; i++)        W[i] = msg[start + i];
       for (; i < W.length; i++)
         W[i] = sum32_4(g1_256(W[i - 2]), W[i - 7], g0_256(W[i - 15]), W[i - 16]);
       var a = this.h[0];
@@ -14012,7 +13991,8 @@ var __async = (__this, __arguments, generator) => {
       12,
       0,
       9,
-      5,      2,
+      5,
+      2,
       14,
       11,
       8,
@@ -14300,8 +14280,7 @@ var __async = (__this, __arguments, generator) => {
       9,
       12,
       5,
-      14,
-      6,
+      14,      6,
       8,
       13,
       6,
@@ -15011,7 +14990,8 @@ var __async = (__this, __arguments, generator) => {
               solidFill: child.solidFill
             }));
           } else {
-            return new Pic({ mediaData: child, transform: child.transformation, outline: child.outline });          }
+            return new Pic({ mediaData: child, transform: child.transformation, outline: child.outline });
+          }
         });
         const wpg = createWpgGroup({ children, transformation: transform });
         this.root.push(wpg);
@@ -15299,8 +15279,7 @@ var __async = (__this, __arguments, generator) => {
       children: [
         createExtent({ x: transform.emus.x, y: transform.emus.y }),
         createEffectExtent(
-          outline ? {
-            top: ((_a = outline.width) != null ? _a : 9525) * 2,
+          outline ? {            top: ((_a = outline.width) != null ? _a : 9525) * 2,
             right: ((_b = outline.width) != null ? _b : 9525) * 2,
             bottom: ((_c = outline.width) != null ? _c : 9525) * 2,
             left: ((_d = outline.width) != null ? _d : 9525) * 2
@@ -16010,7 +15989,8 @@ var __async = (__this, __arguments, generator) => {
   class InternalHyperlink extends ConcreteHyperlink {
     constructor(options) {
       super(options.children, uniqueId(), options.anchor);
-    }  }
+    }
+  }
   class ExternalHyperlink extends XmlComponent {
     constructor(options) {
       super("w:externalHyperlink");
@@ -16298,8 +16278,7 @@ var __async = (__this, __arguments, generator) => {
     NONE: "none",
     /** Drop cap that drops down into the paragraph text */
     DROP: "drop",
-    /** Drop cap that extends into the margin */
-    MARGIN: "margin"
+    /** Drop cap that extends into the margin */    MARGIN: "margin"
   };
   const FrameAnchorType = {
     /** Anchor relative to the page margin */
@@ -17009,7 +16988,8 @@ var __async = (__this, __arguments, generator) => {
     }
   }
   class DeletedTextRunWrapper extends XmlComponent {
-    constructor(options) {      super("w:r");
+    constructor(options) {
+      super("w:r");
       this.root.push(new RunProperties(options));
       if (options.children) {
         for (const child of options.children) {
@@ -17297,8 +17277,7 @@ var __async = (__this, __arguments, generator) => {
       if (options.columnSpan) {
         this.root.push(new GridSpan(options.columnSpan));
       }
-      if (options.verticalMerge) {
-        this.root.push(new VerticalMerge(options.verticalMerge));
+      if (options.verticalMerge) {        this.root.push(new VerticalMerge(options.verticalMerge));
       } else if (options.rowSpan && options.rowSpan > 1) {
         this.root.push(new VerticalMerge(VerticalMergeType.RESTART));
       }
@@ -18008,7 +17987,8 @@ var __async = (__this, __arguments, generator) => {
       space: { key: "w:space", value: space === void 0 ? void 0 : twipsMeasureValue(space) },
       count: { key: "w:num", value: count === void 0 ? void 0 : decimalNumber(count) },
       separate: { key: "w:sep", value: separate },
-      equalWidth: { key: "w:equalWidth", value: equalWidth }    },
+      equalWidth: { key: "w:equalWidth", value: equalWidth }
+    },
     children: !equalWidth && children ? children : void 0
   });
   const DocumentGridType = {
@@ -18296,8 +18276,7 @@ var __async = (__this, __arguments, generator) => {
         borders,
         textDirection
       } = {},
-      grid: { linePitch = 360, charSpace, type: gridType } = {},
-      headerWrapperGroup = {},
+      grid: { linePitch = 360, charSpace, type: gridType } = {},      headerWrapperGroup = {},
       footerWrapperGroup = {},
       lineNumbers,
       titlePage,
@@ -19007,7 +18986,8 @@ var __async = (__this, __arguments, generator) => {
     }
   }
   let Header$1 = class Header extends InitializableXmlComponent {
-    constructor(referenceNumber, initContent) {      super("w:hdr", initContent);
+    constructor(referenceNumber, initContent) {
+      super("w:hdr", initContent);
       __publicField(this, "refId");
       this.refId = referenceNumber;
       if (!initContent) {
@@ -19295,8 +19275,7 @@ var __async = (__this, __arguments, generator) => {
     /**
      * Creates a new numbering level.
      *
-     * @param options - Level configuration options
-     * @throws Error if level is greater than 9 (Word limitation)
+     * @param options - Level configuration options     * @throws Error if level is greater than 9 (Word limitation)
      */
     constructor({
       level,
@@ -20006,7 +19985,8 @@ var __async = (__this, __arguments, generator) => {
       super("w:uiPriority");
       this.root.push(new ComponentAttributes({ val: decimalNumber(value) }));
     }
-  }  class StyleAttributes extends XmlAttributeComponent {
+  }
+  class StyleAttributes extends XmlAttributeComponent {
     constructor() {
       super(...arguments);
       __publicField(this, "xmlKeys", {
@@ -20294,8 +20274,7 @@ var __async = (__this, __arguments, generator) => {
     }
   }
   class ParagraphPropertiesDefaults extends XmlComponent {
-    constructor(options) {
-      super("w:pPrDefault");
+    constructor(options) {      super("w:pPrDefault");
       this.root.push(new ParagraphProperties(options));
     }
   }
@@ -21005,7 +20984,8 @@ var __async = (__this, __arguments, generator) => {
       style: {
         key: "style",
         value: style
-      },      insetMode: {
+      },
+      insetMode: {
         key: "insetmode",
         value: inset ? "custom" : "auto"
       },
@@ -21293,8 +21273,7 @@ var __async = (__this, __arguments, generator) => {
         }, { "../compressions": 3, "./ZipFileWorker": 8 }], 10: [function(e, t, r) {
           function n() {
             if (!(this instanceof n)) return new n();
-            if (arguments.length) throw new Error("The constructor with parameters has been removed in JSZip 3.0, please check the upgrade guide.");
-            this.files = /* @__PURE__ */ Object.create(null), this.comment = null, this.root = "", this.clone = function() {
+            if (arguments.length) throw new Error("The constructor with parameters has been removed in JSZip 3.0, please check the upgrade guide.");            this.files = /* @__PURE__ */ Object.create(null), this.comment = null, this.root = "", this.clone = function() {
               var e2 = new n();
               for (var t2 in this) "function" != typeof this[t2] && (e2[t2] = this[t2]);
               return e2;
@@ -22004,7 +21983,8 @@ var __async = (__this, __arguments, generator) => {
             var n2 = t2 - r2;
             if (0 < n2) this.isSignature(t2, s.CENTRAL_FILE_HEADER) || (this.reader.zero = n2);
             else if (n2 < 0) throw new Error("Corrupted zip: missing " + Math.abs(n2) + " bytes.");
-          }, prepareReader: function(e2) {            this.reader = n(e2);
+          }, prepareReader: function(e2) {
+            this.reader = n(e2);
           }, load: function(e2) {
             this.prepareReader(e2), this.readEndOfCentral(), this.readCentralDir(), this.readLocalFiles();
           } }, t.exports = h;
@@ -22292,8 +22272,7 @@ var __async = (__this, __arguments, generator) => {
             var r2 = new p(t2);
             if (r2.push(e2, true), r2.err) throw r2.msg || i[r2.err];
             return r2.result;
-          }
-          p.prototype.push = function(e2, t2) {
+          }          p.prototype.push = function(e2, t2) {
             var r2, n2, i2 = this.strm, s2 = this.options.chunkSize;
             if (this.ended) return false;
             n2 = t2 === ~~t2 ? t2 : true === t2 ? 4 : 0, "string" == typeof e2 ? i2.input = h.string2buf(e2) : "[object ArrayBuffer]" === u.call(e2) ? i2.input = new Uint8Array(e2) : i2.input = e2, i2.next_in = 0, i2.avail_in = i2.input.length;
@@ -23003,7 +22982,8 @@ var __async = (__this, __arguments, generator) => {
                 }
                 for (r2.back = 0; g = (C = r2.lencode[u2 & (1 << r2.lenbits) - 1]) >>> 16 & 255, b = 65535 & C, !((_ = C >>> 24) <= l2); ) {
                   if (0 === o2) break e;
-                  o2--, u2 += n2[s2++] << l2, l2 += 8;                }
+                  o2--, u2 += n2[s2++] << l2, l2 += 8;
+                }
                 if (g && 0 == (240 & g)) {
                   for (v = _, y = g, w = b; g = (C = r2.lencode[w + ((u2 & (1 << v + y) - 1) >> v)]) >>> 16 & 255, b = 65535 & C, !(v + (_ = C >>> 24) <= l2); ) {
                     if (0 === o2) break e;
@@ -23291,8 +23271,7 @@ var __async = (__this, __arguments, generator) => {
               return o;
             })(e2)), Y(e2, e2.l_desc), Y(e2, e2.d_desc), a2 = (function(e3) {
               var t3;
-              for (X(e3, e3.dyn_ltree, e3.l_desc.max_code), X(e3, e3.dyn_dtree, e3.d_desc.max_code), Y(e3, e3.bl_desc), t3 = c - 1; 3 <= t3 && 0 === e3.bl_tree[2 * S[t3] + 1]; t3--) ;
-              return e3.opt_len += 3 * (t3 + 1) + 5 + 5 + 4, t3;
+              for (X(e3, e3.dyn_ltree, e3.l_desc.max_code), X(e3, e3.dyn_dtree, e3.d_desc.max_code), Y(e3, e3.bl_desc), t3 = c - 1; 3 <= t3 && 0 === e3.bl_tree[2 * S[t3] + 1]; t3--) ;              return e3.opt_len += 3 * (t3 + 1) + 5 + 5 + 4, t3;
             })(e2), i2 = e2.opt_len + 3 + 7 >>> 3, (s2 = e2.static_len + 3 + 7 >>> 3) <= i2 && (i2 = s2)) : i2 = s2 = r2 + 5, r2 + 4 <= i2 && -1 !== t2 ? J(e2, t2, r2, n2) : 4 === e2.strategy || s2 === i2 ? (P(e2, 2 + (n2 ? 1 : 0), 3), K(e2, z, C)) : (P(e2, 4 + (n2 ? 1 : 0), 3), (function(e3, t3, r3, n3) {
               var i3;
               for (P(e3, t3 - 257, 5), P(e3, r3 - 1, 5), P(e3, n3 - 4, 4), i3 = 0; i3 < n3; i3++) P(e3, e3.bl_tree[2 * S[i3] + 1], 3);
@@ -24002,7 +23981,8 @@ var __async = (__this, __arguments, generator) => {
               viewWrapper: footerWrapper,
               file,
               stack: []
-            }),            {
+            }),
+            {
               indent: prettify,
               declaration: {
                 encoding: "UTF-8"
@@ -24290,8 +24270,7 @@ var __async = (__this, __arguments, generator) => {
     /** Indent with 4 spaces */
     WITH_4_BLANKS: "    ",
     /** Indent with tab character */
-    WITH_TAB: "	"
-  };
+    WITH_TAB: "	"  };
   const convertPrettifyType = (prettify) => prettify === true ? PrettifyType.WITH_2_BLANKS : prettify === false ? void 0 : prettify;
   const _Packer = class _Packer {
     /**
@@ -25001,7 +24980,8 @@ var __async = (__this, __arguments, generator) => {
   exports.EMPTY_OBJECT = EMPTY_OBJECT;
   exports.EmphasisMarkType = EmphasisMarkType;
   exports.EmptyElement = EmptyElement;
-  exports.EndnoteIdReference = EndnoteIdReference;  exports.EndnoteReference = EndnoteReference;
+  exports.EndnoteIdReference = EndnoteIdReference;
+  exports.EndnoteReference = EndnoteReference;
   exports.EndnoteReferenceRun = EndnoteReferenceRun;
   exports.EndnoteReferenceRunAttributes = EndnoteReferenceRunAttributes;
   exports.Endnotes = Endnotes;
@@ -25289,7 +25269,6 @@ const SUBJECT_CODE_DEPT_MAP = {
   'กน':'แนะแนว','ลส':'กิจกรรมพัฒนาผู้เรียน','ยก':'กิจกรรมพัฒนาผู้เรียน','ชม':'กิจกรรมพัฒนาผู้เรียน','งค':'กิจกรรมพัฒนาผู้เรียน'
 };
 const COLORS=[...new Set(Object.values(SUBJECT_COLOR_PALETTES).flat())];
-
 function inferDeptForSubject(code,name){
   var c=(code||'').trim();
   // ตรวจ prefix ยาวก่อน เพื่อไม่ให้ งค ถูกอ่านเป็น ง
@@ -25560,7 +25539,7 @@ function renderCustomDeptList() {
 function emptyDB(){
   return {
     school:{name:'',address:'',year:'2568',semester:'1',acadName:'',acadPos:'',principalName:'',principalPos:'',
-            logoDataUrl:'',logoSize:'small'},
+            logoDataUrl:'',logoSize:'medium'},
     teachers:[],subjects:[],rooms:[],
     slots:DEF_SLOTS.map(s=>({...s})),
     days:['จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์'],
@@ -25655,22 +25634,6 @@ function toast(msg,type='info'){
 // ════════════════════════════════════════════
 //  NAVIGATION
 // ════════════════════════════════════════════
-function ensureHomeBackButton(p){
-  document.querySelectorAll('.home-back-wrap').forEach(function(el){el.remove();});
-  if(p==='dashboard') return;
-  var pg=document.getElementById('page-'+p);
-  if(!pg) return;
-  var wrap=document.createElement('div');
-  wrap.className='home-back-wrap no-print';
-  var btn=document.createElement('button');
-  btn.type='button';
-  btn.className='home-back-btn';
-  btn.innerHTML='← <span>กลับหน้าหลัก</span>';
-  btn.onclick=function(){nav('dashboard');};
-  wrap.appendChild(btn);
-  pg.insertBefore(wrap,pg.firstChild);
-}
-
 function nav(p){
   if(typeof refreshAllDeptDropdowns==='function') refreshAllDeptDropdowns();
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
@@ -25691,7 +25654,6 @@ function nav(p){
   else if(p==='builder') renderBuilder();
   else if(p==='auto-schedule') renderAutoSchedulePage();
   else if(p==='teacher-view') renderTeacherViewPage();
-  else if(p==='teacher-all') renderTeacherAll();
   else if(p==='workload') renderWorkload();
   else if(p==='export') renderExportPage();
   else if(p==='storage') renderStoragePage();
@@ -25700,7 +25662,6 @@ function nav(p){
   else if(p==='conflict') renderConflictPage();
   updateTopbar();
   updateSidebarCounts();
-  ensureHomeBackButton(p);
   document.querySelector('.main').scrollTop=0;
 }
 
@@ -25763,14 +25724,14 @@ function fillSchoolForm(){
   set('scSem',s.semester||'1');set('scAcad',s.acadName);set('scAcadPos',s.acadPos);
   set('scPrincipal',s.principalName);set('scPrinPos',s.principalPos);
   // restore logo
-  if(s.logoDataUrl) renderLogoPreview(s.logoDataUrl,'โลโก้โรงเรียน','',s.logoSize||'small');
+  if(s.logoDataUrl) renderLogoPreview(s.logoDataUrl,'โลโก้โรงเรียน','','medium');
   else clearLogoPreview();
 }
 function saveSchool(){
   DB.school={
     name:gv('scName'),address:gv('scAddr'),year:gv('scYear'),semester:gv('scSem'),
     acadName:gv('scAcad'),acadPos:gv('scAcadPos'),principalName:gv('scPrincipal'),principalPos:gv('scPrinPos'),
-    logoDataUrl:DB.school.logoDataUrl||'',logoSize:DB.school.logoSize||'small'
+    logoDataUrl:DB.school.logoDataUrl||'',logoSize:'medium'
   };
   updateTopbar(); markDirty();
   // update profile name
@@ -26018,7 +25979,8 @@ function openAddSubject(){
   refreshAllDeptDropdowns();
   editingSubjectId=null;
   document.getElementById('modalSubjectTitle').textContent='เพิ่มวิชา';
-  ['sjName','sjCode'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});  document.getElementById('sjDept').value='';
+  ['sjName','sjCode'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('sjDept').value='';
   document.getElementById('sjGrade').value='';
   document.getElementById('sjGrade').dataset.auto='0';
   document.getElementById('sjHours').value='1';
@@ -26306,8 +26268,7 @@ function addSlot(){
   DB.slots.push({id:maxId+1,label:'คาบที่ '+(maxId+1),start:'16:00',end:'16:50'});
   renderSlotsUI(); markDirty();
 }
-function removeSlot(i){
-  const id=DB.slots[i].id; DB.slots.splice(i,1);
+function removeSlot(i){  const id=DB.slots[i].id; DB.slots.splice(i,1);
   Object.keys(DB.sched).filter(k=>k.split('_')[1]==String(id)).forEach(k=>delete DB.sched[k]);
   renderSlotsUI(); markDirty();
 }
@@ -27017,7 +26978,8 @@ function runAutoSchedulePage() {
 
     // (f) ASSIGNMENT LOOP with forward-checking
     var usedInRoom = {};
-    var assignedIdx = {};  // subject → count of times placed in this room    var placedByDay = {};  // day → count of same subject on that day (for spread)
+    var assignedIdx = {};  // subject → count of times placed in this room
+    var placedByDay = {};  // day → count of same subject on that day (for spread)
     DB.days.forEach(function(d){ placedByDay[d] = {}; });
 
     variables.forEach(function(cell){
@@ -27305,8 +27267,7 @@ async function _buildTimetableImg(roomId,type){
  if(s.logoDataUrl) h+='<img src="'+s.logoDataUrl+'" style="height:34px;margin-bottom:4px"><br>';
  h+='<div style="font-size:16px;font-weight:800">'+(s.name||'โรงเรียน')+'</div><div style="font-size:12px;opacity:.9;margin-top:2px">'+lbl+' '+room.label+'</div><div style="font-size:10px;opacity:.7">ปี '+(s.year||'')+' ภาค '+(s.semester||'')+'</div></div>';
  h+='<table style="width:100%;border-collapse:collapse"><tr><th style="'+TH+'min-width:75px">คาบ/เวลา</th>';
- DB.days.forEach(d=>{h+='<th style="'+TH+'">'+d+'</th>';});
- h+='</tr>';
+ DB.days.forEach(d=>{h+='<th style="'+TH+'">'+d+'</th>';}); h+='</tr>';
  DB.slots.forEach((sl,si)=>{
   if(sl.isBreak){h+='<tr><td colspan="'+(DB.days.length+1)+'" style="background:#FFF8E1;border:2px solid #FFC107;padding:7px;text-align:center;font-weight:800;font-size:12px;color:#E65100">☀️ '+sl.label+' '+sl.start+'–'+sl.end+'</td></tr>';return;}
   h+='<tr><td style="'+TP+'">'+sl.label+'<br><span style="font-size:9px;color:#666;font-weight:400">'+sl.start+'–'+sl.end+'</span></td>';
@@ -28004,7 +27965,7 @@ async function buildTeacherDocx(teacherName, teacherObj) {
   });
 
   let logoRun=null;
-  if(school.logoDataUrl){try{const logoSize=LOGO_SIZES[school.logoSize||'small']||LOGO_SIZES.small;const logoBuf=await logoToArrayBuffer(school.logoDataUrl);const logoType=logoMimeToType(school.logoDataUrl);logoRun=new ImageRun({type:logoType,data:logoBuf,transformation:{width:logoSize.w,height:logoSize.h},altText:{title:'logo',description:'logo',name:'logo'}});}catch(e){}}
+  if(school.logoDataUrl){try{const logoSize=LOGO_SIZES['medium']||LOGO_SIZES.small;const logoBuf=await logoToArrayBuffer(school.logoDataUrl);const logoType=logoMimeToType(school.logoDataUrl);logoRun=new ImageRun({type:logoType,data:logoBuf,transformation:{width:logoSize.w,height:logoSize.h},altText:{title:'logo',description:'logo',name:'logo'}});}catch(e){}}
   const rankTxt=teacherObj&&teacherObj.rank?teacherObj.rank+(teacherObj.dept?'  กลุ่มสาระ'+teacherObj.dept:''):'';
   const doc=new Document({sections:[{properties:{page:{size:{width:11906,height:16838,orientation:PageOrientation.LANDSCAPE},margin:{top:margin,right:margin,bottom:margin,left:margin}}},children:[
     ...(logoRun?[new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:60},children:[logoRun]})]:[]),
@@ -28016,7 +27977,8 @@ async function buildTeacherDocx(teacherName, teacherObj) {
     new Table({width:{size:contentW,type:WidthType.DXA},columnWidths:colWidths,rows:[hdrRow,...rows]})
   ]}]});
   const blob=await Packer.toBlob(doc);
-  const safe=teacherName.replace(/[^\u0e00-\u0e7fa-zA-Z0-9]/g,'_');  dlBlob(blob,'ตารางสอน_'+safe+'_ปี'+(school.year||'')+'.docx');
+  const safe=teacherName.replace(/[^\u0e00-\u0e7fa-zA-Z0-9]/g,'_');
+  dlBlob(blob,'ตารางสอน_'+safe+'_ปี'+(school.year||'')+'.docx');
   toast('ดาวน์โหลดตารางสอน '+teacherName+' เสร็จแล้ว','succ');
 }
 
@@ -28304,8 +28266,7 @@ function exportBackup(){
   toast('📤 ส่งออก Backup สำเร็จ','succ');
 }
 function importBackup(event){
-  const file=event.target.files[0]; if(!file) return;
-  const reader=new FileReader();
+  const file=event.target.files[0]; if(!file) return;  const reader=new FileReader();
   reader.onload=e=>{
     try{
       const data=JSON.parse(e.target.result);
@@ -28431,7 +28392,7 @@ async function buildDocx(docType,room){
   let logoRun=null;
   if(school.logoDataUrl){
     try{
-      const logoSize=LOGO_SIZES[school.logoSize||'small']||LOGO_SIZES.small;
+      const logoSize=LOGO_SIZES['medium']||LOGO_SIZES.small;
       const logoBuf=await logoToArrayBuffer(school.logoDataUrl);
       const logoType=logoMimeToType(school.logoDataUrl);
       logoRun=new ImageRun({type:logoType,data:logoBuf,transformation:{width:logoSize.w,height:logoSize.h},altText:{title:'โลโก้โรงเรียน',description:'โลโก้โรงเรียน',name:'logo'}});
@@ -28643,7 +28604,6 @@ function renderAllUI(){
   else if(p==='builder') renderBuilder();
   else if(p==='auto-schedule') renderAutoSchedulePage();
   else if(p==='teacher-view') renderTeacherViewPage();
-  else if(p==='teacher-all') renderTeacherAll();
   else if(p==='workload') renderWorkload();
   else if(p==='export') renderExportPage();
   else if(p==='substitute'){ if(currentSubDate) renderSubContent(); }
@@ -28662,14 +28622,14 @@ const LOGO_SIZES = {small:{w:60,h:60,emu_w:685800,emu_h:685800},
 
 function handleLogoDrop(e){
   e.preventDefault();
-  document.getElementById('logoDropZone').classList.remove('drag');
+  const dz=document.getElementById('logoDropZone'); if(dz) dz.classList.remove('drag');
   const file = e.dataTransfer.files[0];
   if(file && file.type.startsWith('image/')) loadLogoFile(file);
   else toast('⚠️ กรุณาเลือกไฟล์รูปภาพเท่านั้น','warn');
 }
 function handleLogoFile(e){
   const file = e.target.files[0];
-  if(file) loadLogoFile(file);
+  if(file) loadLogoFile(file); e.target.value='';
 }
 function loadLogoFile(file){
   if(file.size > 2*1024*1024){ toast('⚠️ ไฟล์รูปต้องไม่เกิน 2MB','warn'); return; }
@@ -28677,48 +28637,55 @@ function loadLogoFile(file){
   reader.onload = ev => {
     const dataUrl = ev.target.result;
     DB.school.logoDataUrl = dataUrl;
-    DB.school.logoSize    = DB.school.logoSize || 'small';
-    renderLogoPreview(dataUrl, file.name, formatBytes(file.size), DB.school.logoSize);
+    DB.school.logoSize = 'medium';
+    renderLogoPreview(dataUrl, file.name, formatBytes(file.size), 'medium');
     markDirty();
     toast('🏫 โหลดโลโก้แล้ว','succ');
   };
   reader.readAsDataURL(file);
 }
 function renderLogoPreview(dataUrl, name, size, logoSize){
-  const ph  = document.getElementById('logoPlaceholder');
-  const area= document.getElementById('logoPreviewArea');
-  const img = document.getElementById('logoPreviewImg');
-  const fn  = document.getElementById('logoFileName');
-  const fs  = document.getElementById('logoFileSize');
-  const note= document.getElementById('logoSaveNote');
-  if(!ph||!area||!img) return;
-  img.src    = dataUrl;
-  fn.textContent = name || 'โลโก้โรงเรียน';
-  fs.textContent = size || '';
-  ph.style.display   = 'none';
+  const ph   = document.getElementById('logoPlaceholder');
+  const area = document.getElementById('logoPreviewArea');
+  const img  = document.getElementById('logoPreviewImg');
+  const fn   = document.getElementById('logoFileName');
+  const fs   = document.getElementById('logoFileSize');
+  const rm   = document.getElementById('logoRemoveBtn');
+  const dz   = document.getElementById('logoDropZone');
+  if(!area||!img) return;
+  img.src = dataUrl;
+  img.style.display = 'block';
+  if(ph) ph.style.display = 'none';
+  if(fn) fn.textContent = name || 'โลโก้โรงเรียน';
+  if(fs) fs.textContent = size || '';
+  if(rm) rm.style.display = 'inline-flex';
+  if(dz) dz.classList.remove('drag');
   area.style.display = 'block';
-  if(note) note.style.display = 'block';
-  setLogoSize(logoSize || 'small');
+  DB.school.logoSize = 'medium';
 }
 function clearLogoPreview(){
-  const ph  = document.getElementById('logoPlaceholder');
-  const area= document.getElementById('logoPreviewArea');
-  const note= document.getElementById('logoSaveNote');
-  if(ph)   ph.style.display   = 'block';
-  if(area) area.style.display = 'none';
-  if(note) note.style.display = 'none';
+  const ph   = document.getElementById('logoPlaceholder');
+  const area = document.getElementById('logoPreviewArea');
+  const img  = document.getElementById('logoPreviewImg');
+  const fn   = document.getElementById('logoFileName');
+  const fs   = document.getElementById('logoFileSize');
+  const rm   = document.getElementById('logoRemoveBtn');
+  const dz   = document.getElementById('logoDropZone');
+  if(ph) ph.style.display = 'flex';
+  if(img){ img.src=''; img.style.display='none'; }
+  if(fn) fn.textContent = 'ยังไม่ได้อัปโหลดโลโก้';
+  if(fs) fs.textContent = '';
+  if(rm) rm.style.display = 'none';
+  if(dz) dz.classList.remove('drag');
+  if(area) area.style.display = 'block';
 }
 function setLogoSize(size){
-  DB.school.logoSize = size;
-  document.querySelectorAll('.logo-size-btn').forEach(b=>{
-    b.classList.toggle('on', b.dataset.size===size);
-  });
-  markDirty();
+  DB.school.logoSize = 'medium';
 }
 function removeLogo(){
   if(!confirm('ลบโลโก้โรงเรียน?')) return;
   DB.school.logoDataUrl = '';
-  DB.school.logoSize    = 'small';
+  DB.school.logoSize = 'medium';
   const inp = document.getElementById('logoFileInput');
   if(inp) inp.value = '';
   clearLogoPreview();
@@ -28934,95 +28901,7 @@ function buildSmartSubOptions(absent, p, schedDay, absentList) {
   };
 }
 
-function renderSubContent(){
-  const dateStr = currentSubDate;
-  if(!dateStr) return;
-  const day = getSubDay(dateStr);
-  const content = document.getElementById('subContent');
-  if(!content) return;
 
-  // summary
-  const sumBar = document.getElementById('subSummaryBar');
-  const totalAbsent = day.absentList.length;
-  const totalPeriods = day.absentList.reduce((s,a)=>s+a.periods.length, 0);
-  const totalAssigned = day.absentList.reduce((s,a)=>s+a.periods.filter(p=>p.subTeacher).length, 0);
-  if(sumBar){
-    sumBar.style.display = totalAbsent>0 ? 'flex' : 'none';
-    const sa=document.getElementById('sumAbsent'),sp=document.getElementById('sumPeriods'),sg=document.getElementById('sumAssigned');
-    if(sa) sa.textContent=totalAbsent;
-    if(sp) sp.textContent=totalPeriods;
-    if(sg) sg.textContent=totalAssigned;
-  }
-
-  if(!day.absentList.length){
-    content.innerHTML=`<div class="no-absent">
-      <div class="no-absent-icon">✅</div>
-      <div style="font-size:15px;font-weight:800;color:var(--succ)">ไม่มีครูลาวันนี้</div>
-      <div style="font-size:13px;margin-top:6px;color:var(--muted)">กดปุ่ม "+ เพิ่มครูที่ลา" หากมีการลา</div>
-    </div>`;
-    return;
-  }
-
-  const schedDay = mapDayNameToSched(dateStr);
-
-  content.innerHTML = day.absentList.map((absent,ai)=>{
-    const t = DB.teachers.find(x=>x.id===absent.teacherId)||{prefix:'',first:'ไม่ระบุ',last:'',dept:''};
-    const tName = t.prefix+t.first+' '+t.last;
-    const icon = ABSENCE_ICONS[absent.type]||'📝';
-    // initials avatar
-    const initials = (t.first||'?').charAt(0);
-    const periodRows = absent.periods.map((p,pi)=>{
-      const slot = DB.slots.find(s=>String(s.id)===String(p.slotId));
-      const room = DB.rooms.find(r=>r.id===p.roomId);
-      // SMART ANALYZER: Check teacher availability (free / busy / absent)
-      const smartRes = buildSmartSubOptions(absent, p, schedDay, day.absentList);
-      const opts = smartRes.opts;
-      const stats = smartRes.summary;
-      const statsLabel = `<span style="font-size:10px;color:var(--muted);white-space:nowrap">
-        <span style="color:#10b981">✅ ${stats.best}</span> |
-        <span style="color:#f59e0b">🟡 ${stats.available}</span> |
-        <span style="color:#ef4444">🔴 ${stats.busy}</span>
-      </span>`;
-      return `<div class="period-sub-row">
-        <div class="period-pill">${slot?slot.label:'คาบ '+p.slotId}</div>
-        <div style="font-size:11px;color:var(--muted);min-width:80px">${slot?slot.start+'–'+slot.end:''}</div>
-        <div class="period-subj">${p.subject||'–'}</div>
-        <div class="period-room">${room?room.label:'–'}</div>
-        <div style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:220px">
-          <select class="sub-select${p.subTeacher?' assigned':''}"
-            data-absent="${ai}" data-period="${pi}"
-            onchange="setSubTeacher(${ai},${pi},this.value,this)">${opts}</select>
-          ${statsLabel}
-        </div>
-        <input class="sub-note-inp" type="text" placeholder="หมายเหตุ..."
-          value="${p.subNote||''}"
-          data-absent="${ai}" data-period="${pi}"
-          oninput="setSubNote(${ai},${pi},this.value)">
-        <button class="btn btn-danger btn-xs" onclick="removePeriodFromAbsent(${ai},${pi})" title="ลบคาบนี้">✕</button>
-      </div>`;
-    }).join('');
-
-    // เพิ่มปุ่มเพิ่มคาบด้วยตนเอง
-    const addPeriodBtn = `<div style="padding:8px 16px;border-top:1px dashed #e0e8f5">
-      <button class="btn btn-out btn-xs" onclick="addManualPeriod(${ai})">+ เพิ่มคาบด้วยตนเอง</button>
-    </div>`;
-
-    return `<div class="absent-card">
-      <div class="absent-hd">
-        <div class="absent-avt">${initials}</div>
-        <div>
-          <div class="absent-name">${tName}</div>
-          <div class="absent-meta">${t.dept||'ไม่ระบุกลุ่มสาระ'} | ${icon} ${absent.type}${absent.note?' — '+absent.note:''}</div>
-        </div>
-        <div class="absent-reason">
-          <span class="badge${absent.type==='ลาป่วย'?' b-red':absent.type==='ราชการ'||absent.type==='อบรม'?' b-blue':' b-yellow'}">${icon} ${absent.type}</span>
-          <button class="btn btn-danger btn-xs" onclick="removeAbsent(${ai})">🗑️ ลบ</button>        </div>
-      </div>
-      ${periodRows||'<div style="padding:12px 16px;color:var(--muted);font-size:13px">ไม่พบคาบสอนในวันนี้ — อาจสอนวันอื่น</div>'}
-      ${addPeriodBtn}
-    </div>`;
-  }).join('');
-}
 
 // ── Set substitute teacher ─────────────────
 function setSubTeacher(ai,pi,val,selEl){
@@ -29297,8 +29176,7 @@ async function buildSubstituteDocx(dateStr, day){
           new TableCell({borders:dkB,width:{size:C5,type:WidthType.DXA},margins:mg,
             shading:{fill:'2a5298',type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,
             children:[new Paragraph({alignment:AlignmentType.CENTER,children:[t('ครูสอนแทน',{bold:true,size:22,color:'FFFFFF'})]})] }),
-          new TableCell({borders:dkB,width:{size:C6,type:WidthType.DXA},margins:mg,
-            shading:{fill:'2a5298',type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,
+          new TableCell({borders:dkB,width:{size:C6,type:WidthType.DXA},margins:mg,            shading:{fill:'2a5298',type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,
             children:[new Paragraph({alignment:AlignmentType.CENTER,children:[t('หมายเหตุ',{bold:true,size:22,color:'FFFFFF'})]})] }),
         ]}),
         // period rows
@@ -29727,7 +29605,7 @@ function wzApply(){
     year:wzData.year, semester:wzData.semester,
     acadName:wzData.acadName, acadPos:wzData.acadPos,
     principalName:wzData.principalName, principalPos:wzData.principalPos,
-    logoDataUrl:'', logoSize:'small'
+    logoDataUrl:'', logoSize:'medium'
   };
   // subjects
   DB.subjects=[];
@@ -29912,7 +29790,7 @@ function loadDemoData(){
     year:'2568',semester:'1',
     acadName:'นายสมศักดิ์ ปัญญาดี',acadPos:'ครูชำนาญการ คศ.2',
     principalName:'นางสาวพรทิพย์ วิชาการ',principalPos:'ผู้อำนวยการโรงเรียน คศ.3',
-    logoDataUrl:'',logoSize:'small'};
+    logoDataUrl:'',logoSize:'medium'};
 
   DB.subjects=[
     {id:'sj01',name:'ภาษาไทย',          code:'ท',dept:'ภาษาไทย',                        hours:4,color:'#DBEAFE'},
@@ -30015,7 +29893,8 @@ function loadDemoData(){
       [5,'จันทร์','สังคมศึกษา','tc15'],           [5,'อังคาร','โลก ดาราศาสตร์ และอวกาศ','tc14'],[5,'พุธ','สังคมศึกษา','tc15'],           [5,'พฤหัสบดี','ฟิสิกส์เพิ่มเติม','tc14'],     [5,'ศุกร์','สังคมศึกษา','tc15'],
       [6,'จันทร์','ภาษาอังกฤษเพิ่มเติม','tc05'],[6,'อังคาร','ภาษาอังกฤษ','tc05'],           [6,'พุธ','ประวัติศาสตร์','tc15'],          [6,'พฤหัสบดี','การงานอาชีพ','tc09'],          [6,'ศุกร์','กิจกรรมแนะแนว','tc09'],
       [7,'จันทร์','สุขศึกษาและพลศึกษา','tc07'], [7,'อังคาร','ทัศนศิลป์','tc08'],             [7,'พุธ','วิทยาการคำนวณ','tc10'],         [7,'พฤหัสบดี','ดนตรี','tc08'],                [7,'ศุกร์','พระพุทธศาสนา','tc06'],
-      [8,'จันทร์','ยุวกาชาด','tc07'],            [8,'อังคาร','ยุวกาชาด','tc07'],              [8,'พุธ','ชุมนุม','tc09'],                [8,'พฤหัสบดี','ชุมนุม','tc09'],               [8,'ศุกร์','โลก ดาราศาสตร์ และอวกาศ','tc14'],    ],
+      [8,'จันทร์','ยุวกาชาด','tc07'],            [8,'อังคาร','ยุวกาชาด','tc07'],              [8,'พุธ','ชุมนุม','tc09'],                [8,'พฤหัสบดี','ชุมนุม','tc09'],               [8,'ศุกร์','โลก ดาราศาสตร์ และอวกาศ','tc14'],
+    ],
     // ม.ปลาย ศิลป์-ภาษา
     upper_art:[
       [1,'จันทร์','ภาษาไทย','tc11'],       [1,'อังคาร','คณิตศาสตร์','tc02'],          [1,'พุธ','ภาษาไทย','tc11'],         [1,'พฤหัสบดี','ภาษาอังกฤษ','tc05'],         [1,'ศุกร์','ภาษาไทย','tc11'],
@@ -30482,9 +30361,6 @@ if(_subV2OldSetSubTeacher){
   };
 }
 </script>
-
-
-
 <script id="substitute-production-share-script">
 (function(){
   function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
@@ -30667,15 +30543,7 @@ if(_subV2OldSetSubTeacher){
   }
 })();
 </script>
-
 <script src="config.js"></script>
-<style id="school-os-online-style">
-#onlineDbBadge{position:fixed;right:16px;bottom:16px;z-index:5000;padding:8px 12px;border-radius:999px;
-font-family:'Sarabun',sans-serif;font-size:11px;font-weight:800;box-shadow:0 4px 18px rgba(0,0,0,.14);
-background:#eef3fa;color:#49627f;border:1px solid #d7e1ef}
-#onlineDbBadge.ok{background:#e8f6ed;color:#237a43;border-color:#bfe4cb}
-#onlineDbBadge.err{background:#fff0f0;color:#a43d3d;border-color:#f0caca}
-</style>
 <script id="school-os-online-adapter">
 (function(){
   var SAFE_LOGO_URL='https://drivekup01.github.io/School-OS/assets/school-logo.svg';
@@ -30727,7 +30595,6 @@ background:#eef3fa;color:#49627f;border:1px solid #d7e1ef}
   else setTimeout(loadOnlineDatabase,0);
 })();
 </script>
-
 <script id="public-auth-mode-script">
 window.SCHOOL_AUTH = window.SCHOOL_AUTH || {loggedIn:false,token:'',role:'guest',mode:'DAILY'};
 
@@ -30915,5 +30782,21 @@ function renderTeacherAll(query){
 }
 #page-builder .sched-tbl tbody tr{
   height: 20%;
+}
+
+.logo-unified-dropzone{
+  width:180px;height:180px;margin:0 auto;border:1.5px dashed #CCD8E8;border-radius:16px;
+  background:#FAFBFE;display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:.18s ease;overflow:hidden;position:relative;
+}
+.logo-unified-dropzone:hover,.logo-unified-dropzone.drag{
+  border-color:#7FA4D6;background:#F2F7FD;box-shadow:0 5px 16px rgba(15,46,93,.08);
+}
+.logo-unified-placeholder{
+  width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:18px;
+}
+.logo-unified-image{
+  width:100%;height:100%;object-fit:contain;padding:10px;display:block;
 }
 </style>
