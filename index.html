@@ -25638,11 +25638,6 @@ async function persistOnlineNow(){
   if(!window.SCHOOL_AUTH || !SCHOOL_AUTH.loggedIn) return;
   if(typeof postSchoolApi!=='function') return;
 
-  if(SCHOOL_AUTH.token==='local-admin'){
-    setSaveInd('unsaved','ยังไม่บันทึกออนไลน์ · กรุณาใช้บัญชีฝ่ายวิชาการ');
-    return;
-  }
-
   if(onlineSaveInFlight){
     onlineSavePending=true;
     return;
@@ -30675,7 +30670,7 @@ async function academicLogin(){
   }catch(e){toast('เข้าสู่ระบบไม่สำเร็จ: '+e.message,'warn');}
 }
 async function academicLogout(){
-  try{if(SCHOOL_AUTH.token && SCHOOL_AUTH.token!=='local-admin') await postSchoolApi({action:'logout',token:SCHOOL_AUTH.token});}catch(_){}
+  try{if(SCHOOL_AUTH.token) await postSchoolApi({action:'logout',token:SCHOOL_AUTH.token});}catch(_){}
   SCHOOL_AUTH={loggedIn:false,token:'',role:'guest',mode:'DAILY'};
   window.SCHOOL_AUTH=SCHOOL_AUTH;
   sessionStorage.removeItem('school_os_admin_token');sessionStorage.removeItem('school_os_admin_mode');
@@ -30683,16 +30678,6 @@ async function academicLogout(){
 }
 async function switchSystemMode(mode){
   if(!SCHOOL_AUTH.loggedIn) return;
-
-  if(SCHOOL_AUTH.token==='local-admin'){
-    SCHOOL_AUTH.mode=mode==='DAILY'?'DAILY':'SETUP';
-    sessionStorage.setItem('school_os_admin_mode',SCHOOL_AUTH.mode);
-    if(window.DB) DB.systemMode=SCHOOL_AUTH.mode;
-    applyAccessUI();
-    nav('dashboard');
-    toast(SCHOOL_AUTH.mode==='SETUP'?'🔓 SETUP: เปิดการจัดการข้อมูล':'🔒 DAILY: ล็อกข้อมูลหลักแล้ว','succ');
-    return;
-  }
 
   try{
     var out=await postSchoolApi({action:'setMode',token:SCHOOL_AUTH.token,mode:mode});
@@ -30746,9 +30731,25 @@ function renderTeacherAll(query){
   });
 
   var token=sessionStorage.getItem('school_os_admin_token')||'';
+
+  // Remove legacy local-admin sessions from the old frontend-only login.
+  // A logged-in state is valid only when the token was issued by Apps Script.
+  if(token==='local-admin'){
+    sessionStorage.removeItem('school_os_admin_token');
+    sessionStorage.removeItem('school_os_admin_mode');
+    token='';
+  }
+
   if(token){
-    SCHOOL_AUTH.loggedIn=true;SCHOOL_AUTH.token=token;SCHOOL_AUTH.role='admin';
+    SCHOOL_AUTH.loggedIn=true;
+    SCHOOL_AUTH.token=token;
+    SCHOOL_AUTH.role='admin';
     SCHOOL_AUTH.mode=sessionStorage.getItem('school_os_admin_mode')||'SETUP';
+  }else{
+    SCHOOL_AUTH.loggedIn=false;
+    SCHOOL_AUTH.token='';
+    SCHOOL_AUTH.role='guest';
+    SCHOOL_AUTH.mode='DAILY';
   }
   applyAccessUI();
   setTimeout(applyAccessUI,800);
