@@ -954,82 +954,6 @@ body{background:var(--bg)}
 }
 </style>
 
-<style id="after-mockup-ui-v14">
-:root{
-  --pri:#0C2F5D;--pri2:#174B86;--pri3:#2A67A8;
-  --gold:#E7B64A;--gold2:#F3D27A;--gold-soft:#FFF5D8;
-  --bg:#F4F7FB;--card:#FFFFFF;--border:#E3EAF4;
-  --text:#17345F;--muted:#73839D;--sidebar:228px;
-  --sh:0 8px 24px rgba(22,54,96,.07);
-}
-*{box-sizing:border-box}
-body{background:var(--bg);color:#20324B}
-.school-topbar{
-  height:78px!important;padding:0 24px 0 0!important;background:#fff!important;
-  border-bottom:1px solid #E9EEF6!important;box-shadow:0 2px 14px rgba(20,50,90,.07)!important;
-  position:relative;overflow:visible;gap:0!important;
-}
-.school-topbar:before{
-  content:'';position:absolute;left:0;top:0;width:430px;height:78px;
-  background:linear-gradient(135deg,#0B2C57 0%,#133F73 76%,#E4B548 76.5%,#F2D47B 79%,transparent 79.5%);
-  border-bottom-right-radius:52px;z-index:0;pointer-events:none;
-}
-.school-brand{position:relative;z-index:1;min-width:420px!important;padding-left:26px;gap:13px!important}
-.school-logo-shell{width:70px!important;height:70px!important;border:none!important;box-shadow:none!important;background:transparent!important;overflow:visible!important}
-.school-name{color:#F7D36D!important;font-size:17px!important;max-width:315px!important;font-family:'Sarabun',sans-serif!important;line-height:1.15!important}
-.school-system-name{color:rgba(255,255,255,.88)!important;font-size:10px!important;letter-spacing:.1px}
-.tb-spacer{flex:1}
-.topbar-tools{position:relative;z-index:1;padding-right:22px;gap:8px!important}
-.school-year,.school-save{height:34px;display:flex;align-items:center;border-radius:18px!important;background:#F7F9FC!important;border:1px solid #DEE6F1!important;color:#3A5377!important;padding:0 12px!important}
-.school-year{background:#FFF9EA!important;border-color:#E8CC76!important;color:#7B5B13!important}
-.top-icon-btn{height:36px!important;border-radius:10px!important;background:#fff!important;border:1px solid #DDE6F2!important;box-shadow:0 2px 8px rgba(20,50,90,.035)}
-.top-icon-btn:hover{background:#F7FAFE!important;border-color:#C9D6E7!important}
-
-.app-shell{height:calc(100vh - 78px)!important}
-.sidebar{width:228px!important;background:linear-gradient(180deg,#0C2D57 0%,#082443 100%)!important;padding-top:0!important;box-shadow:4px 0 14px rgba(7,33,65,.08)}
-.sb-collapse-wrap{padding:10px 10px 8px!important;background:rgba(255,255,255,.025)!important}
-.sb-collapse-btn{height:36px!important;border-radius:9px!important;border-color:rgba(255,255,255,.18)!important;background:rgba(255,255,255,.07)!important}
-.sb-section{padding:12px 0 5px!important}
-.sb-label{text-transform:none!important;font-size:9px!important;letter-spacing:1.35px!important;color:rgba(255,255,255,.37)!important;padding:0 16px 7px!important}
-.sb-item{min-height:40px;margin:2px 8px!important;padding:9px 11px!important;border-radius:9px!important;color:rgba(255,255,255,.80)!important;font-size:13px!important;gap:9px!important}
-.sb-item .icon{font-size:16px!important;width:21px!important}
-.sb-item:hover{background:rgba(255,255,255,.075)!important;color:#fff!important}
-.sb-item.active{background:linear-gradient(90deg,#F3D06E,#E9B74B)!important;color:#12335D!important;box-shadow:0 5px 14px rgba(0,0,0,.16)!important}
-.sb-divider{margin:5px 14px!important;border-top-color:rgba(255,255,255,.07)!important}
-.sb-badge{margin-left:auto!important;background:rgba(255,255,255,.14)!important;border-radius:12px!important;min-width:25px!important;padding:2px 7px!important;text-align:center!important}
-.main{background:linear-gradient(180deg,#F7F9FC 0%,#F3F6FA 100%)!important}.page{padding:24px 28px 34px!important}
-.ph{margin-bottom:18px!important}
-.ph-left h1{font-size:27px!important;color:#17345F!important;display:flex;align-items:center;gap:8px}
-.ph-left p{font-size:12px!important;color:#71809A!important;margin-top:5px!important}
-.page-title-icon{width:40px!important;height:40px!important;background:#FFF1BE!important;border:1px solid #F2D57D!important;border-radius:11px!important}
-.ph-actions{gap:8px!important}
-.ph-actions .btn{height:36px!important;padding:0 14px!important;border-radius:9px!important;box-shadow:0 2px 7px rgba(20,50,90,.04)}
-.ph-actions .btn-pri{background:linear-gradient(135deg,#F2CC65,#E6AC36)!important;color:#17345F!important;border:none!important}
-.card{background:#fff!important;border:1px solid #E8EDF5!important;border-radius:16px!important;box-shadow:0 6px 20px rgba(20,50,90,.055)!important}
-
-/* Builder page from reference mockup */
-#page-builder .builder-page-head{padding:0 2px 2px}
-.builder-room-panel{background:#fff;border:1px solid #E7EDF5;border-radius:15px;padding:13px 14px 14px;margin-bottom:13px;box-shadow:0 5px 17px rgba(20,50,90,.05)}
-.builder-section-title{font-size:13px;font-weight:800;color:#17345F;display:flex;align-items:center;gap:7px;margin-bottom:10px}
-#page-builder .room-tabs{box-shadow:none!important;border:none!important;padding:0!important;margin:0!important;background:transparent!important;border-radius:0!important}
-#page-builder .room-tab{height:34px!important;padding:0 14px!important;font-size:11px!important;border-radius:8px!important;box-shadow:none!important}
-#page-builder .room-tab.active{background:#0F3767!important;box-shadow:0 3px 8px rgba(15,55,103,.18)!important}
-.builder-table-panel{background:#fff;border:1px solid #E7EDF5;border-radius:15px;padding:12px 14px 15px;box-shadow:0 6px 20px rgba(20,50,90,.055)}
-.builder-table-titlebar{height:38px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:800;color:#17345F;margin-bottom:8px}
-.builder-table-titlebar .mini-icon{width:28px;height:28px;border-radius:8px;background:#FFF1BE;border:1px solid #F2D57D;display:flex;align-items:center;justify-content:center}
-#page-builder .card.builder-grid-card{padding:0!important;border:none!important;box-shadow:none!important;border-radius:10px!important;overflow:auto}
-#page-builder .sched-tbl{border-radius:10px;overflow:hidden}
-#page-builder .sched-tbl th{background:#103B70!important}
-#page-builder .sched-tbl th[style*="E65100"],#page-builder .sched-tbl th[style*="#E65100"]{background:#E2AD35!important;color:#17345F!important}
-#page-builder .builder-break-cell{background:#FFF7DE!important;color:#A66A00!important}
-#page-builder .cell-subj-sel,#page-builder .cell-tchr-sel,#page-builder .cell-room-inp{border-radius:6px!important}
-
-@media(max-width:1100px){
- .school-topbar:before{width:360px}.school-brand{min-width:350px!important}.school-name{max-width:250px!important}
-}
-</style>
-
-
 <style id="substitute-v2-style">
 /* ══ SUBSTITUTE V2 — daily all-teacher overview ═══════════ */
 #page-substitute{padding-bottom:40px}
@@ -1353,6 +1277,10 @@ body.admin-mode.daily-mode #nav-storage{display:none!important}
   border-bottom:1px solid rgba(255,255,255,.45)!important;
   box-shadow:0 3px 14px rgba(18,58,104,.14)!important;
 }
+.school-topbar::before{
+  display:none!important;
+  content:none!important;
+}
 .school-topbar::after{
   content:"";
   position:absolute;
@@ -1616,6 +1544,8 @@ body.guest-mode #adminTopBox{display:none!important}
   }
   body.admin-mode .sidebar{min-height:calc(100vh - 154px)!important}
 }
+
+.topbar::before{display:none!important;content:none!important;}
 </style>
 </head>
 <body class="guest-mode">
