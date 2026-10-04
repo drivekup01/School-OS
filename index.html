@@ -1340,8 +1340,8 @@ body.admin-mode.daily-mode #nav-storage{display:none!important}
 /* ===== School-OS canonical header ===== */
 .school-topbar{
   position:relative!important;
-  height:104px!important;
-  min-height:104px!important;
+  height:118px!important;
+  min-height:118px!important;
   padding:0!important;
   gap:0!important;
   overflow:hidden!important;
@@ -1353,12 +1353,12 @@ body.admin-mode.daily-mode #nav-storage{display:none!important}
 /* Photo field */
 .school-header-photo{
   position:absolute!important;
-  inset:0 0 0 300px!important;
+  inset:0 0 0 270px!important;
   z-index:0!important;
   background-size:cover!important;
   background-repeat:no-repeat!important;
-  background-position:center 42%!important;
-  filter:saturate(.72) contrast(.95) brightness(.98)!important;
+  background-position:center 66%!important;
+  filter:saturate(.78) contrast(.96) brightness(.96)!important;
 }
 .school-header-photo::after{
   content:"";
@@ -1599,6 +1599,13 @@ body.guest-mode #adminTopBox{display:none!important}
     width:auto!important;
   }
 }
+
+/* Join header directly to sidebar/content: no white gutter */
+.app-shell{margin-top:0!important;padding-top:0!important;}
+.sidebar{margin-top:0!important;border-top:0!important;}
+.main{margin-top:0!important;padding-top:0!important;}
+body.admin-mode .main>.page.active{padding-top:18px!important;}
+body.admin-mode .sidebar{min-height:calc(100vh - 118px)!important;}
 </style>
 </head>
 <body class="guest-mode">
