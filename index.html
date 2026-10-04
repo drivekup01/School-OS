@@ -1194,15 +1194,34 @@ body.guest-mode #page-substitute .sub-v2-main-card{width:100%}
 body.guest-mode #page-substitute .sub-v2-card-sub{max-width:none}
 
 .public-topbar-tools{gap:8px;flex-wrap:nowrap}
-.academic-login-box{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);padding:5px 6px;border-radius:10px;border:1px solid rgba(255,255,255,.18)}
-.academic-login-box input{width:112px;height:32px;border:1px solid rgba(255,255,255,.45);background:#fff;border-radius:7px;padding:0 9px;font-family:inherit;font-size:11px;outline:none}
-.academic-login-box button,.logout-top-btn{height:32px;border:0;border-radius:7px;padding:0 12px;font-family:inherit;font-size:11px;font-weight:800;cursor:pointer;background:#f0c24f;color:#17345f}
-.admin-top-box{align-items:center;gap:7px}
-.admin-user-chip{color:#fff;font-size:11px;font-weight:800;background:rgba(255,255,255,.13);padding:7px 9px;border-radius:8px}
-.mode-switch{display:flex;background:rgba(255,255,255,.14);padding:3px;border-radius:9px;gap:2px}
-.mode-switch button{border:0;background:transparent;color:#dfeaff;padding:5px 9px;border-radius:7px;font-size:10px;font-weight:900;cursor:pointer}
-.mode-switch button.active{background:#fff;color:#164174}
-.logout-top-btn{background:#ef5d6a;color:#fff}
+
+.dashboard-action-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:stretch}
+.dashboard-action-card{margin-bottom:0;min-height:430px;display:flex;flex-direction:column}
+.dashboard-card-head{padding-bottom:14px;margin-bottom:16px;border-bottom:1px solid #e6ebf3}
+.dashboard-card-sub{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5}
+.dashboard-shortcuts{display:grid;grid-template-columns:1fr 1fr;gap:10px;flex:1}
+.dashboard-shortcut{border:1.5px solid #dce4f1;background:#fff;border-radius:12px;padding:13px 14px;display:flex;align-items:center;gap:11px;text-align:left;cursor:pointer;font-family:inherit;color:var(--text);transition:.16s ease;min-height:88px}
+.dashboard-shortcut:hover{border-color:var(--pri2);background:#f7f9ff;transform:translateY(-1px);box-shadow:0 4px 13px rgba(26,58,110,.08)}
+.dashboard-shortcut.primary{background:#eef4ff;border-color:#cbd9f0}
+.dashboard-shortcut.wide{grid-column:1/-1}
+.dashboard-shortcut-icon{width:42px;height:42px;border-radius:11px;background:#e8f0fe;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0}
+.dashboard-shortcut strong{display:block;font-size:13px;color:var(--pri);font-weight:800}
+.dashboard-shortcut small{display:block;font-size:10px;color:var(--muted);margin-top:3px;line-height:1.4}
+
+.dashboard-login-card{background:linear-gradient(180deg,#fff 0%,#fbfcff 100%)}
+.academic-login-box{display:flex;flex-direction:column;gap:7px;flex:1}
+.academic-login-box label{font-size:12px;font-weight:800;color:var(--pri);text-transform:none;letter-spacing:0;margin-top:3px}
+.academic-login-box input{width:100%;height:46px;border:1.5px solid #d4deeb;background:#fff;border-radius:9px;padding:0 13px;font-family:inherit;font-size:13px;outline:none;box-shadow:0 2px 7px rgba(28,58,100,.06);transition:.15s}
+.academic-login-box input:focus{border-color:var(--pri2);box-shadow:0 0 0 3px rgba(42,82,152,.10)}
+.dashboard-login-btn{height:48px;border:0;border-radius:9px;margin-top:10px;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,var(--pri2),var(--pri3));color:#fff;box-shadow:0 4px 12px rgba(42,82,152,.22)}
+.dashboard-login-btn:hover{filter:brightness(1.05)}
+.dashboard-login-note{text-align:center;font-size:10px;color:#8a96aa;margin-top:6px}
+.admin-top-box{align-items:center;justify-content:center;gap:9px}
+.dashboard-admin-box{flex:1;flex-direction:column;text-align:center;padding:32px 20px;border:1.5px solid #d8e8dd;background:#f5fbf7;border-radius:12px}
+.dashboard-admin-icon{width:62px;height:62px;border-radius:50%;background:#2e7d32;color:#fff;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900}
+.dashboard-admin-title{font-size:18px;font-weight:900;color:#1f6330}
+.dashboard-admin-sub{font-size:11px;color:#62806a}
+.logout-top-btn{height:40px;border:0;border-radius:8px;padding:0 18px;font-family:inherit;font-size:12px;font-weight:800;cursor:pointer;background:#ef5d6a;color:#fff;margin-top:8px}
 
 .public-home{padding:22px!important}
 .public-hero{min-height:170px;border-radius:20px;padding:28px 30px;display:flex;align-items:center;justify-content:space-between;gap:22px;color:#fff;
@@ -1251,15 +1270,16 @@ body.admin-mode.daily-mode #nav-export,
 body.admin-mode.daily-mode #nav-storage{display:none!important}
 
 @media(max-width:1100px){
-  .academic-login-box input{width:90px}
+  .dashboard-action-grid{grid-template-columns:1fr}
+  .dashboard-action-card{min-height:auto}
   .public-menu-grid{grid-template-columns:1fr}
   .public-menu-card{min-height:128px}
 }
 @media(max-width:760px){
   .topbar{min-height:72px;height:auto;padding:8px 10px;align-items:flex-start}
   .school-system-name,.tb-tag.school-year{display:none!important}
-  .academic-login-box{position:absolute;right:8px;top:7px;display:grid;grid-template-columns:92px 92px;gap:4px;padding:4px}
-  .academic-login-box button{grid-column:1/3;height:26px}
+  .dashboard-shortcuts{grid-template-columns:1fr}
+  .dashboard-shortcut.wide{grid-column:auto}
   .public-home{padding:12px!important}.public-hero{padding:20px;min-height:150px;display:block}.public-hero h1{font-size:22px}.public-lock-note{margin-top:14px;min-width:0}
   .public-info-grid{grid-template-columns:1fr}
   .admin-top-box{flex-wrap:wrap;justify-content:flex-end}
@@ -1286,15 +1306,6 @@ background:#eef3fa;color:#49627f;border:1px solid #d7e1ef}
   <div class="tb-spacer"></div>
   <div class="topbar-tools public-topbar-tools">
     <div class="tb-tag school-year" id="tbYear">ปีการศึกษา –</div>
-    <div id="guestLoginBox" class="academic-login-box">
-      <input id="academicLoginId" type="text" autocomplete="username" placeholder="ID" aria-label="ID ฝ่ายวิชาการ">
-      <input id="academicLoginPass" type="password" autocomplete="current-password" placeholder="Password" aria-label="Password ฝ่ายวิชาการ" onkeydown="if(event.key==='Enter') academicLogin()">
-      <button type="button" onclick="academicLogin()">เข้าสู่ระบบ</button>
-    </div>
-    <div id="adminTopBox" class="admin-top-box" style="display:none">
-      <span class="admin-user-chip">👤 ฝ่ายวิชาการ</span>
-      <button class="logout-top-btn" onclick="academicLogout()">ออกจากระบบ</button>
-    </div>
     <div class="save-ind school-save admin-only-top" id="saveIndicator" title="สถานะการบันทึก"><div class="save-dot" id="saveDot"></div><span id="saveLabel">–</span></div>
     <button class="top-icon-btn admin-only-top" onclick="nav('storage')" title="ข้อมูลและสำรองข้อมูล">💾 <span>ข้อมูล</span></button>
     <button class="top-icon-btn admin-only-top" onclick="exportAllDocx()" title="ส่งออก Word">📄 <span>Word</span></button>
@@ -1359,55 +1370,70 @@ background:#eef3fa;color:#49627f;border:1px solid #d7e1ef}
       <button class="btn btn-gold" onclick="showWizard()">🚀 ตั้งค่าโรงเรียน Wizard</button>
     </div>
   </div>
-  <!-- stat row -->
+
   <div class="stats-row" id="statsRow">
     <div class="stat-card c1"><div class="stat-num" id="stTeacher">0</div><div class="stat-label">👨‍🏫 ครูทั้งหมด</div></div>
     <div class="stat-card c2"><div class="stat-num" id="stSubject">0</div><div class="stat-label">📚 วิชาทั้งหมด</div></div>
     <div class="stat-card c3"><div class="stat-num" id="stRoom">0</div><div class="stat-label">🚪 ห้องเรียน</div></div>
     <div class="stat-card c4"><div class="stat-num" id="stFilled">0</div><div class="stat-label">📋 ช่องที่กรอกแล้ว</div></div>
   </div>
-  <!-- main grid -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px">
-    <!-- quick links -->
-    <div class="card">
-      <div class="card-hd"><div class="card-title">🚀 เมนูลัด</div></div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <button class="btn btn-pri" onclick="nav('builder')">🗓️ สร้าง/แก้ไขตาราง</button>
-        <button class="btn btn-out" onclick="nav('substitute')">🔄 บันทึกสอนแทนวันนี้</button>
-        <button class="btn btn-out" onclick="nav('teachers')">👨‍🏫 จัดการรายชื่อครู</button>
-        <button class="btn btn-out" onclick="nav('workload')">📊 ตรวจภาระงานสอน</button>
-        <button class="btn btn-out" onclick="nav('export')">📥 ส่งออกไฟล์ Word</button>
-        <button class="btn btn-gold" onclick="showWizard()">⚙️ ตั้งค่าใหม่ด้วย Wizard</button>
+
+  <div class="dashboard-action-grid">
+    <section class="card dashboard-action-card">
+      <div class="dashboard-card-head">
+        <div>
+          <div class="card-title">⚡ เมนูลัด</div>
+          <div class="dashboard-card-sub">เลือกเมนูที่ใช้งานบ่อย เพื่อเข้าถึงงานได้รวดเร็ว</div>
+        </div>
       </div>
-    </div>
-    <!-- grade progress -->
-    <div class="card">
-      <div class="card-hd"><div class="card-title">📈 ความคืบหน้าตารางแต่ละชั้น</div></div>
-      <div id="dashGradeProgress">
-        <div class="empty-state" style="padding:16px"><div class="empty-icon">🚪</div><div class="empty-text">ยังไม่มีห้องเรียน</div></div>
+      <div class="dashboard-shortcuts">
+        <button class="dashboard-shortcut primary" onclick="nav('builder')">
+          <span class="dashboard-shortcut-icon">🗓️</span>
+          <span><strong>สร้าง / แก้ไขตาราง</strong><small>จัดการตารางเรียนของแต่ละห้อง</small></span>
+        </button>
+        <button class="dashboard-shortcut" onclick="nav('teachers')">
+          <span class="dashboard-shortcut-icon">👨‍🏫</span>
+          <span><strong>ครูผู้สอน</strong><small>จัดการรายชื่อครูและข้อมูลผู้สอน</small></span>
+        </button>
+        <button class="dashboard-shortcut" onclick="nav('subjects')">
+          <span class="dashboard-shortcut-icon">📚</span>
+          <span><strong>รายวิชา</strong><small>จัดการข้อมูลรายวิชา</small></span>
+        </button>
+        <button class="dashboard-shortcut" onclick="nav('rooms')">
+          <span class="dashboard-shortcut-icon">🚪</span>
+          <span><strong>ห้องเรียน</strong><small>จัดการข้อมูลห้องเรียน</small></span>
+        </button>
+        <button class="dashboard-shortcut wide" onclick="nav('substitute')">
+          <span class="dashboard-shortcut-icon">🔄</span>
+          <span><strong>ตารางสอนแทนรายวัน</strong><small>จัดการครูลาและตารางสอนแทนประจำวัน</small></span>
+        </button>
       </div>
-    </div>
-  </div>
-  <!-- lower grid -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
-    <!-- workload -->
-    <div class="card">
-      <div class="card-hd"><div class="card-title">📊 ภาระงานสอนสูงสุด</div></div>
-      <div id="dashWorkload">
-        <div class="empty-state" style="padding:20px"><div class="empty-icon">👨‍🏫</div><div class="empty-text">ยังไม่มีข้อมูล</div></div>
+    </section>
+
+    <section class="card dashboard-action-card dashboard-login-card">
+      <div class="dashboard-card-head">
+        <div>
+          <div class="card-title">🔐 เข้าสู่ระบบฝ่ายวิชาการ</div>
+          <div class="dashboard-card-sub">เข้าสู่ระบบเพื่อจัดการข้อมูลและตารางเรียนของโรงเรียน</div>
+        </div>
       </div>
-    </div>
-    <!-- curriculum check -->
-    <div class="card">
-      <div class="card-hd"><div class="card-title">📋 ตรวจหลักสูตรแกนกลาง 2551</div>
-        <select id="currGradeSel" onchange="updateCurrCheck()" style="font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:5px;max-width:100px">
-          <option value="">ชั้น</option>
-        </select>
+
+      <div id="guestLoginBox" class="academic-login-box">
+        <label for="academicLoginId">รหัสผู้ใช้งาน (User ID)</label>
+        <input id="academicLoginId" type="text" autocomplete="username" placeholder="กรอกรหัสผู้ใช้งาน" aria-label="ID ฝ่ายวิชาการ">
+        <label for="academicLoginPass">รหัสผ่าน (Password)</label>
+        <input id="academicLoginPass" type="password" autocomplete="current-password" placeholder="กรอกรหัสผ่าน" aria-label="Password ฝ่ายวิชาการ" onkeydown="if(event.key==='Enter') academicLogin()">
+        <button type="button" class="dashboard-login-btn" onclick="academicLogin()">🔑 เข้าสู่ระบบ</button>
+        <div class="dashboard-login-note">สำหรับฝ่ายวิชาการและผู้ดูแลระบบ</div>
       </div>
-      <div id="dashCurrCheck">
-        <div style="font-size:13px;color:var(--muted);padding:8px">เพิ่มห้องเรียนก่อนเพื่อดูสรุปหลักสูตร</div>
+
+      <div id="adminTopBox" class="admin-top-box dashboard-admin-box" style="display:none">
+        <div class="dashboard-admin-icon">✓</div>
+        <div class="dashboard-admin-title">เข้าสู่ระบบแล้ว</div>
+        <div class="dashboard-admin-sub">คุณกำลังใช้งานในสิทธิ์ฝ่ายวิชาการ</div>
+        <button class="logout-top-btn" onclick="academicLogout()">ออกจากระบบ</button>
       </div>
-    </div>
+    </section>
   </div>
 </div>
 
@@ -29694,79 +29720,7 @@ function renderCurriculumCheck(grade){
 // ════════════════════════════════════════════
 function renderDashboard(){
   updateSidebarCounts();
-  // workload widget
-  const el=document.getElementById('dashWorkload');
-
-  // Conflict widget on dashboard
-  const cfEl = document.getElementById('dashConflict');
-  if(cfEl){
-    const cfs = detectConflicts();
-    const cnt = cfs.length;
-    if(cnt===0){
-      cfEl.innerHTML=`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#E8F5E9;border-radius:8px;border-left:3px solid #2E7D32">
-        <span style="font-size:22px">✅</span>
-        <div><div style="font-weight:800;color:#1B5E20">ไม่พบตารางสอนชนกัน</div>
-        <div style="font-size:12px;color:#2E7D32">ตารางสอนทุกคนถูกต้อง</div></div></div>`;
-    } else {
-      const top3 = [...new Set(cfs.map(c=>c.teacherName))].slice(0,3);
-      cfEl.innerHTML=`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#FFEBEE;border-radius:8px;border-left:3px solid #E53935;margin-bottom:6px">
-        <span style="font-size:22px">⚠️</span>
-        <div style="flex:1"><div style="font-weight:800;color:#B71C1C">พบ ${cnt} จุดที่ชนกัน — ${[...new Set(cfs.map(c=>c.teacherName))].length} คน</div>
-        <div style="font-size:12px;color:#C62828">${top3.join(', ')}${[...new Set(cfs.map(c=>c.teacherName))].length>3?' และอื่นๆ':''}</div></div>
-        <button class="btn btn-sm" style="background:#E53935;color:#fff;border:none;border-radius:6px;padding:4px 12px;cursor:pointer;font-size:12px;font-weight:700" onclick="nav('conflict')">ดูรายละเอียด</button>
-      </div>`;
-    }
-  }
-  if(el){
-    const wl=calcWorkload();
-    if(!wl.length){ el.innerHTML='<div class="empty-state" style="padding:20px"><div class="empty-icon">👨‍🏫</div><div class="empty-text">ยังไม่มีข้อมูล</div></div>'; }
-    else {
-      const top5=wl.sort((a,b)=>b.hours-a.hours).slice(0,5);
-      el.innerHTML=top5.map(t=>`<div class="wl-row" style="margin-bottom:8px">
-        <span style="font-size:12px;min-width:130px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.name}</span>
-        <div class="wl-bar-bg"><div class="wl-bar-fill ${t.hours>20?'wl-over':t.hours>18?'wl-warn':'wl-ok'}" style="width:${Math.min(100,t.hours/25*100)}%"></div></div>
-        <span class="wl-num" style="color:${t.hours>20?'var(--err)':t.hours>18?'var(--gold)':'var(--succ)'}">${t.hours} ชม.</span>
-      </div>`).join('');
-    }
-  }
-  // curriculum check for first grade
-  const cc=document.getElementById('dashCurrCheck');
-  if(cc){
-    const grades=[...new Set(DB.rooms.map(r=>r.grade))].filter(Boolean);
-    if(!grades.length){ cc.innerHTML='<div style="font-size:13px;color:var(--muted);padding:8px">เพิ่มห้องเรียนก่อนเพื่อดูสรุปหลักสูตร</div>'; }
-    else { cc.innerHTML=renderCurriculumCheck(grades[0]); }
-  }
-  // grade progress
-  const gp=document.getElementById('dashGradeProgress');
-  if(gp){
-    const grades=[...new Set(DB.rooms.map(r=>r.grade))];
-    if(!grades.length){ gp.innerHTML='<div class="empty-state" style="padding:16px"><div class="empty-icon">🚪</div><div class="empty-text">ยังไม่มีห้องเรียน</div></div>'; }
-    else {
-      const totalSlots=DB.slots.length*DB.days.length;
-      gp.innerHTML=grades.map(g=>{
-        const rooms=DB.rooms.filter(r=>r.grade===g);
-        const avgPct=rooms.length?Math.round(rooms.reduce((s,r)=>{
-          const f=Object.keys(DB.sched).filter(k=>k.startsWith(r.id+'_')&&DB.sched[k]&&DB.sched[k].subject).length;
-          return s+(totalSlots?f/totalSlots*100:0);
-        },0)/rooms.length):0;
-        return`<div class="wl-row" style="margin-bottom:8px">
-          <span style="font-size:13px;font-weight:800;color:var(--pri);min-width:38px">${g}</span>
-          <span style="font-size:11px;color:var(--muted);min-width:50px">${rooms.length} ห้อง</span>
-          <div class="wl-bar-bg"><div class="wl-bar-fill wl-ok" style="width:${avgPct}%"></div></div>
-          <span style="font-size:12px;min-width:36px;text-align:right;font-weight:700">${avgPct}%</span>
-        </div>`;
-      }).join('');
-    }
-  }
-  // populate curriculum grade selector
-  const cgSel=document.getElementById('currGradeSel');
-  if(cgSel){
-    const grades=[...new Set(DB.rooms.map(r=>r.grade))];
-    const cur=cgSel.value;
-    cgSel.innerHTML='<option value="">– ชั้น –</option>'+grades.map(g=>`<option value="${g}" ${g===cur?'selected':''}>${g}</option>`).join('');
-    if(!cur&&grades.length){ cgSel.value=grades[0]; updateCurrCheck(); }
-    else if(cur) updateCurrCheck();
-  }
+  if(typeof applyAccessUI==='function') applyAccessUI();
 }
 function updateCurrCheck(){
   const g=document.getElementById('currGradeSel').value;
