@@ -1358,6 +1358,20 @@ label,.fg label{font-size:13px!important}
   .ph-left h1{font-size:25px!important}
 }
 </style>
+
+<style id="topbar-status-readability-v1">
+.school-year,.school-save{
+  height:44px!important;
+  padding:0 17px!important;
+  border-radius:22px!important;
+  font-size:14px!important;
+  font-weight:800!important;
+  line-height:1!important;
+}
+.school-save{gap:7px!important}
+.school-save .save-dot,.save-ind .save-dot{width:9px!important;height:9px!important}
+.topbar-tools{gap:12px!important}
+</style>
 </head>
 <body class="guest-mode">
 <!-- TOPBAR -->
@@ -1373,8 +1387,6 @@ label,.fg label{font-size:13px!important}
   <div class="topbar-tools public-topbar-tools">
     <div class="tb-tag school-year" id="tbYear">ปีการศึกษา –</div>
     <div class="save-ind school-save admin-only-top" id="saveIndicator" title="สถานะการบันทึก"><div class="save-dot" id="saveDot"></div><span id="saveLabel">–</span></div>
-    <button class="top-icon-btn admin-only-top" onclick="nav('storage')" title="ข้อมูลและสำรองข้อมูล">💾 <span>ข้อมูล</span></button>
-    <button class="top-icon-btn admin-only-top" onclick="exportAllDocx()" title="ส่งออก Word">📄 <span>Word</span></button>
   </div>
   <div id="tbSchool" style="display:none"></div>
 </div>
