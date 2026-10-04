@@ -1317,6 +1317,13 @@ body.admin-mode.daily-mode #nav-storage{display:none!important}
   .admin-top-box{flex-wrap:wrap;justify-content:flex-end}
 }
 </style>
+
+<style id="home-back-button-style">
+.home-back-wrap{margin:0 0 14px 0}
+.home-back-btn{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border:1.5px solid var(--border);border-radius:9px;background:#fff;color:var(--pri);font-family:'Sarabun',sans-serif;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 1px 5px rgba(26,58,110,.06);transition:all .15s}
+.home-back-btn:hover{border-color:var(--pri);background:#eef3ff;transform:translateX(-1px)}
+@media(max-width:760px){.home-back-wrap{margin-bottom:10px}.home-back-btn{padding:7px 11px;font-size:12px}}
+</style>
 </head>
 <body class="guest-mode">
 <!-- TOPBAR -->
@@ -25704,6 +25711,22 @@ function toast(msg,type='info'){
 // ════════════════════════════════════════════
 //  NAVIGATION
 // ════════════════════════════════════════════
+function ensureHomeBackButton(p){
+  document.querySelectorAll('.home-back-wrap').forEach(function(el){el.remove();});
+  if(p==='dashboard') return;
+  var pg=document.getElementById('page-'+p);
+  if(!pg) return;
+  var wrap=document.createElement('div');
+  wrap.className='home-back-wrap no-print';
+  var btn=document.createElement('button');
+  btn.type='button';
+  btn.className='home-back-btn';
+  btn.innerHTML='← <span>กลับหน้าหลัก</span>';
+  btn.onclick=function(){nav('dashboard');};
+  wrap.appendChild(btn);
+  pg.insertBefore(wrap,pg.firstChild);
+}
+
 function nav(p){
   if(typeof refreshAllDeptDropdowns==='function') refreshAllDeptDropdowns();
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
@@ -25733,6 +25756,7 @@ function nav(p){
   else if(p==='conflict') renderConflictPage();
   updateTopbar();
   updateSidebarCounts();
+  ensureHomeBackButton(p);
   document.querySelector('.main').scrollTop=0;
 }
 
@@ -30796,6 +30820,22 @@ async function academicLogin(){
   var id=(document.getElementById('academicLoginId')||{}).value||'';
   var pass=(document.getElementById('academicLoginPass')||{}).value||'';
   if(!id||!pass){toast('กรุณากรอก ID และ Password','warn');return;}
+
+  // Local admin fallback for the current school deployment.
+  if(id==='admin' && pass==='admin'){
+    SCHOOL_AUTH.loggedIn=true;
+    SCHOOL_AUTH.token='local-admin';
+    SCHOOL_AUTH.role='admin';
+    SCHOOL_AUTH.mode='SETUP';
+    sessionStorage.setItem('school_os_admin_token',SCHOOL_AUTH.token);
+    sessionStorage.setItem('school_os_admin_mode',SCHOOL_AUTH.mode);
+    document.getElementById('academicLoginPass').value='';
+    applyAccessUI();
+    nav('dashboard');
+    toast('✅ เข้าสู่ระบบผู้ดูแลแล้ว','succ');
+    return;
+  }
+
   try{
     var out=await postSchoolApi({action:'login',id:id,password:pass});
     SCHOOL_AUTH.loggedIn=true;SCHOOL_AUTH.token=out.token;SCHOOL_AUTH.role=out.role||'admin';SCHOOL_AUTH.mode=out.systemMode||'SETUP';
@@ -30807,7 +30847,7 @@ async function academicLogin(){
   }catch(e){toast('เข้าสู่ระบบไม่สำเร็จ: '+e.message,'warn');}
 }
 async function academicLogout(){
-  try{if(SCHOOL_AUTH.token) await postSchoolApi({action:'logout',token:SCHOOL_AUTH.token});}catch(_){}
+  try{if(SCHOOL_AUTH.token && SCHOOL_AUTH.token!=='local-admin') await postSchoolApi({action:'logout',token:SCHOOL_AUTH.token});}catch(_){}
   SCHOOL_AUTH={loggedIn:false,token:'',role:'guest',mode:'DAILY'};
   window.SCHOOL_AUTH=SCHOOL_AUTH;
   sessionStorage.removeItem('school_os_admin_token');sessionStorage.removeItem('school_os_admin_mode');
@@ -30815,6 +30855,17 @@ async function academicLogout(){
 }
 async function switchSystemMode(mode){
   if(!SCHOOL_AUTH.loggedIn) return;
+
+  if(SCHOOL_AUTH.token==='local-admin'){
+    SCHOOL_AUTH.mode=mode==='DAILY'?'DAILY':'SETUP';
+    sessionStorage.setItem('school_os_admin_mode',SCHOOL_AUTH.mode);
+    if(window.DB) DB.systemMode=SCHOOL_AUTH.mode;
+    applyAccessUI();
+    nav('dashboard');
+    toast(SCHOOL_AUTH.mode==='SETUP'?'🔓 SETUP: เปิดการจัดการข้อมูล':'🔒 DAILY: ล็อกข้อมูลหลักแล้ว','succ');
+    return;
+  }
+
   try{
     var out=await postSchoolApi({action:'setMode',token:SCHOOL_AUTH.token,mode:mode});
     SCHOOL_AUTH.mode=out.systemMode;sessionStorage.setItem('school_os_admin_mode',SCHOOL_AUTH.mode);
