@@ -1181,6 +1181,23 @@ body{background:var(--bg);color:#20324B}
 </style>
 
 
+
+<style id="quick-menu-modern-style">
+.quick-menu-card{padding-bottom:18px}
+.quick-menu-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding-top:2px}
+.quick-menu-item{min-height:78px;border:1px solid #dbe4ef;border-radius:14px;background:#fff;display:flex;align-items:center;gap:14px;padding:14px 16px;cursor:pointer;text-align:left;box-shadow:0 2px 8px rgba(15,46,93,.04);transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease,background .16s ease;color:#123766}
+.quick-menu-item:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(15,46,93,.10);border-color:#b8c9df;background:#fbfdff}
+.quick-menu-item.primary{background:linear-gradient(135deg,#17457f,#123565);border-color:#17457f;color:#fff;box-shadow:0 7px 18px rgba(18,53,101,.18)}
+.quick-menu-item.wizard{background:linear-gradient(135deg,#ffe79a,#f0c24f);border-color:#efc650;color:#153a6d}
+.quick-menu-icon{width:46px;height:46px;border-radius:13px;background:#eef4fb;display:flex;align-items:center;justify-content:center;font-size:24px;flex:0 0 46px}
+.quick-menu-item.primary .quick-menu-icon{background:rgba(255,255,255,.13)}
+.quick-menu-item.wizard .quick-menu-icon{background:rgba(255,255,255,.32)}
+.quick-menu-label{font-size:16px;font-weight:800;line-height:1.2;flex:1}
+.quick-menu-arrow{width:34px;height:34px;border-radius:50%;background:#eef4fb;display:flex;align-items:center;justify-content:center;font-size:28px;line-height:1;color:#184477;flex:0 0 34px}
+.quick-menu-item.primary .quick-menu-arrow{background:rgba(255,255,255,.13);color:#fff}
+.quick-menu-item.wizard .quick-menu-arrow{background:rgba(255,255,255,.38)}
+@media(max-width:900px){.quick-menu-grid{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 <!-- TOPBAR -->
@@ -1269,15 +1286,39 @@ body{background:var(--bg);color:#20324B}
   <!-- main grid -->
   <div style="display:grid;grid-template-columns:1fr;gap:18px;margin-bottom:18px">
     <!-- quick links -->
-    <div class="card">
+    <div class="card quick-menu-card">
       <div class="card-hd"><div class="card-title">🚀 เมนูลัด</div></div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <button class="btn btn-pri" onclick="nav('builder')">🗓️ สร้าง/แก้ไขตาราง</button>
-        <button class="btn btn-out" onclick="nav('substitute')">🔄 บันทึกสอนแทนวันนี้</button>
-        <button class="btn btn-out" onclick="nav('teachers')">👨‍🏫 จัดการรายชื่อครู</button>
-        <button class="btn btn-out" onclick="nav('workload')">📊 ตรวจภาระงานสอน</button>
-        <button class="btn btn-out" onclick="nav('export')">📥 ส่งออกไฟล์ Word</button>
-        <button class="btn btn-gold" onclick="showWizard()">⚙️ ตั้งค่าใหม่ด้วย Wizard</button>
+      <div class="quick-menu-grid">
+        <button class="quick-menu-item primary" onclick="nav('builder')">
+          <span class="quick-menu-icon">📅</span>
+          <span class="quick-menu-label">สร้าง/แก้ไขตาราง</span>
+          <span class="quick-menu-arrow">›</span>
+        </button>
+        <button class="quick-menu-item" onclick="nav('substitute')">
+          <span class="quick-menu-icon">🔄</span>
+          <span class="quick-menu-label">บันทึกสอนแทนวันนี้</span>
+          <span class="quick-menu-arrow">›</span>
+        </button>
+        <button class="quick-menu-item" onclick="nav('teachers')">
+          <span class="quick-menu-icon">👨‍🏫</span>
+          <span class="quick-menu-label">จัดการรายชื่อครู</span>
+          <span class="quick-menu-arrow">›</span>
+        </button>
+        <button class="quick-menu-item" onclick="nav('workload')">
+          <span class="quick-menu-icon">📊</span>
+          <span class="quick-menu-label">ตรวจภาระงานสอน</span>
+          <span class="quick-menu-arrow">›</span>
+        </button>
+        <button class="quick-menu-item" onclick="nav('export')">
+          <span class="quick-menu-icon">📥</span>
+          <span class="quick-menu-label">ส่งออกไฟล์ Word</span>
+          <span class="quick-menu-arrow">›</span>
+        </button>
+        <button class="quick-menu-item wizard" onclick="showWizard()">
+          <span class="quick-menu-icon">⚙️</span>
+          <span class="quick-menu-label">ตั้งค่าใหม่ด้วย Wizard</span>
+          <span class="quick-menu-arrow">›</span>
+        </button>
       </div>
     </div>
   </div>
