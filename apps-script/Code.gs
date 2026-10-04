@@ -7,12 +7,36 @@ function doGet(e) {
       return json_({ ok: true, service: 'School-OS API', version: '1.0', time: new Date().toISOString() });
     }
     if (action === 'bootstrap') {
-      return json_({ ok: true, data: loadDatabase_(), readOnly: true, version: '1.0' });
+      return json_({ ok: true, data: loadDatabaseCached_(), readOnly: true, version: '1.1' });
+    }
+    if (action === 'refresh') {
+      CacheService.getScriptCache().remove('school_os_bootstrap_v1');
+      return json_({ ok: true, data: loadDatabaseCached_(), readOnly: true, version: '1.1', refreshed: true });
     }
     return json_({ ok: false, error: 'Unknown action' });
   } catch (err) {
     return json_({ ok: false, error: String(err && err.message ? err.message : err) });
   }
+}
+
+function loadDatabaseCached_() {
+  const cache = CacheService.getScriptCache();
+  const key = 'school_os_bootstrap_v1';
+  const cached = cache.get(key);
+  if (cached) {
+    try { return JSON.parse(cached); } catch (_) {}
+  }
+
+  const data = loadDatabase_();
+
+  // Apps Script CacheService has a per-entry size limit.
+  // Keep the cache only when the serialized school DB fits safely.
+  try {
+    const raw = JSON.stringify(data);
+    if (raw.length < 90000) cache.put(key, raw, 300);
+  } catch (_) {}
+
+  return data;
 }
 
 function loadDatabase_() {
