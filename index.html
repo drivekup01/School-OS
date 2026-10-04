@@ -1450,7 +1450,7 @@ label,.fg label{font-size:13px!important}
     <div class="stat-card c1"><div class="stat-num" id="stTeacher">0</div><div class="stat-label">👨‍🏫 ครูทั้งหมด</div></div>
     <div class="stat-card c2"><div class="stat-num" id="stSubject">0</div><div class="stat-label">📚 วิชาทั้งหมด</div></div>
     <div class="stat-card c3"><div class="stat-num" id="stRoom">0</div><div class="stat-label">🚪 ห้องเรียน</div></div>
-    <div class="stat-card c4"><div class="stat-num" id="stFilled">0</div><div class="stat-label">📋 ช่องที่กรอกแล้ว</div></div>
+    <div class="stat-card c4"><div class="stat-num" id="stFilled">0</div><div class="stat-label">🚫 ครูที่ลา</div></div>
   </div>
 
   <div class="dashboard-action-grid">
@@ -25936,8 +25936,14 @@ function updateSidebarCounts(){
   set('stTeacher',DB.teachers.length);
   set('stSubject',DB.subjects.length);
   set('stRoom',DB.rooms.length);
-  const filled=Object.values(DB.sched).filter(c=>c&&c.subject).length;
-  set('stFilled',filled);
+  let subDateForDashboard=currentSubDate;
+  if(!subDateForDashboard){
+    const now=new Date();
+    subDateForDashboard=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  }
+  const subDay=(DB.substitute&&DB.substitute[subDateForDashboard])?DB.substitute[subDateForDashboard]:null;
+  const absentCount=(subDay&&Array.isArray(subDay.absentList))?subDay.absentList.length:0;
+  set('stFilled',absentCount);
 }
 function renderProfileSidebar(){
   const bar=document.getElementById('profileBar'); if(!bar) return;
