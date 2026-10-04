@@ -30368,6 +30368,63 @@ if(_subV2OldSetSubTeacher){
 </script>
 
 
+
+<script src="config.js"></script>
+<style id="school-os-online-style">
+#onlineDbBadge{position:fixed;right:16px;bottom:16px;z-index:5000;padding:8px 12px;border-radius:999px;
+font-family:'Sarabun',sans-serif;font-size:11px;font-weight:800;box-shadow:0 4px 18px rgba(0,0,0,.14);
+background:#eef3fa;color:#49627f;border:1px solid #d7e1ef}
+#onlineDbBadge.ok{background:#e8f6ed;color:#237a43;border-color:#bfe4cb}
+#onlineDbBadge.err{background:#fff0f0;color:#a43d3d;border-color:#f0caca}
+</style>
+<script id="school-os-online-adapter">
+(function(){
+  function badge(text,cls){
+    var el=document.getElementById('onlineDbBadge');
+    if(!el){el=document.createElement('div');el.id='onlineDbBadge';document.body.appendChild(el);}
+    el.className=cls||''; el.textContent=text;
+  }
+  async function loadOnlineDatabase(){
+    var url=window.SCHOOL_OS_API_URL||'';
+    if(!url){badge('ฐานข้อมูลออนไลน์: รอเชื่อม Apps Script','');return;}
+    badge('กำลังโหลดฐานข้อมูลโรงเรียน...','');
+    try{
+      var sep=url.indexOf('?')>=0?'&':'?';
+      var res=await fetch(url+sep+'action=bootstrap',{method:'GET',redirect:'follow',cache:'no-store'});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      var payload=await res.json();
+      if(!payload||!payload.ok||!payload.data) throw new Error((payload&&payload.error)||'ข้อมูลไม่ถูกต้อง');
+      var oldLogo=(DB&&DB.school&&DB.school.logoDataUrl)||'';
+      DB=payload.data;
+      if(oldLogo && !DB.school.logoDataUrl) DB.school.logoDataUrl=oldLogo;
+      DB.substitute=DB.substitute||{};
+      DB.customDepts=DB.customDepts||[];
+      var profiles=getProfiles();
+      if(!activeProfileId) activeProfileId='online-school-os';
+      profiles[activeProfileId]={
+        id:activeProfileId,name:DB.school.name||'School-OS Online',year:DB.school.year||'',
+        data:JSON.parse(JSON.stringify(DB)),savedAt:Date.now(),onlineSource:true
+      };
+      saveProfiles(profiles);
+      localStorage.setItem(LS_ACTIVE,activeProfileId);
+      var wiz=document.getElementById('setupWizard'); if(wiz) wiz.style.display='none';
+      if(typeof applySubjectColorScheme==='function') applySubjectColorScheme(false);
+      if(typeof refreshAllDeptDropdowns==='function') refreshAllDeptDropdowns();
+      if(typeof renderCustomDeptList==='function') renderCustomDeptList();
+      if(typeof renderAllUI==='function') renderAllUI();
+      else {updateTopbar();updateSidebarCounts();renderDashboard();renderProfileSidebar();}
+      badge('● ฐานข้อมูลโรงเรียนออนไลน์ · อ่านอย่างเดียว','ok');
+      toast('☁️ โหลดฐานข้อมูลโรงเรียนจาก Google สำเร็จ','succ');
+    }catch(err){
+      badge('ฐานข้อมูลออนไลน์เชื่อมต่อไม่ได้ · ใช้ข้อมูลในเครื่อง','err');
+      toast('⚠️ เชื่อม Google Database ไม่สำเร็จ — ใช้ข้อมูลในเครื่องแทน','warn');
+      console.error('School-OS Online DB:',err);
+    }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',loadOnlineDatabase);
+  else setTimeout(loadOnlineDatabase,0);
+})();
+</script>
 </body>
 </html>
 <style id="builder-full-height-fix">
