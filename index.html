@@ -1230,8 +1230,95 @@ body{background:var(--bg);color:#20324B}
 .sub-export-done{background:#eaf8ef}.sub-export-pending{background:#fff5d1}
 @media(max-width:760px){.sub-share-actions .btn{font-size:10px;padding:7px 8px}}
 </style>
+
+<style id="public-home-auth-style">
+body.guest-mode .sidebar{display:none!important}
+body.guest-mode .main{width:100%;max-width:none}
+body.guest-mode .app-shell{display:block}
+body.guest-mode .admin-only-top{display:none!important}
+body.admin-mode .academic-login-box{display:none!important}
+body.guest-mode #page-substitute .sub-v2-toolbar-actions,
+body.guest-mode #page-substitute .sub-v2-side-card,
+body.guest-mode #page-substitute .sub-v2-assigned-card .sub-group-edit,
+body.guest-mode #page-substitute .sub-group-select{display:none!important}
+body.guest-mode #page-substitute .sub-v2-layout{grid-template-columns:1fr!important}
+body.guest-mode #page-substitute .sub-v2-main-card{width:100%}
+body.guest-mode #page-substitute .sub-v2-card-sub{max-width:none}
+
+.public-topbar-tools{gap:8px;flex-wrap:nowrap}
+.academic-login-box{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);padding:5px 6px;border-radius:10px;border:1px solid rgba(255,255,255,.18)}
+.academic-login-box input{width:112px;height:32px;border:1px solid rgba(255,255,255,.45);background:#fff;border-radius:7px;padding:0 9px;font-family:inherit;font-size:11px;outline:none}
+.academic-login-box button,.logout-top-btn{height:32px;border:0;border-radius:7px;padding:0 12px;font-family:inherit;font-size:11px;font-weight:800;cursor:pointer;background:#f0c24f;color:#17345f}
+.admin-top-box{align-items:center;gap:7px}
+.admin-user-chip{color:#fff;font-size:11px;font-weight:800;background:rgba(255,255,255,.13);padding:7px 9px;border-radius:8px}
+.mode-switch{display:flex;background:rgba(255,255,255,.14);padding:3px;border-radius:9px;gap:2px}
+.mode-switch button{border:0;background:transparent;color:#dfeaff;padding:5px 9px;border-radius:7px;font-size:10px;font-weight:900;cursor:pointer}
+.mode-switch button.active{background:#fff;color:#164174}
+.logout-top-btn{background:#ef5d6a;color:#fff}
+
+.public-home{padding:22px!important}
+.public-hero{min-height:170px;border-radius:20px;padding:28px 30px;display:flex;align-items:center;justify-content:space-between;gap:22px;color:#fff;
+background:
+radial-gradient(circle at 82% 20%,rgba(255,255,255,.18),transparent 28%),
+linear-gradient(120deg,#0f3b73,#1669b1 58%,#58a4d8);
+box-shadow:0 12px 34px rgba(24,67,117,.18);overflow:hidden;position:relative}
+.public-hero:after{content:"";position:absolute;right:-40px;bottom:-90px;width:330px;height:220px;border-radius:50%;background:rgba(255,255,255,.09)}
+.public-hero-copy{position:relative;z-index:1}
+.public-kicker{font-size:13px;font-weight:900;letter-spacing:.08em;color:#ffe28a;margin-bottom:6px}
+.public-hero h1{font-size:30px;margin:0 0 7px;font-weight:900}
+.public-hero p{font-size:13px;color:rgba(255,255,255,.85);margin:0}
+.public-lock-note{position:relative;z-index:1;display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.22);padding:12px 14px;border-radius:13px;min-width:220px}
+.public-lock-icon{font-size:28px}.public-lock-note strong,.public-lock-note small{display:block}.public-lock-note small{font-size:10px;color:rgba(255,255,255,.78);margin-top:2px}
+
+.public-menu-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:18px}
+.public-menu-card{min-height:180px;border:1px solid #dce6f1;border-radius:18px;padding:22px;display:flex;flex-direction:column;align-items:flex-start;text-align:left;cursor:pointer;position:relative;overflow:hidden;box-shadow:0 4px 15px rgba(18,58,104,.06);transition:.18s ease;font-family:inherit}
+.public-menu-card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(18,58,104,.12)}
+.public-menu-card.blue{background:linear-gradient(145deg,#edf6ff,#dceeff);color:#15569c}
+.public-menu-card.green{background:linear-gradient(145deg,#edfff7,#dff6ec);color:#097f52}
+.public-menu-card.pink{background:linear-gradient(145deg,#fff0f5,#fde2ec);color:#b42658}
+.public-card-icon{width:56px;height:56px;border-radius:16px;background:rgba(255,255,255,.72);display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:16px}
+.public-card-copy strong{display:block;font-size:18px;font-weight:900}.public-card-copy small{display:block;font-size:11px;line-height:1.65;margin-top:6px;opacity:.78}
+.public-card-arrow{position:absolute;right:18px;bottom:18px;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.75);display:flex;align-items:center;justify-content:center;font-size:27px;font-weight:700}
+.public-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.public-info-card{background:#fff;border:1px solid #dce4ef;border-radius:14px;padding:15px 17px;box-shadow:0 2px 10px rgba(16,54,98,.04)}
+.public-info-card h3{font-size:14px;color:#163f73;margin:0 0 5px}.public-info-card p{font-size:11px;color:#66758b;line-height:1.65;margin:0}
+
+.teacher-all-card{background:#fff;border:1px solid #dbe4ef;border-radius:14px;margin-bottom:14px;overflow:hidden;box-shadow:0 2px 10px rgba(17,54,98,.05)}
+.teacher-all-head{padding:11px 14px;background:#eef4fb;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.teacher-all-name{font-size:14px;font-weight:900;color:#173f73}.teacher-all-dept{font-size:10px;color:#738096;margin-top:2px}
+.teacher-all-body{padding:10px}
+.guest-readonly-note{display:none}
+body.guest-mode .guest-readonly-note{display:block;background:#fff7d7;color:#7a5c00;border:1px solid #f0d77a;padding:8px 11px;border-radius:9px;font-size:11px;margin-bottom:10px}
+
+body.admin-mode.daily-mode #nav-school,
+body.admin-mode.daily-mode #nav-teachers,
+body.admin-mode.daily-mode #nav-subjects,
+body.admin-mode.daily-mode #nav-rooms,
+body.admin-mode.daily-mode #nav-timeslots,
+body.admin-mode.daily-mode #nav-builder,
+body.admin-mode.daily-mode #nav-auto-schedule,
+body.admin-mode.daily-mode #nav-workload,
+body.admin-mode.daily-mode #nav-conflict,
+body.admin-mode.daily-mode #nav-export,
+body.admin-mode.daily-mode #nav-storage{display:none!important}
+
+@media(max-width:1100px){
+  .academic-login-box input{width:90px}
+  .public-menu-grid{grid-template-columns:1fr}
+  .public-menu-card{min-height:128px}
+}
+@media(max-width:760px){
+  .topbar{min-height:72px;height:auto;padding:8px 10px;align-items:flex-start}
+  .school-system-name,.tb-tag.school-year{display:none!important}
+  .academic-login-box{position:absolute;right:8px;top:7px;display:grid;grid-template-columns:92px 92px;gap:4px;padding:4px}
+  .academic-login-box button{grid-column:1/3;height:26px}
+  .public-home{padding:12px!important}.public-hero{padding:20px;min-height:150px;display:block}.public-hero h1{font-size:22px}.public-lock-note{margin-top:14px;min-width:0}
+  .public-info-grid{grid-template-columns:1fr}
+  .admin-top-box{flex-wrap:wrap;justify-content:flex-end}
+}
+</style>
 </head>
-<body>
+<body class="guest-mode">
 <!-- TOPBAR -->
 <div class="topbar school-topbar">
   <div class="school-brand">
@@ -1242,11 +1329,24 @@ body{background:var(--bg);color:#20324B}
     </div>
   </div>
   <div class="tb-spacer"></div>
-  <div class="topbar-tools">
+  <div class="topbar-tools public-topbar-tools">
     <div class="tb-tag school-year" id="tbYear">ปีการศึกษา –</div>
-    <div class="save-ind school-save" id="saveIndicator" title="สถานะการบันทึก"><div class="save-dot" id="saveDot"></div><span id="saveLabel">–</span></div>
-    <button class="top-icon-btn" onclick="nav('storage')" title="ข้อมูลและสำรองข้อมูล">💾 <span>ข้อมูล</span></button>
-    <button class="top-icon-btn" onclick="exportAllDocx()" title="ส่งออก Word">📄 <span>Word</span></button>
+    <div id="guestLoginBox" class="academic-login-box">
+      <input id="academicLoginId" type="text" autocomplete="username" placeholder="ID" aria-label="ID ฝ่ายวิชาการ">
+      <input id="academicLoginPass" type="password" autocomplete="current-password" placeholder="Password" aria-label="Password ฝ่ายวิชาการ" onkeydown="if(event.key==='Enter') academicLogin()">
+      <button type="button" onclick="academicLogin()">เข้าสู่ระบบ</button>
+    </div>
+    <div id="adminTopBox" class="admin-top-box" style="display:none">
+      <span class="admin-user-chip">👤 ฝ่ายวิชาการ</span>
+      <div class="mode-switch" title="โหมดการใช้งาน">
+        <button id="modeSetupBtn" onclick="switchSystemMode('SETUP')">SETUP</button>
+        <button id="modeDailyBtn" onclick="switchSystemMode('DAILY')">DAILY</button>
+      </div>
+      <button class="logout-top-btn" onclick="academicLogout()">ออกจากระบบ</button>
+    </div>
+    <div class="save-ind school-save admin-only-top" id="saveIndicator" title="สถานะการบันทึก"><div class="save-dot" id="saveDot"></div><span id="saveLabel">–</span></div>
+    <button class="top-icon-btn admin-only-top" onclick="nav('storage')" title="ข้อมูลและสำรองข้อมูล">💾 <span>ข้อมูล</span></button>
+    <button class="top-icon-btn admin-only-top" onclick="exportAllDocx()" title="ส่งออก Word">📄 <span>Word</span></button>
   </div>
   <div id="tbSchool" style="display:none"></div>
 </div>
@@ -1300,36 +1400,47 @@ body{background:var(--bg);color:#20324B}
 <div class="main" id="mainContent">
 
 <!-- ═══════════ PAGE: DASHBOARD ═══════════ -->
-<div class="page active" id="page-dashboard">
-  <div class="ph">
-    <div class="ph-left"><h1>🏠 ภาพรวมระบบ</h1><p>ระบบตารางเรียน-ตารางสอน มัธยมศึกษาตอนต้น–ตอนปลาย</p></div>
-    <div class="ph-actions">
-      <button class="btn btn-out btn-sm" onclick="loadDemoData()">🧪 โหลดข้อมูลตัวอย่าง</button>
-      <button class="btn btn-gold" onclick="showWizard()">🚀 ตั้งค่าโรงเรียน Wizard</button>
+<div class="page active public-home" id="page-dashboard">
+  <section class="public-hero">
+    <div class="public-hero-copy">
+      <div class="public-kicker">School-OS</div>
+      <h1 id="publicSchoolTitle">ระบบตารางสอนโรงเรียน</h1>
+      <p>ดูตารางสอนได้ทันทีโดยไม่ต้องเข้าสู่ระบบ • การแก้ไขข้อมูลสำหรับฝ่ายวิชาการเท่านั้น</p>
     </div>
-  </div>
-  <!-- stat row -->
-  <div class="stats-row" id="statsRow">
-    <div class="stat-card c1"><div class="stat-num" id="stTeacher">0</div><div class="stat-label">👨‍🏫 ครูทั้งหมด</div></div>
-    <div class="stat-card c2"><div class="stat-num" id="stSubject">0</div><div class="stat-label">📚 วิชาทั้งหมด</div></div>
-    <div class="stat-card c3"><div class="stat-num" id="stRoom">0</div><div class="stat-label">🚪 ห้องเรียน</div></div>
-    <div class="stat-card c4"><div class="stat-num" id="stFilled">0</div><div class="stat-label">📋 ช่องที่กรอกแล้ว</div></div>
-  </div>
-  <!-- main grid -->
-  <div style="display:grid;grid-template-columns:1fr;gap:18px;margin-bottom:18px">
-    <!-- quick links -->
-    <div class="card quick-menu-card">
-      <div class="card-hd"><div class="card-title">🚀 เมนูลัด</div></div>
-      <div class="quick-menu-grid">
-        <button class="quick-menu-item primary" onclick="nav('builder')"><span class="quick-menu-icon">📅</span><span class="quick-menu-label">สร้าง/แก้ไขตาราง</span><span class="quick-menu-arrow">›</span></button>
-        <button class="quick-menu-item" onclick="nav('substitute')"><span class="quick-menu-icon">🔄</span><span class="quick-menu-label">บันทึกสอนแทนวันนี้</span><span class="quick-menu-arrow">›</span></button>
-        <button class="quick-menu-item" onclick="nav('teachers')"><span class="quick-menu-icon">👨‍🏫</span><span class="quick-menu-label">จัดการรายชื่อครู</span><span class="quick-menu-arrow">›</span></button>
-        <button class="quick-menu-item" onclick="nav('workload')"><span class="quick-menu-icon">📊</span><span class="quick-menu-label">ตรวจภาระงานสอน</span><span class="quick-menu-arrow">›</span></button>
-        <button class="quick-menu-item" onclick="nav('export')"><span class="quick-menu-icon">📥</span><span class="quick-menu-label">ส่งออกไฟล์ Word</span><span class="quick-menu-arrow">›</span></button>
-        <button class="quick-menu-item wizard" onclick="showWizard()"><span class="quick-menu-icon">⚙️</span><span class="quick-menu-label">ตั้งค่าใหม่ด้วย Wizard</span><span class="quick-menu-arrow">›</span></button>
-      </div>
+    <div class="public-lock-note">
+      <span class="public-lock-icon">🔒</span>
+      <div><strong>โหมดดูข้อมูล</strong><small>เข้าสู่ระบบมุมขวาบนเมื่อต้องการแก้ไข</small></div>
     </div>
-  </div>
+  </section>
+
+  <section class="public-menu-grid">
+    <button class="public-menu-card blue" onclick="nav('teacher-view')">
+      <span class="public-card-icon">📅</span>
+      <span class="public-card-copy"><strong>ดูตารางสอนครูรายคน</strong><small>ค้นหาชื่อครู แล้วดูตารางสอนรายบุคคล</small></span>
+      <span class="public-card-arrow">›</span>
+    </button>
+    <button class="public-menu-card green" onclick="nav('teacher-all')">
+      <span class="public-card-icon">👥</span>
+      <span class="public-card-copy"><strong>ดูตารางสอนครูทุกคน</strong><small>ดูตารางสอนรวมของครูทั้งโรงเรียน</small></span>
+      <span class="public-card-arrow">›</span>
+    </button>
+    <button class="public-menu-card pink" onclick="nav('substitute')">
+      <span class="public-card-icon">🔄</span>
+      <span class="public-card-copy"><strong>ตารางสอนแทนรายวัน</strong><small>ตรวจสอบครูลา ครูสอนแทน และสถานะรายวัน</small></span>
+      <span class="public-card-arrow">›</span>
+    </button>
+  </section>
+
+  <section class="public-info-grid">
+    <div class="public-info-card">
+      <h3>📌 การใช้งานสำหรับครู</h3>
+      <p>สามารถดูตารางสอนรายคน ตารางของครูทุกคน และตารางสอนแทนรายวันได้โดยไม่ต้อง Login</p>
+    </div>
+    <div class="public-info-card">
+      <h3>🔐 สำหรับฝ่ายวิชาการ</h3>
+      <p>กรอก ID / Password ที่มุมขวาบนเพื่อเปิดเมนูจัดการ และสลับโหมด SETUP / DAILY</p>
+    </div>
+  </section>
 </div>
 
 <!-- ═══════════ PAGE: SCHOOL ═══════════ -->
@@ -1708,6 +1819,17 @@ body{background:var(--bg);color:#20324B}
       <div id="teacherViewContent" style="overflow-x:auto"></div>
     </div>
   </div>
+</div>
+
+<!-- ═══════════ PAGE: TEACHER-ALL ═══════════ -->
+<div class="page" id="page-teacher-all">
+  <div class="ph">
+    <div class="ph-left"><h1>👥 ตารางสอนครูทุกคน</h1><p>ดูตารางสอนรายสัปดาห์ของครูทั้งโรงเรียน</p></div>
+    <div class="ph-actions no-print">
+      <input id="teacherAllSearch" type="text" placeholder="🔍 ค้นหาชื่อครู..." oninput="renderTeacherAll(this.value)" style="min-width:220px;padding:8px 10px;border:1px solid var(--border);border-radius:8px">
+    </div>
+  </div>
+  <div id="teacherAllContent"></div>
 </div>
 
 <!-- ═══════════ PAGE: WORKLOAD ═══════════ -->
@@ -25602,6 +25724,7 @@ function nav(p){
   else if(p==='builder') renderBuilder();
   else if(p==='auto-schedule') renderAutoSchedulePage();
   else if(p==='teacher-view') renderTeacherViewPage();
+  else if(p==='teacher-all') renderTeacherAll();
   else if(p==='workload') renderWorkload();
   else if(p==='export') renderExportPage();
   else if(p==='storage') renderStoragePage();
@@ -28552,6 +28675,7 @@ function renderAllUI(){
   else if(p==='builder') renderBuilder();
   else if(p==='auto-schedule') renderAutoSchedulePage();
   else if(p==='teacher-view') renderTeacherViewPage();
+  else if(p==='teacher-all') renderTeacherAll();
   else if(p==='workload') renderWorkload();
   else if(p==='export') renderExportPage();
   else if(p==='substitute'){ if(currentSubDate) renderSubContent(); }
@@ -30633,6 +30757,126 @@ background:#eef3fa;color:#49627f;border:1px solid #d7e1ef}
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',loadOnlineDatabase);
   else setTimeout(loadOnlineDatabase,0);
+})();
+</script>
+
+<script id="public-auth-mode-script">
+window.SCHOOL_AUTH = window.SCHOOL_AUTH || {loggedIn:false,token:'',role:'guest',mode:'DAILY'};
+
+function publicApiUrl(){ return window.SCHOOL_OS_API_URL || ''; }
+async function postSchoolApi(params){
+  var url=publicApiUrl();
+  if(!url) throw new Error('ยังไม่ได้เชื่อม School-OS API');
+  var body=new URLSearchParams();
+  Object.keys(params||{}).forEach(function(k){body.append(k,params[k]==null?'':params[k]);});
+  var res=await fetch(url,{method:'POST',body:body,redirect:'follow'});
+  var out=await res.json();
+  if(!out.ok) throw new Error(out.error||'ดำเนินการไม่สำเร็จ');
+  return out;
+}
+function setModeButtons(){
+  var s=document.getElementById('modeSetupBtn'),d=document.getElementById('modeDailyBtn');
+  if(s) s.classList.toggle('active',SCHOOL_AUTH.mode==='SETUP');
+  if(d) d.classList.toggle('active',SCHOOL_AUTH.mode==='DAILY');
+}
+function applyAccessUI(){
+  var b=document.body;
+  b.classList.toggle('guest-mode',!SCHOOL_AUTH.loggedIn);
+  b.classList.toggle('admin-mode',!!SCHOOL_AUTH.loggedIn);
+  b.classList.toggle('setup-mode',SCHOOL_AUTH.loggedIn&&SCHOOL_AUTH.mode==='SETUP');
+  b.classList.toggle('daily-mode',SCHOOL_AUTH.loggedIn&&SCHOOL_AUTH.mode==='DAILY');
+  var g=document.getElementById('guestLoginBox'),a=document.getElementById('adminTopBox');
+  if(g) g.style.display=SCHOOL_AUTH.loggedIn?'none':'flex';
+  if(a) a.style.display=SCHOOL_AUTH.loggedIn?'flex':'none';
+  setModeButtons();
+  var title=document.getElementById('publicSchoolTitle');
+  if(title&&window.DB&&DB.school&&DB.school.name) title.textContent=DB.school.name;
+}
+async function academicLogin(){
+  var id=(document.getElementById('academicLoginId')||{}).value||'';
+  var pass=(document.getElementById('academicLoginPass')||{}).value||'';
+  if(!id||!pass){toast('กรุณากรอก ID และ Password','warn');return;}
+  try{
+    var out=await postSchoolApi({action:'login',id:id,password:pass});
+    SCHOOL_AUTH.loggedIn=true;SCHOOL_AUTH.token=out.token;SCHOOL_AUTH.role=out.role||'admin';SCHOOL_AUTH.mode=out.systemMode||'SETUP';
+    sessionStorage.setItem('school_os_admin_token',SCHOOL_AUTH.token);
+    sessionStorage.setItem('school_os_admin_mode',SCHOOL_AUTH.mode);
+    document.getElementById('academicLoginPass').value='';
+    applyAccessUI();
+    toast('✅ เข้าสู่ระบบฝ่ายวิชาการแล้ว','succ');
+  }catch(e){toast('เข้าสู่ระบบไม่สำเร็จ: '+e.message,'warn');}
+}
+async function academicLogout(){
+  try{if(SCHOOL_AUTH.token) await postSchoolApi({action:'logout',token:SCHOOL_AUTH.token});}catch(_){}
+  SCHOOL_AUTH={loggedIn:false,token:'',role:'guest',mode:'DAILY'};
+  window.SCHOOL_AUTH=SCHOOL_AUTH;
+  sessionStorage.removeItem('school_os_admin_token');sessionStorage.removeItem('school_os_admin_mode');
+  applyAccessUI();nav('dashboard');toast('ออกจากระบบแล้ว','info');
+}
+async function switchSystemMode(mode){
+  if(!SCHOOL_AUTH.loggedIn) return;
+  try{
+    var out=await postSchoolApi({action:'setMode',token:SCHOOL_AUTH.token,mode:mode});
+    SCHOOL_AUTH.mode=out.systemMode;sessionStorage.setItem('school_os_admin_mode',SCHOOL_AUTH.mode);
+    if(window.DB) DB.systemMode=SCHOOL_AUTH.mode;
+    applyAccessUI();nav('dashboard');
+    toast(SCHOOL_AUTH.mode==='SETUP'?'🔓 SETUP: เปิดการจัดการข้อมูล':'🔒 DAILY: ล็อกข้อมูลหลักแล้ว','succ');
+  }catch(e){
+    toast(e.message,'warn');
+    if(/Session/.test(e.message)) academicLogout();
+  }
+}
+function renderTeacherAll(query){
+  var el=document.getElementById('teacherAllContent');if(!el||!window.DB)return;
+  var q=String(query==null?((document.getElementById('teacherAllSearch')||{}).value||''):query).trim().toLowerCase();
+  var list=(DB.teachers||[]).filter(function(t){
+    var n=((t.prefix||'')+(t.first||'')+' '+(t.last||'')).trim();
+    return !q || n.toLowerCase().indexOf(q)>=0 || String(t.dept||'').toLowerCase().indexOf(q)>=0;
+  });
+  if(!list.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">ไม่พบรายชื่อครู</div></div>';return;}
+  el.innerHTML=list.map(function(t){
+    var n=((t.prefix||'')+(t.first||'')+' '+(t.last||'')).trim();
+    return '<div class="teacher-all-card"><div class="teacher-all-head"><div><div class="teacher-all-name">'+subV2Escape(n)+'</div><div class="teacher-all-dept">'+subV2Escape(t.dept||'ไม่ระบุกลุ่มสาระ')+'</div></div>'+
+      '<button class="btn btn-out btn-xs no-print" onclick="nav(\'teacher-view\');setTimeout(function(){renderTeacherViewById(\''+String(t.id).replace(/'/g,"\\'")+'\')},50)">ดูรายคน</button></div>'+
+      '<div class="teacher-all-body">'+buildTeacherViewTable(n)+'</div></div>';
+  }).join('');
+}
+(function(){
+  var oldNav=window.nav;
+  if(typeof oldNav==='function'){
+    window.nav=function(p){
+      var guestAllowed=['dashboard','teacher-view','teacher-all','substitute'];
+      var dailyAllowed=['dashboard','teacher-view','teacher-all','substitute','sub-history'];
+      if(!SCHOOL_AUTH.loggedIn && guestAllowed.indexOf(p)<0){
+        toast('เมนูนี้สำหรับฝ่ายวิชาการ กรุณาเข้าสู่ระบบ','warn');return oldNav('dashboard');
+      }
+      if(SCHOOL_AUTH.loggedIn && SCHOOL_AUTH.mode==='DAILY' && dailyAllowed.indexOf(p)<0){
+        toast('ขณะนี้อยู่โหมด DAILY ข้อมูลหลักถูกล็อก','info');return oldNav('dashboard');
+      }
+      var r=oldNav(p);
+      if(p==='teacher-all') renderTeacherAll();
+      return r;
+    };
+  }
+
+  // Guest cannot mutate substitute data even if a hidden control is triggered.
+  ['confirmSubV2Teacher','setSubTeacher','addAbsentTeacher','removeAbsent','removePeriodFromAbsent','saveManualPeriod','subV2ClearAssigned','setSubWorkType','setSubMessageStatus'].forEach(function(name){
+    var fn=window[name];
+    if(typeof fn!=='function') return;
+    window[name]=function(){
+      if(!SCHOOL_AUTH.loggedIn){toast('ดูได้อย่างเดียว กรุณาเข้าสู่ระบบเพื่อแก้ไข','warn');return;}
+      return fn.apply(this,arguments);
+    };
+  });
+
+  var token=sessionStorage.getItem('school_os_admin_token')||'';
+  if(token){
+    SCHOOL_AUTH.loggedIn=true;SCHOOL_AUTH.token=token;SCHOOL_AUTH.role='admin';
+    SCHOOL_AUTH.mode=sessionStorage.getItem('school_os_admin_mode')||'SETUP';
+  }
+  applyAccessUI();
+  setTimeout(applyAccessUI,800);
+  setTimeout(function(){ if(window.DB&&DB.systemMode&&!SCHOOL_AUTH.loggedIn){ /* guest stays read-only */ } applyAccessUI(); },1800);
 })();
 </script>
 </body>
