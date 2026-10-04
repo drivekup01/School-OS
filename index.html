@@ -1324,6 +1324,18 @@ body.admin-mode.daily-mode #nav-storage{display:none!important}
 .home-back-btn:hover{border-color:var(--pri);background:#eef3ff;transform:translateX(-1px)}
 @media(max-width:760px){.home-back-wrap{margin-bottom:10px}.home-back-btn{padding:7px 11px;font-size:12px}}
 </style>
+<style id="login-visibility-tune">
+/* Make the academic login fields easier to notice without changing the overall topbar layout. */
+.academic-login-box input{
+  background:#fff !important;
+  border:1.5px solid #cfd9e8 !important;
+  box-shadow:0 4px 14px rgba(26,58,110,.16),0 1px 3px rgba(0,0,0,.08) !important;
+}
+.academic-login-box input:focus{
+  border-color:var(--pri2) !important;
+  box-shadow:0 0 0 3px rgba(42,82,152,.13),0 6px 18px rgba(26,58,110,.22) !important;
+}
+</style>
 </head>
 <body class="guest-mode">
 <!-- TOPBAR -->
@@ -1345,10 +1357,6 @@ body.admin-mode.daily-mode #nav-storage{display:none!important}
     </div>
     <div id="adminTopBox" class="admin-top-box" style="display:none">
       <span class="admin-user-chip">👤 ฝ่ายวิชาการ</span>
-      <div class="mode-switch" title="โหมดการใช้งาน">
-        <button id="modeSetupBtn" onclick="switchSystemMode('SETUP')">SETUP</button>
-        <button id="modeDailyBtn" onclick="switchSystemMode('DAILY')">DAILY</button>
-      </div>
       <button class="logout-top-btn" onclick="academicLogout()">ออกจากระบบ</button>
     </div>
     <div class="save-ind school-save admin-only-top" id="saveIndicator" title="สถานะการบันทึก"><div class="save-dot" id="saveDot"></div><span id="saveLabel">–</span></div>
