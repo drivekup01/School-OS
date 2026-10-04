@@ -57,8 +57,9 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min
 .ph-left h1{font-family:'Noto Serif Thai',serif;font-size:22px;font-weight:700;color:var(--pri)}
 .ph-left p{font-size:13px;color:var(--muted);margin-top:3px}
 .ph-actions{display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap}
-.page-back-bar{display:none;margin:0 0 12px}
-.page-back-btn{height:36px;padding:0 14px;border:1.5px solid var(--border);border-radius:8px;background:#fff;color:var(--pri);font-family:'Sarabun',sans-serif;font-size:13px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:7px;box-shadow:0 2px 8px rgba(26,58,110,.06);transition:all .15s}
+.page-title-line{display:flex;align-items:center;gap:10px;min-width:0}
+.page-title-line h1{margin:0;min-width:0}
+.page-back-btn{height:34px;padding:0 12px;border:1.5px solid var(--border);border-radius:8px;background:#fff;color:var(--pri);font-family:'Sarabun',sans-serif;font-size:12px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(26,58,110,.06);transition:all .15s;flex-shrink:0}
 .page-back-btn:hover{border-color:var(--pri2);background:#f5f8ff;transform:translateX(-1px)}
 
 /* ── CARDS ── */
@@ -1391,10 +1392,6 @@ background:#eef3fa;color:#49627f;border:1px solid #d7e1ef}
 
 <!-- MAIN CONTENT -->
 <div class="main" id="mainContent">
-<div class="page-back-bar" id="pageBackBar">
-  <button type="button" class="page-back-btn" onclick="goBackPage()">← ย้อนกลับ</button>
-</div>
-
 <!-- ═══════════ PAGE: DASHBOARD ═══════════ -->
 <div class="page active" id="page-dashboard">
   <div class="ph">
@@ -1498,7 +1495,6 @@ background:#eef3fa;color:#49627f;border:1px solid #d7e1ef}
         <button class="logout-top-btn" onclick="academicLogout()">ออกจากระบบ</button>
       </div>
     </section>
-  </div>
   </div>
 </div>
 
@@ -25838,9 +25834,35 @@ function nav(p){
   else if(p==='conflict') renderConflictPage();
   updateTopbar();
   updateSidebarCounts();
-  const backBar=document.getElementById('pageBackBar');
-  if(backBar) backBar.style.display=p==='dashboard'?'none':'block';
-  document.querySelector('.main').scrollTop=0;
+  updateInlineBackButton(p);
+  const mainEl=document.querySelector('.main');
+  if(mainEl) mainEl.scrollTop=0;
+}
+
+function updateInlineBackButton(p){
+  document.querySelectorAll('.page-inline-back').forEach(function(btn){ btn.remove(); });
+  if(p==='dashboard') return;
+
+  const page=document.getElementById('page-'+p);
+  if(!page) return;
+  const left=page.querySelector('.ph-left');
+  const h1=left && left.querySelector('h1');
+  if(!left || !h1) return;
+
+  let line=h1.parentElement;
+  if(!line || !line.classList.contains('page-title-line')){
+    line=document.createElement('div');
+    line.className='page-title-line';
+    h1.parentNode.insertBefore(line,h1);
+    line.appendChild(h1);
+  }
+
+  const btn=document.createElement('button');
+  btn.type='button';
+  btn.className='page-back-btn page-inline-back';
+  btn.onclick=goBackPage;
+  btn.textContent='← ย้อนกลับ';
+  line.insertBefore(btn,h1);
 }
 
 // ════════════════════════════════════════════
