@@ -31595,25 +31595,42 @@ function syncLeaveTestDay_(){
   if(el) el.textContent=iso ? getDayNameThai(iso)+'  |  '+formatDateThai(iso) : '–';
 }
 async function renderLeaveTest(){
-  var input=document.getElementById('leaveTestDate'),box=document.getElementById('leaveTestResult'),count=document.getElementById('leaveTestCount');
+  var input=document.getElementById('leaveTestDate');
+  var box=document.getElementById('leaveTestResult');
+  var count=document.getElementById('leaveTestCount');
   if(!input||!box||!count) return;
-  if(!input.value){
-    var now=new Date(); input.value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  var iso=String(input.value||'').trim();
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(iso)){
+    var now=new Date();
+    iso=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+    input.value=iso;
   }
-  syncSchoolDateControl('leaveTestDate');
   syncLeaveTestDay_();
-  box.innerHTML='<div style="padding:24px;text-align:center;color:#7787A2">กำลังอ่านฐานข้อมูลใบลา...</div>'; count.textContent='...';
+  box.innerHTML='<div style="padding:24px;text-align:center;color:#7787A2">กำลังอ่านฐานข้อมูลใบลา...</div>';
+  count.textContent='...';
+  var controller=new AbortController();
+  var timer=setTimeout(function(){controller.abort();},12000);
   try{
     var base=String(window.SCHOOL_OS_LEAVE_API_URL||'').replace(/\/+$/,'');
     if(!base) throw new Error('ยังไม่ได้เชื่อม Leave API แยก');
-    var res=await fetch(base+'?action=teacherLeave&date='+encodeURIComponent(input.value),{method:'GET',cache:'no-store'});
+    var url=base+'?action=teacherLeave&date='+encodeURIComponent(iso)+'&_='+Date.now();
+    var res=await fetch(url,{method:'GET',cache:'no-store',signal:controller.signal});
+    if(!res.ok) throw new Error('Leave API HTTP '+res.status);
     var out=await res.json();
     if(!out||out.ok===false) throw new Error((out&&out.error)||'อ่านข้อมูลใบลาไม่สำเร็จ');
-    var rows=Array.isArray(out.rows)?out.rows:[]; count.textContent=rows.length+' คน';
-    if(!rows.length){box.innerHTML='<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-text">ไม่พบครูลาในวันที่เลือก</div></div>';return;}
+    var rows=Array.isArray(out.rows)?out.rows:[];
+    count.textContent=rows.length+' คน';
+    if(!rows.length){
+      box.innerHTML='<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-text">ไม่พบครูลาในวันที่เลือก</div></div>';
+      return;
+    }
     box.innerHTML='<div style="overflow:auto"><table class="tbl"><thead><tr><th>#</th><th>ชื่อ-สกุล</th><th>ประเภทการลา</th><th>จากวันที่</th><th>ถึงวันที่</th><th>กำหนดการ</th></tr></thead><tbody>'+
       rows.map(function(r,i){return '<tr><td>'+(i+1)+'</td><td><b>'+escapeHtml(String(r.name||''))+'</b></td><td>'+escapeHtml(String(r.type||''))+'</td><td>'+escapeHtml(String(r.from||''))+'</td><td>'+escapeHtml(String(r.to||''))+'</td><td>'+escapeHtml(String(r.duration||''))+'</td></tr>';}).join('')+'</tbody></table></div>';
-  }catch(err){count.textContent='0 คน';box.innerHTML='<div class="alert a-warn">เชื่อมฐานข้อมูลใบลาไม่สำเร็จ: '+escapeHtml(String(err&&err.message?err.message:err))+'</div>';}
+  }catch(err){
+    count.textContent='0 คน';
+    var msg=(err&&err.name==='AbortError')?'Leave API ใช้เวลาตอบนานเกิน 12 วินาที':String(err&&err.message?err.message:err);
+    box.innerHTML='<div class="alert a-warn">เชื่อมฐานข้อมูลใบลาไม่สำเร็จ: '+escapeHtml(msg)+'</div>';
+  }finally{ clearTimeout(timer); }
 }
 </script>
 </body>
