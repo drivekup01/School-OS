@@ -29363,6 +29363,10 @@ function getSubDB(){
   if(!DB.substitute) DB.substitute = {};
   return DB.substitute;
 }
+function peekSubDay(dateStr){
+  const db = DB.substitute || {};
+  return db[dateStr] || null;
+}
 function getSubDay(dateStr){
   const db = getSubDB();
   if(!db[dateStr]) db[dateStr] = {absentList:[]};
@@ -29443,7 +29447,7 @@ function loadSubstituteDay(){
   const dateStr = (document.getElementById('subDate')||{}).value||'';
   if(!dateStr){ return; }
   currentSubDate = dateStr;
-  syncLeaveRecordsForDate(dateStr);
+  // Selecting a date is read-only. Do not create/sync leave history here.
   const dayName = getDayNameThai(dateStr);
   const dayEl = document.getElementById('subDayName');
   if(dayEl) dayEl.textContent = dayName + '  |  ' + formatDateThai(dateStr);
@@ -29655,8 +29659,8 @@ function removePeriodFromAbsent(ai,pi){
 function addAbsentTeacher(){
   if(!currentSubDate){ toast('⚠️ กรุณาเลือกวันที่ก่อน','warn'); return; }
   const sel = document.getElementById('absentTeacherSel');
-  const day = getSubDay(currentSubDate);
-  const alreadyAbsent = day.absentList.map(a=>a.teacherId);
+  const day = peekSubDay(currentSubDate) || {absentList:[]};
+  const alreadyAbsent = (day.absentList||[]).map(a=>a.teacherId);
   if(sel){
     sel.innerHTML = '<option value="">-- เลือกครู --</option>'+
       DB.teachers.filter(t=>!alreadyAbsent.includes(t.id))
@@ -29758,8 +29762,11 @@ function saveManualPeriod(ai){
 // ── History page ───────────────────────────
 function renderSubHistoryPage(){
   const el = document.getElementById('subHistoryContent'); if(!el) return;
-  const sub = getSubDB();
-  const dates = Object.keys(sub).sort().reverse();
+  const sub = DB.substitute || {};
+  const dates = Object.keys(sub).filter(function(d){
+    var day=sub[d];
+    return !!(day && Array.isArray(day.absentList) && day.absentList.length);
+  }).sort().reverse();
   if(!dates.length){
     el.innerHTML='<div class="empty-state"><div class="empty-icon">📂</div><div class="empty-text">ยังไม่มีประวัติการสอนแทน</div></div>';
     return;
@@ -30787,7 +30794,7 @@ function renderSubContent(){
   var content=document.getElementById('subContent');
   if(!content) return;
 
-  var day=getSubDay(dateStr);
+  var day=peekSubDay(dateStr) || {absentList:[]};
   var schedDay=mapDayNameToSched(dateStr);
   var teachers=DB.teachers||[];
   var slots=(DB.slots||[]);
@@ -30879,7 +30886,7 @@ function renderSubSidePanel(){
     return;
   }
 
-  var day=getSubDay(currentSubDate);
+  var day=peekSubDay(currentSubDate) || {absentList:[]};
   var schedDay=mapDayNameToSched(currentSubDate);
   var t=(DB.teachers||[]).find(function(x){return String(x.id)===String(subV2SelectedTeacherId);});
   var slot=(DB.slots||[]).find(function(x){return String(x.id)===String(subV2SelectedSlotId);});
@@ -30973,7 +30980,7 @@ function renderSubAssignedList(){
   var wrap=document.getElementById('subAssignedList');
   if(!wrap) return;
   if(!currentSubDate){ wrap.innerHTML='<div class="sub-v2-assigned-empty">ยังไม่ได้เลือกวันที่</div>'; return; }
-  var day=getSubDay(currentSubDate);
+  var day=peekSubDay(currentSubDate) || {absentList:[]};
   var rows=[];
   (day.absentList||[]).forEach(function(a,ai){
     var t=(DB.teachers||[]).find(function(x){return x.id===a.teacherId;});
@@ -31048,7 +31055,7 @@ if(_subV2OldSetSubTeacher){
     var wrap=document.getElementById('subAssignedList');
     if(!wrap) return;
     if(!currentSubDate){wrap.innerHTML='<div class="sub-v2-assigned-empty">ยังไม่ได้เลือกวันที่</div>';return;}
-    var day=getSubDay(currentSubDate);
+    var day=peekSubDay(currentSubDate) || {absentList:[]};
     var groups=(day.absentList||[]);
     if(!groups.length){wrap.innerHTML='<div class="sub-v2-assigned-empty">ยังไม่มีครูลาในวันนี้</div>';return;}
     var h='<div class="sub-group-wrap">';
