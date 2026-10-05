@@ -424,12 +424,15 @@ function writeTable_(ss, sheetName, headers, rows) {
 }
 
 function getAuthConfigCached_() {
-  const cache = CacheService.getScriptCache();
-  const key = 'school_os_auth_config_v1';
-  const cached = cache.get(key);
-  if (cached) {
-    try { return JSON.parse(cached); } catch (_) {}
+  const props = PropertiesService.getScriptProperties();
+  const saved = props.getProperty('school_os_auth_config_v1');
+  if (saved) {
+    try {
+      const auth = JSON.parse(saved);
+      if (auth && auth.adminId && auth.adminPasswordHash) return auth;
+    } catch (_) {}
   }
+
   const ss = SpreadsheetApp.openById(SCHOOL_OS_SPREADSHEET_ID);
   const cfg = keyValueSheet_(ss, 'Config');
   const auth = {
@@ -437,7 +440,9 @@ function getAuthConfigCached_() {
     adminPasswordHash: s_(cfg.adminPasswordHash).toLowerCase(),
     systemMode: (s_(cfg.systemMode)||'DAILY').toUpperCase()
   };
-  try { cache.put(key, JSON.stringify(auth), 600); } catch (_) {}
+  if (auth.adminId && auth.adminPasswordHash) {
+    props.setProperty('school_os_auth_config_v1', JSON.stringify(auth));
+  }
   return auth;
 }
 
@@ -470,8 +475,11 @@ function setMode_(p) {
   if(mode!=='SETUP' && mode!=='DAILY') throw new Error('โหมดไม่ถูกต้อง');
   const ss=SpreadsheetApp.openById(SCHOOL_OS_SPREADSHEET_ID);
   setKeyValue_(ss,'Config','systemMode',mode);
+  const props = PropertiesService.getScriptProperties();
+  const auth = getAuthConfigCached_();
+  auth.systemMode = mode;
+  props.setProperty('school_os_auth_config_v1', JSON.stringify(auth));
   CacheService.getScriptCache().remove('school_os_bootstrap_v6');
-  CacheService.getScriptCache().remove('school_os_auth_config_v1');
   return json_({ok:true,systemMode:mode});
 }
 
