@@ -20,21 +20,36 @@ function teacherLeave_(p) {
   const ss=SpreadsheetApp.openById(LEAVE_SPREADSHEET_ID);
   const sh=ss.getSheetByName('data');
   if(!sh) throw new Error('ไม่พบชีต data');
-  const lastRow=sh.getLastRow();
-  if(lastRow<2) return leaveJson_({ok:true,date:String(p.date||''),rows:[]});
-  const values=sh.getRange(2,1,lastRow-1,12).getDisplayValues();
+  // Column F is the real leave-record marker. Formula-only rows elsewhere must not
+  // make the API process hundreds of empty records.
+  const maxRow=sh.getLastRow();
+  if(maxRow<2) return leaveJson_({ok:true,date:String(p.date||''),rows:[]});
+
+  const names=sh.getRange(2,6,maxRow-1,1).getDisplayValues();
+  let dataRowCount=0;
+  for(let i=names.length-1;i>=0;i--){
+    if(String(names[i][0]||'').trim()){
+      dataRowCount=i+1;
+      break;
+    }
+  }
+  if(!dataRowCount) return leaveJson_({ok:true,date:String(p.date||''),rows:[]});
+
+  // Read only F:L through the last row that actually has a teacher name.
+  const values=sh.getRange(2,6,dataRowCount,7).getDisplayValues();
   const rows=[];
-  values.forEach(function(r){
-    const name=String(r[5]||'').trim();
-    const fromText=String(r[9]||'').trim();
-    const toText=String(r[10]||'').trim();
+  values.forEach(function(r,i){
+    const name=String(r[0]||'').trim();      // F
+    const type=String(r[3]||'').trim();      // I
+    const fromText=String(r[4]||'').trim();  // J
+    const toText=String(r[5]||'').trim();    // K
+    const duration=String(r[6]||'').trim();  // L
     if(!name||!fromText||!toText) return;
     const from=parseThaiDateKey_(fromText),to=parseThaiDateKey_(toText);
     if(!from||!to||selected<from||selected>to) return;
     rows.push({
-      row:String(r[0]||''),headApproval:String(r[1]||''),directorApproval:String(r[2]||''),
-      submitted:String(r[4]||''),name:name,type:String(r[8]||''),
-      from:fromText,to:toText,duration:String(r[11]||'')
+      row:String(i+2),name:name,type:type,
+      from:fromText,to:toText,duration:duration
     });
   });
   return leaveJson_({ok:true,date:String(p.date||''),rows:rows});
