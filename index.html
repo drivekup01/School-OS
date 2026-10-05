@@ -26321,26 +26321,81 @@ function openAnnouncementEditor(id){
 function closeAnnouncementEditor(){
   const box=document.getElementById('announcementEditor'); if(box) box.style.display='none';
 }
-function saveAnnouncement(){
+async function saveAnnouncement(){
   if(!window.SCHOOL_AUTH||!SCHOOL_AUTH.loggedIn){toast('กรุณาเข้าสู่ระบบฝ่ายวิชาการ','warn');return;}
   const title=gv('announcementTitle').trim(),body=gv('announcementBody').trim();
   if(!title||!body){toast('กรุณากรอกหัวข้อและรายละเอียดประกาศ','warn');return;}
   if(!Array.isArray(DB.announcements)) DB.announcements=[];
   const id=gv('announcementEditId');
-  const data={title:title,body:body,type:gv('announcementType')||'ทั่วไป',date:gv('announcementDate')||new Date().toISOString().slice(0,10),updatedAt:Date.now()};
-  if(id){
-    const i=DB.announcements.findIndex(x=>x.id===id);
-    if(i>=0) DB.announcements[i]={...DB.announcements[i],...data};
-  }else{
-    DB.announcements.push({id:uid(),createdAt:Date.now(),...data});
+  const now=Date.now();
+  const existing=id?DB.announcements.find(x=>x.id===id):null;
+  const item={
+    id:id||uid(),
+    title:title,
+    body:body,
+    type:gv('announcementType')||'ทั่วไป',
+    date:gv('announcementDate')||new Date().toISOString().slice(0,10),
+    createdAt:existing&&existing.createdAt?existing.createdAt:now,
+    updatedAt:now
+  };
+
+  try{
+    setSaveInd('saving','กำลังบันทึกประกาศ...');
+    await postSchoolApi({
+      action:'saveAnnouncement',
+      token:SCHOOL_AUTH.token,
+      announcement:JSON.stringify(item)
+    });
+    const i=DB.announcements.findIndex(x=>x.id===item.id);
+    if(i>=0) DB.announcements[i]=item;
+    else DB.announcements.push(item);
+
+    // keep local mirror after the server confirms the write
+    const profiles=getProfiles();
+    if(activeProfileId){
+      if(!profiles[activeProfileId]) profiles[activeProfileId]={id:activeProfileId,name:'',savedAt:0};
+      profiles[activeProfileId].data=JSON.parse(JSON.stringify(DB));
+      profiles[activeProfileId].savedAt=Date.now();
+      saveProfiles(profiles);
+    }
+
+    closeAnnouncementEditor();
+    renderAnnouncements();
+    renderDashboardAnnouncements();
+    setSaveInd('saved','บันทึกประกาศออนไลน์แล้ว · '+fmtTime(Date.now()));
+    toast('✅ บันทึกประกาศออนไลน์แล้ว','succ');
+  }catch(e){
+    console.error('School-OS announcement save:',e);
+    setSaveInd('unsaved','บันทึกประกาศไม่สำเร็จ');
+    toast('บันทึกประกาศไม่สำเร็จ: '+e.message,'err');
+    if(/Session หมดอายุ/.test(String(e.message||''))) academicLogout();
   }
-  closeAnnouncementEditor();renderAnnouncements();renderDashboardAnnouncements();markDirty();toast('✅ บันทึกประกาศแล้ว','succ');
 }
-function deleteAnnouncement(id){
+async function deleteAnnouncement(id){
   if(!window.SCHOOL_AUTH||!SCHOOL_AUTH.loggedIn) return;
   if(!confirm('ลบประกาศนี้?')) return;
-  DB.announcements=(DB.announcements||[]).filter(x=>x.id!==id);
-  renderAnnouncements();renderDashboardAnnouncements();markDirty();toast('ลบประกาศแล้ว','info');
+  try{
+    setSaveInd('saving','กำลังลบประกาศ...');
+    await postSchoolApi({action:'deleteAnnouncement',token:SCHOOL_AUTH.token,id:id});
+    DB.announcements=(DB.announcements||[]).filter(x=>x.id!==id);
+
+    const profiles=getProfiles();
+    if(activeProfileId&&profiles[activeProfileId]){
+      profiles[activeProfileId].data=JSON.parse(JSON.stringify(DB));
+      profiles[activeProfileId].savedAt=Date.now();
+      saveProfiles(profiles);
+    }
+
+    renderAnnouncements();
+    renderDashboardAnnouncements();
+    setSaveInd('saved','ลบประกาศออนไลน์แล้ว · '+fmtTime(Date.now()));
+    toast('ลบประกาศแล้ว','info');
+  }catch(e){
+    console.error('School-OS announcement delete:',e);
+    setSaveInd('unsaved','ลบประกาศไม่สำเร็จ');
+    toast('ลบประกาศไม่สำเร็จ: '+e.message,'err');
+    if(/Session หมดอายุ/.test(String(e.message||''))) academicLogout();
+  }
 }
 
 // ════════════════════════════════════════════
