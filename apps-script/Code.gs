@@ -360,6 +360,8 @@ function doPost(e) {
     if (action === 'setMode') return setMode_(p);
     if (action === 'logout') return logout_(p);
     if (action === 'saveDatabase') return saveDatabase_(p);
+    if (action === 'saveAnnouncement') return saveAnnouncementApi_(p);
+    if (action === 'deleteAnnouncement') return deleteAnnouncementApi_(p);
     return json_({ ok:false, error:'Unknown action' });
   } catch (err) {
     return json_({ ok:false, error:String(err && err.message ? err.message : err) });
@@ -530,6 +532,65 @@ function writeAnnouncements_(ss, list) {
   ]);
   ensureAnnouncementsSheet_(ss);
   writeTable_(ss, 'Announcements', headers, rows);
+}
+
+function saveAnnouncementApi_(p) {
+  requireAdmin_(p.token);
+  const raw = String(p.announcement == null ? '' : p.announcement);
+  if (!raw) throw new Error('ไม่มีข้อมูลประกาศ');
+  let item;
+  try { item = JSON.parse(raw); } catch (_) { throw new Error('รูปแบบประกาศไม่ถูกต้อง'); }
+  const id = s_(item.id);
+  const title = s_(item.title);
+  const body = s_(item.body);
+  if (!id || !title || !body) throw new Error('ข้อมูลประกาศไม่ครบ');
+
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(15000)) throw new Error('ระบบกำลังบันทึก กรุณาลองใหม่');
+  try {
+    const ss = SpreadsheetApp.openById(SCHOOL_OS_SPREADSHEET_ID);
+    ensureAnnouncementsSheet_(ss);
+    const list = tableObjects_(ss, 'Announcements');
+    const now = Date.now();
+    const row = {
+      id:id,
+      title:title,
+      body:body,
+      type:s_(item.type) || 'ทั่วไป',
+      date:s_(item.date),
+      createdAt:n_(item.createdAt) || now,
+      updatedAt:n_(item.updatedAt) || now
+    };
+    const idx = list.findIndex(x => s_(x.id) === id);
+    if (idx >= 0) list[idx] = row;
+    else list.push(row);
+    writeAnnouncements_(ss, list);
+    SpreadsheetApp.flush();
+    CacheService.getScriptCache().remove('school_os_bootstrap_v6');
+    return json_({ok:true,announcement:row,savedAt:new Date().toISOString()});
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function deleteAnnouncementApi_(p) {
+  requireAdmin_(p.token);
+  const id = s_(p.id);
+  if (!id) throw new Error('ไม่พบรหัสประกาศ');
+
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(15000)) throw new Error('ระบบกำลังบันทึก กรุณาลองใหม่');
+  try {
+    const ss = SpreadsheetApp.openById(SCHOOL_OS_SPREADSHEET_ID);
+    ensureAnnouncementsSheet_(ss);
+    const list = tableObjects_(ss, 'Announcements').filter(x => s_(x.id) !== id);
+    writeAnnouncements_(ss, list);
+    SpreadsheetApp.flush();
+    CacheService.getScriptCache().remove('school_os_bootstrap_v6');
+    return json_({ok:true,id:id,savedAt:new Date().toISOString()});
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 function ensureAnnouncementsSheet_(ss) {
