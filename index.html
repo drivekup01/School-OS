@@ -31066,15 +31066,65 @@ if(_subV2OldSetSubTeacher){
       var fname='ตารางสอนแทน_'+currentSubDate+'.png';
       var file=new File([out.blob],fname,{type:'image/png'});
       var txt=buildText();
+      var title='ตารางสอนแทน '+formatDateThai(currentSubDate);
+
+      // Best path on mobile and Windows browsers that support Web Share with files.
       if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
-        await navigator.share({title:'ตารางสอนแทน '+formatDateThai(currentSubDate),text:txt,files:[file]});
+        await navigator.share({title:title,text:txt,files:[file]});
         toast('📤 เปิดเมนูแชร์แล้ว เลือก LINE หรือ Telegram ได้เลย','succ');
-      }else{
-        var a=document.createElement('a');a.href=URL.createObjectURL(out.blob);a.download=fname;document.body.appendChild(a);a.click();a.remove();
-        try{await navigator.clipboard.writeText(txt);}catch(_){}
-        toast('อุปกรณ์นี้ไม่รองรับ Share โดยตรง — ดาวน์โหลดภาพและคัดลอกข้อความให้แล้ว','info');
+        return;
       }
-    }catch(e){if(e&&e.name!=='AbortError') toast('แชร์ไม่สำเร็จ: '+e.message,'warn');}
+
+      // Desktop fallback: keep the real image available locally and copy the summary text.
+      var objectUrl=URL.createObjectURL(out.blob);
+      var a=document.createElement('a');
+      a.href=objectUrl;
+      a.download=fname;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function(){URL.revokeObjectURL(objectUrl);},3000);
+
+      var copied=false;
+      try{
+        await navigator.clipboard.writeText(txt);
+        copied=true;
+      }catch(_){
+        try{
+          var ta=document.createElement('textarea');
+          ta.value=txt;
+          ta.style.position='fixed';
+          ta.style.left='-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          copied=document.execCommand('copy');
+          ta.remove();
+        }catch(__){}
+      }
+
+      // Telegram supports desktop/web sharing directly.
+      var tgUrl='https://t.me/share/url?url='+encodeURIComponent(location.href)+'&text='+encodeURIComponent(txt);
+      var isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent||'');
+
+      if(isMobile){
+        // LINE share URL is officially supported on iOS/Android.
+        var lineUrl='https://line.me/R/share?text='+encodeURIComponent(txt);
+        var useLine=window.confirm('เลือกแอปสำหรับแชร์\n\nตกลง = LINE\nยกเลิก = Telegram');
+        window.open(useLine?lineUrl:tgUrl,'_blank','noopener');
+        toast('📤 ดาวน์โหลดภาพแล้ว'+(copied?' และคัดลอกข้อความแล้ว':'')+' — เลือกรูปที่ดาวน์โหลดแนบได้ทันที','succ');
+      }else{
+        // LINE does not officially support its share URL on Windows/macOS.
+        // Telegram can open directly; for LINE the image is downloaded and text is ready to paste.
+        var useTelegram=window.confirm('อุปกรณ์นี้ไม่มีเมนู Share ของระบบ\n\nตกลง = เปิด Telegram เพื่อแชร์ทันที\nยกเลิก = ใช้ LINE (รูปดาวน์โหลดแล้ว และข้อความคัดลอกพร้อมวาง)');
+        if(useTelegram) window.open(tgUrl,'_blank','noopener');
+        toast(useTelegram
+          ? '📤 เปิด Telegram แล้ว และดาวน์โหลดรูปไว้ให้แล้ว'
+          : '📋 สำหรับ LINE: ดาวน์โหลดรูปแล้ว'+(copied?' และคัดลอกข้อความไว้แล้ว — เปิด LINE แล้วกดวางได้เลย':' — เปิด LINE แล้วแนบรูปได้เลย'),
+          'info');
+      }
+    }catch(e){
+      if(e&&e.name!=='AbortError') toast('แชร์ไม่สำเร็จ: '+e.message,'warn');
+    }
   };
 
   // Refresh grouped summary whenever original render completes.
