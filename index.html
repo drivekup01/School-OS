@@ -28315,16 +28315,15 @@ function renderTeacherList() {
 
   if(countEl) countEl.textContent = filtered.length+'/'+DB.teachers.length+' \u0e04\u0e19';
 
-  list.innerHTML = filtered.map(function(t){
+  list.innerHTML = filtered.map(function(t,ti){
     var name = t.prefix+t.first+' '+t.last;
     var periods = periodCount[t.id]||0;
     var hasConflict = conflictTeachers.has(name);
-    var initial = (t.first||'?').charAt(0);
     var isActive = t.id === _tvCurrentTeacherId;
     var badgeClass = hasConflict?'tv-period-badge has-conflict':periods===0?'tv-period-badge zero':'tv-period-badge';
     var badgeTitle = hasConflict?'\u0e15\u0e32\u0e23\u0e32\u0e07\u0e0a\u0e19':'';
     return '<div class="tv-teacher-item'+(isActive?' active':'')+'" onclick="selectTeacherView(\''+t.id+'\')" id="tvItem_'+t.id+'">' +
-      '<div class="tv-teacher-avatar">'+initial+'</div>' +
+      '<div class="tv-teacher-avatar">'+(ti+1)+'</div>' +
       '<div class="tv-teacher-info">' +
         '<div class="tv-teacher-name" title="'+name+'">'+name+'</div>' +
         '<div class="tv-teacher-meta">'+(t.dept||'\u0e44\u0e21\u0e48\u0e23\u0e30\u0e1a\u0e38')+(t.rank?'  &middot;  '+t.rank:'')+' </div>' +
