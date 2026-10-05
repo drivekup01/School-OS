@@ -88,36 +88,6 @@ function loadDatabase_() {
   });
 
   const substitute = {};
-  tableObjects_(ss, 'Substitute').forEach(r => {
-    const date = s_(r.date);
-    const teacherId = s_(r.teacherId);
-    if (!date || !teacherId) return;
-    if (!substitute[date]) substitute[date] = { absentList: [] };
-    let absent = substitute[date].absentList.find(a => a.teacherId === teacherId);
-    if (!absent) {
-      absent = {
-        teacherId: teacherId,
-        type: s_(r.leaveType || r.type),
-        note: s_(r.leaveNote || r.note),
-        periods: []
-      };
-      substitute[date].absentList.push(absent);
-    }
-    const slotRaw = r.slotId;
-    if (slotRaw != null && s_(slotRaw) !== '') {
-      const slotNum = Number(slotRaw);
-      absent.periods.push({
-        slotId: isNaN(slotNum) ? s_(slotRaw) : slotNum,
-        day: s_(r.day),
-        roomId: s_(r.roomId),
-        subject: s_(r.subject),
-        subTeacher: s_(r.subTeacher || r.subTeacherId),
-        subNote: s_(r.subNote),
-        workType: s_(r.workType),
-        messageStatus: s_(r.messageStatus)
-      });
-    }
-  });
 
   const announcements = tableObjects_(ss, 'Announcements').map(r => ({
     id: s_(r.id),
