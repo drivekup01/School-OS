@@ -12,13 +12,9 @@ function doGet(e) {
       return json_({ ok: true, data: data, readOnly: true, systemMode: data.systemMode || 'DAILY', version: '1.2' });
     }
     if (action === 'refresh') {
-      CacheService.getScriptCache().remove('school_os_bootstrap_v2');
+      CacheService.getScriptCache().remove('school_os_bootstrap_v3');
       const data = loadDatabaseCached_();
       return json_({ ok: true, data: data, readOnly: true, systemMode: data.systemMode || 'DAILY', version: '1.2', refreshed: true });
-    }
-    if (action === 'leaveRecords') {
-      const leaveSs = SpreadsheetApp.openById(LEAVE_SPREADSHEET_ID);
-      return json_({ ok:true, readOnly:true, leaveRecords:readLeaveRecords_(leaveSs), time:new Date().toISOString() });
     }
     return json_({ ok: false, error: 'Unknown action' });
   } catch (err) {
@@ -28,7 +24,7 @@ function doGet(e) {
 
 function loadDatabaseCached_() {
   const cache = CacheService.getScriptCache();
-  const key = 'school_os_bootstrap_v2';
+  const key = 'school_os_bootstrap_v3';
   const cached = cache.get(key);
   if (cached) {
     try { return JSON.parse(cached); } catch (_) {}
@@ -161,18 +157,11 @@ function readLeaveRecords_(leaveSs) {
     const startDate = parseThaiDateIso_(r['จากวันที่']);
     const endDate = parseThaiDateIso_(r['ถึงวันที่']);
     return {
-      sourceRow: s_(r['เลขที่']),
       teacherName: s_(r['ชื่อสกุล']),
       leaveType: s_(r['ประเภทการลา']),
       startDate: startDate,
       endDate: endDate || startDate,
-      duration: s_(r['กำหนดการ']),
-      reason: s_(r['เนื่องจาก']),
-      attachmentUrl: s_(r['ไฟลน์']),
-      contact: s_(r['ติดต่อ']),
-      approvedByHead: s_(r['หัวหน้าฝ่าย']),
-      approvedByDirector: s_(r['ผอ']),
-      permissionDate: s_(r['วันที่อนุญาต'])
+      note: s_(r['เนื่องจาก'])
     };
   }).filter(r => r.teacherName && r.startDate && r.endDate);
 }
@@ -276,7 +265,7 @@ function saveDatabase_(p) {
       writeSubstitute_(ss, db.substitute || {});
       writeAnnouncements_(ss, db.announcements || []);
       SpreadsheetApp.flush();
-      CacheService.getScriptCache().remove('school_os_bootstrap_v2');
+      CacheService.getScriptCache().remove('school_os_bootstrap_v3');
       return json_({ok:true,mode:mode,saved:['Substitute','Announcements'],savedAt:new Date().toISOString()});
     }
 
@@ -296,7 +285,7 @@ function saveDatabase_(p) {
     setKeyValue_(ss, 'Config', 'subjectColorSchemeVersion', Number(db.subjectColorSchemeVersion || 2));
 
     SpreadsheetApp.flush();
-    CacheService.getScriptCache().remove('school_os_bootstrap_v2');
+    CacheService.getScriptCache().remove('school_os_bootstrap_v3');
 
     return json_({
       ok:true,
@@ -472,7 +461,7 @@ function setMode_(p) {
   if(mode!=='SETUP' && mode!=='DAILY') throw new Error('โหมดไม่ถูกต้อง');
   const ss=SpreadsheetApp.openById(SCHOOL_OS_SPREADSHEET_ID);
   setKeyValue_(ss,'Config','systemMode',mode);
-  CacheService.getScriptCache().remove('school_os_bootstrap_v2');
+  CacheService.getScriptCache().remove('school_os_bootstrap_v3');
   return json_({ok:true,systemMode:mode});
 }
 
