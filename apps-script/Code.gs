@@ -1,4 +1,5 @@
 const SCHOOL_OS_SPREADSHEET_ID = '1f0vnm-dJHaVRRbPVXEIRuBYhXwyft_ceNraqs8XwqkY';
+const LEAVE_SPREADSHEET_ID = '1KA8ch40D0iFHN1nYNcgadWTQbxehEiyKtOdcivRupW0'; // read only; queried only by leave endpoints
 
 function doGet(e) {
   try {
@@ -14,6 +15,19 @@ function doGet(e) {
       CacheService.getScriptCache().remove('school_os_bootstrap_v6');
       const data = loadDatabaseCached_();
       return json_({ ok: true, data: data, readOnly: true, systemMode: data.systemMode || 'DAILY', version: '1.2', refreshed: true });
+    }
+    if (action === 'leaveCount') {
+      const date = s_(e && e.parameter && e.parameter.date);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error('วันที่ไม่ถูกต้อง');
+      const records = loadLeaveDayCached_(date);
+      const unique = {};
+      records.forEach(r => { if (r.teacherName) unique[normalizeLeaveName_(r.teacherName)] = true; });
+      return json_({ ok:true, date:date, count:Object.keys(unique).length });
+    }
+    if (action === 'leaveByDate') {
+      const date = s_(e && e.parameter && e.parameter.date);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error('วันที่ไม่ถูกต้อง');
+      return json_({ ok:true, date:date, records:loadLeaveDayCached_(date) });
     }
     return json_({ ok: false, error: 'Unknown action' });
   } catch (err) {
@@ -278,6 +292,57 @@ function addDaysToDateKey_(dateKey, daysToAdd) {
   return String(dt.getUTCFullYear()).padStart(4,'0')+'-'+
     String(dt.getUTCMonth()+1).padStart(2,'0')+'-'+
     String(dt.getUTCDate()).padStart(2,'0');
+}
+
+function normalizeLeaveName_(v) {
+  return s_(v).replace(/\s+/g,'').replace(/^(นาย|นางสาว|นาง)/,'');
+}
+
+function loadLeaveDayCached_(dateStr) {
+  const cache = CacheService.getScriptCache();
+  const key = 'school_os_leave_day_' + dateStr.replace(/-/g,'_');
+  const cached = cache.get(key);
+  if (cached) {
+    try { return JSON.parse(cached); } catch (_) {}
+  }
+  const records = readLeaveRecordsForDate_(dateStr);
+  try { cache.put(key, JSON.stringify(records), 60); } catch (_) {}
+  return records;
+}
+
+function readLeaveRecordsForDate_(dateStr) {
+  const leaveSs = SpreadsheetApp.openById(LEAVE_SPREADSHEET_ID);
+  const sh = leaveSs.getSheetByName('data');
+  if (!sh) return [];
+  const display = sh.getDataRange().getDisplayValues();
+  if (display.length < 2) return [];
+
+  const headers = display[0].map(String);
+  const idxName = headers.indexOf('ชื่อสกุล');
+  const idxType = headers.indexOf('ประเภทการลา');
+  const idxStart = headers.indexOf('จากวันที่');
+  const idxDuration = headers.indexOf('กำหนดการ');
+  const idxNote = headers.indexOf('เนื่องจาก');
+  if (idxName < 0 || idxStart < 0 || idxDuration < 0) return [];
+
+  const out = [];
+  for (let i = 1; i < display.length; i++) {
+    const teacherName = s_(display[i][idxName]);
+    if (!teacherName) continue;
+    const startDate = parseThaiDateIso_(display[i][idxStart]);
+    const duration = Number(s_(display[i][idxDuration]));
+    if (!startDate || !Number.isInteger(duration) || duration < 1) continue;
+    const endDate = addDaysToDateKey_(startDate, duration - 1);
+    if (dateStr < startDate || dateStr > endDate) continue;
+    out.push({
+      teacherName: teacherName,
+      leaveType: idxType >= 0 ? s_(display[i][idxType]) : '',
+      startDate: startDate,
+      endDate: endDate,
+      note: idxNote >= 0 ? s_(display[i][idxNote]) : ''
+    });
+  }
+  return out;
 }
 
 function json_(obj) {
