@@ -29483,8 +29483,6 @@ function syncLeaveRecordsForDate(dateStr){
   day.absentList=Array.isArray(day.absentList)?day.absentList:[];
   records.forEach(function(r){
     if(!r.startDate||!r.endDate||dateStr<r.startDate||dateStr>r.endDate) return;
-    var director=String(r.approvedByDirector||'');
-    if(director && director.indexOf('อนุญาต')<0) return;
     var target=normalizeTeacherNameForMatch_(r.teacherName);
     var t=(DB.teachers||[]).find(function(x){
       return normalizeTeacherNameForMatch_(subV2TeacherName(x))===target;
@@ -29492,15 +29490,12 @@ function syncLeaveRecordsForDate(dateStr){
     if(!t) return;
     var absent=day.absentList.find(function(a){return String(a.teacherId)===String(t.id);});
     if(!absent){
-      absent={teacherId:t.id,type:r.leaveType||'ลา',note:r.reason||'',periods:[]};
+      absent={teacherId:t.id,type:r.leaveType||'ลา',note:r.note||'',periods:[]};
       day.absentList.push(absent);
     }
     absent.type=r.leaveType||absent.type||'ลา';
-    absent.note=r.reason||absent.note||'';
+    absent.note=r.note||absent.note||'';
     absent.leaveSource='sheet';
-    absent.leaveAttachment=r.attachmentUrl||'';
-    absent.leaveDuration=r.duration||'';
-    absent.leavePermissionDate=r.permissionDate||'';
     absent.periods=buildScheduledPeriodsForTeacher_(t,dateStr,absent.periods);
   });
 }
@@ -30909,10 +30904,7 @@ function renderSubSidePanel(){
     h+='<div class="sub-v2-side-section"><div class="sub-v2-side-section-title"><span>📝 รายละเอียดการลา</span></div>'+
       '<div class="sub-v2-info-note"><strong>'+subV2Escape(absent.type||'ลา')+'</strong>'+
       (absent.note?' • '+subV2Escape(absent.note):'')+
-      (absent.leaveDuration?' • '+subV2Escape(absent.leaveDuration)+' วัน':'')+
-      '</div>'+
-      (absent.leaveAttachment?'<a href="'+subV2Escape(absent.leaveAttachment)+'" target="_blank" rel="noopener" class="btn btn-out btn-xs" style="margin-top:8px">📎 เปิดไฟล์แนบการลา</a>':'')+
-      '</div>';
+      '</div></div>';
   }
 
   if(p){
