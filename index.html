@@ -31275,7 +31275,14 @@ if(_subV2OldSetSubTeacher){
     badge('กำลังอัปเดตฐานข้อมูลโรงเรียน...','');
     try{
       var sep=url.indexOf('?')>=0?'&':'?';
-      var res=await fetch(url+sep+'action=bootstrap',{method:'GET',redirect:'follow',cache:'no-store'});
+      var ctrl=new AbortController();
+      var timer=setTimeout(function(){ctrl.abort();},10000);
+      var res;
+      try{
+        res=await fetch(url+sep+'action=bootstrap',{method:'GET',redirect:'follow',cache:'no-store',signal:ctrl.signal});
+      }finally{
+        clearTimeout(timer);
+      }
       if(!res.ok) throw new Error('HTTP '+res.status);
       var payload=await res.json();
       if(!payload||!payload.ok||!payload.data) throw new Error((payload&&payload.error)||'ข้อมูลไม่ถูกต้อง');
@@ -31319,10 +31326,19 @@ async function postSchoolApi(params){
   if(!url) throw new Error('ยังไม่ได้เชื่อม School-OS API');
   var body=new URLSearchParams();
   Object.keys(params||{}).forEach(function(k){body.append(k,params[k]==null?'':params[k]);});
-  var res=await fetch(url,{method:'POST',body:body,redirect:'follow'});
-  var out=await res.json();
-  if(!out.ok) throw new Error(out.error||'ดำเนินการไม่สำเร็จ');
-  return out;
+  var ctrl=new AbortController();
+  var timer=setTimeout(function(){ctrl.abort();},10000);
+  try{
+    var res=await fetch(url,{method:'POST',body:body,redirect:'follow',signal:ctrl.signal});
+    var out=await res.json();
+    if(!out.ok) throw new Error(out.error||'ดำเนินการไม่สำเร็จ');
+    return out;
+  }catch(e){
+    if(e&&e.name==='AbortError') throw new Error('เซิร์ฟเวอร์ตอบช้าเกิน 10 วินาที');
+    throw e;
+  }finally{
+    clearTimeout(timer);
+  }
 }
 function setModeButtons(){
   var s=document.getElementById('modeSetupBtn'),d=document.getElementById('modeDailyBtn');
@@ -31371,11 +31387,14 @@ async function academicLogin(){
   }catch(e){toast('เข้าสู่ระบบไม่สำเร็จ: '+e.message,'warn');}
 }
 async function academicLogout(){
-  try{if(SCHOOL_AUTH.token) await postSchoolApi({action:'logout',token:SCHOOL_AUTH.token});}catch(_){}
+  var oldToken=SCHOOL_AUTH.token||'';
   SCHOOL_AUTH={loggedIn:false,token:'',role:'guest',mode:'DAILY'};
   window.SCHOOL_AUTH=SCHOOL_AUTH;
   sessionStorage.removeItem('school_os_admin_token');sessionStorage.removeItem('school_os_admin_mode');
   applyAccessUI();nav('dashboard');toast('ออกจากระบบแล้ว','info');
+  if(oldToken){
+    postSchoolApi({action:'logout',token:oldToken}).catch(function(){});
+  }
 }
 async function switchSystemMode(mode){
   if(!SCHOOL_AUTH.loggedIn) return;
