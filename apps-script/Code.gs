@@ -557,9 +557,26 @@ function writeTable_(ss, sheetName, headers, rows) {
   if (rows.length) sh.getRange(2,1,rows.length,width).setValues(rows);
 }
 
-function login_(p) {
+function getAuthConfigCached_() {
+  const cache = CacheService.getScriptCache();
+  const key = 'school_os_auth_config_v1';
+  const cached = cache.get(key);
+  if (cached) {
+    try { return JSON.parse(cached); } catch (_) {}
+  }
   const ss = SpreadsheetApp.openById(SCHOOL_OS_SPREADSHEET_ID);
   const cfg = keyValueSheet_(ss, 'Config');
+  const auth = {
+    adminId: s_(cfg.adminId),
+    adminPasswordHash: s_(cfg.adminPasswordHash).toLowerCase(),
+    systemMode: (s_(cfg.systemMode)||'DAILY').toUpperCase()
+  };
+  try { cache.put(key, JSON.stringify(auth), 600); } catch (_) {}
+  return auth;
+}
+
+function login_(p) {
+  const cfg = getAuthConfigCached_();
   const id = s_(p.id);
   const password = String(p.password == null ? '' : p.password);
   const storedId = s_(cfg.adminId);
@@ -572,7 +589,7 @@ function login_(p) {
   }
   const token = Utilities.getUuid().replace(/-/g,'') + Utilities.getUuid().replace(/-/g,'');
   CacheService.getScriptCache().put('school_os_session_' + token, 'admin', 21600);
-  return json_({ok:true,token:token,role:'admin',systemMode:(s_(cfg.systemMode)||'DAILY').toUpperCase(),expiresIn:21600});
+  return json_({ok:true,token:token,role:'admin',systemMode:cfg.systemMode||'DAILY',expiresIn:21600});
 }
 
 function logout_(p) {
@@ -588,6 +605,7 @@ function setMode_(p) {
   const ss=SpreadsheetApp.openById(SCHOOL_OS_SPREADSHEET_ID);
   setKeyValue_(ss,'Config','systemMode',mode);
   CacheService.getScriptCache().remove('school_os_bootstrap_v6');
+  CacheService.getScriptCache().remove('school_os_auth_config_v1');
   return json_({ok:true,systemMode:mode});
 }
 
