@@ -11,7 +11,7 @@ function doGet(e) {
       return json_({ ok: true, data: data, readOnly: true, systemMode: data.systemMode || 'DAILY', version: '1.2' });
     }
     if (action === 'refresh') {
-      CacheService.getScriptCache().remove('school_os_bootstrap_v6');
+      clearBootstrapCache_();
       const data = loadDatabaseCached_();
       return json_({ ok: true, data: data, readOnly: true, systemMode: data.systemMode || 'DAILY', version: '1.2', refreshed: true });
     }
@@ -21,21 +21,52 @@ function doGet(e) {
   }
 }
 
+function clearBootstrapCache_() {
+  const cache = CacheService.getScriptCache();
+  const metaKey = 'school_os_bootstrap_v7_meta';
+  let count = 0;
+  try { count = Number(cache.get(metaKey) || 0); } catch (_) {}
+  const keys = [metaKey, 'school_os_bootstrap_v6'];
+  for (let i = 0; i < count; i++) keys.push('school_os_bootstrap_v7_' + i);
+  try { cache.removeAll(keys); } catch (_) {}
+}
+
 function loadDatabaseCached_() {
   const cache = CacheService.getScriptCache();
-  const key = 'school_os_bootstrap_v6';
-  const cached = cache.get(key);
-  if (cached) {
-    try { return JSON.parse(cached); } catch (_) {}
-  }
+  const metaKey = 'school_os_bootstrap_v7_meta';
+
+  // The old cache silently stopped working when the DB exceeded one
+  // CacheService entry (~100 KB). Store it in smaller chunks instead.
+  try {
+    const count = Number(cache.get(metaKey) || 0);
+    if (count > 0 && count <= 20) {
+      const keys = [];
+      for (let i = 0; i < count; i++) keys.push('school_os_bootstrap_v7_' + i);
+      const parts = cache.getAll(keys);
+      let raw = '';
+      for (let i = 0; i < count; i++) {
+        const part = parts['school_os_bootstrap_v7_' + i];
+        if (!part) { raw = ''; break; }
+        raw += part;
+      }
+      if (raw) return JSON.parse(raw);
+    }
+  } catch (_) {}
 
   const data = loadDatabase_();
 
-  // Apps Script CacheService has a per-entry size limit.
-  // Keep the cache only when the serialized school DB fits safely.
   try {
     const raw = JSON.stringify(data);
-    if (raw.length < 90000) cache.put(key, raw, 300);
+    const chunkSize = 80000;
+    const count = Math.ceil(raw.length / chunkSize);
+    if (count > 0 && count <= 20) {
+      const values = {};
+      for (let i = 0; i < count; i++) {
+        values['school_os_bootstrap_v7_' + i] = raw.slice(i * chunkSize, (i + 1) * chunkSize);
+      }
+      cache.putAll(values, 600);
+      cache.put(metaKey, String(count), 600);
+    }
   } catch (_) {}
 
   return data;
@@ -215,7 +246,7 @@ function saveDatabase_(p) {
     setKeyValue_(ss, 'Config', 'subjectColorSchemeVersion', Number(db.subjectColorSchemeVersion || 2));
 
     SpreadsheetApp.flush();
-    CacheService.getScriptCache().remove('school_os_bootstrap_v6');
+    clearBootstrapCache_();
 
     return json_({
       ok:true,
@@ -368,7 +399,7 @@ function saveAnnouncementApi_(p) {
     else list.push(row);
     writeAnnouncements_(ss, list);
     SpreadsheetApp.flush();
-    CacheService.getScriptCache().remove('school_os_bootstrap_v6');
+    clearBootstrapCache_();
     return json_({ok:true,announcement:row,savedAt:new Date().toISOString()});
   } finally {
     lock.releaseLock();
@@ -388,7 +419,7 @@ function deleteAnnouncementApi_(p) {
     const list = tableObjects_(ss, 'Announcements').filter(x => s_(x.id) !== id);
     writeAnnouncements_(ss, list);
     SpreadsheetApp.flush();
-    CacheService.getScriptCache().remove('school_os_bootstrap_v6');
+    clearBootstrapCache_();
     return json_({ok:true,id:id,savedAt:new Date().toISOString()});
   } finally {
     lock.releaseLock();
@@ -479,7 +510,7 @@ function setMode_(p) {
   const auth = getAuthConfigCached_();
   auth.systemMode = mode;
   props.setProperty('school_os_auth_config_v1', JSON.stringify(auth));
-  CacheService.getScriptCache().remove('school_os_bootstrap_v6');
+  clearBootstrapCache_();
   return json_({ok:true,systemMode:mode});
 }
 
