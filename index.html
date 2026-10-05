@@ -1058,6 +1058,14 @@ body{background:var(--bg);color:#20324B}
   background:#fff!important;color:#12345F!important;font-size:14px!important;font-weight:800!important;
   box-shadow:none!important
 }
+.sub-v2-date-control{position:relative;display:flex;align-items:center}
+.sub-v2-date-native{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;left:0;bottom:0}
+.sub-v2-date-picker-btn{
+  margin-left:-38px;width:34px;height:34px;border:0;border-radius:7px;background:#fff;color:#17345F;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px
+}
+.sub-v2-date-picker-btn:hover{background:#EEF4FB}
+
 .sub-v2-day{
   padding:7px 13px;border-radius:18px;background:rgba(255,255,255,.13);
   border:1px solid rgba(255,255,255,.22);color:#fff;font-size:12px;font-weight:700
@@ -2346,7 +2354,11 @@ label,.fg label{font-size:13px!important}
   <div class="sub-v2-toolbar">
     <div class="sub-v2-date">
       <span class="sub-v2-label">📅 วันที่จัดสอนแทน</span>
-      <input type="date" id="subDate" class="sub-v2-date-input" onchange="loadSubstituteDay()">
+      <div class="sub-v2-date-control">
+        <input type="text" id="subDateText" class="sub-v2-date-input" inputmode="numeric" placeholder="วว/ดด/ปปปป" aria-label="วันที่จัดสอนแทน วัน เดือน ปี" onkeydown="if(event.key==='Enter') applySubDateText()" onblur="applySubDateText(false)">
+        <input type="date" id="subDate" class="sub-v2-date-native" onchange="syncSubDateText();loadSubstituteDay()">
+        <button type="button" class="sub-v2-date-picker-btn" onclick="openSubDatePicker()" title="เลือกวันที่จากปฏิทิน">📅</button>
+      </div>
       <div class="sub-v2-day" id="subDayName">–</div>
     </div>
     <div class="sub-v2-toolbar-actions">
@@ -29374,6 +29386,47 @@ function mapDayNameToSched(dateStr){
   const dayMap = {0:'อาทิตย์',1:'จันทร์',2:'อังคาร',3:'พุธ',4:'พฤหัสบดี',5:'ศุกร์',6:'เสาร์'};
   return dayMap[d.getDay()]||'';
 }
+function formatSubDateInput_(iso){
+  if(!iso) return '';
+  var p=String(iso).split('-');
+  if(p.length!==3) return '';
+  var y=Number(p[0]);
+  return String(p[2]).padStart(2,'0')+'/'+String(p[1]).padStart(2,'0')+'/'+String(y+543);
+}
+function parseSubDateInput_(text){
+  var m=String(text||'').trim().match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+  if(!m) return '';
+  var d=Number(m[1]), mo=Number(m[2]), y=Number(m[3]);
+  if(y>2400) y-=543;
+  var test=new Date(y,mo-1,d);
+  if(test.getFullYear()!==y || test.getMonth()!==mo-1 || test.getDate()!==d) return '';
+  return String(y).padStart(4,'0')+'-'+String(mo).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+}
+function syncSubDateText(){
+  var iso=(document.getElementById('subDate')||{}).value||'';
+  var text=document.getElementById('subDateText');
+  if(text) text.value=formatSubDateInput_(iso);
+}
+function applySubDateText(showWarning){
+  var text=document.getElementById('subDateText');
+  var native=document.getElementById('subDate');
+  if(!text||!native) return;
+  var iso=parseSubDateInput_(text.value);
+  if(!iso){
+    if(showWarning!==false) toast('กรุณากรอกวันที่เป็น วัน/เดือน/ปี เช่น 04/09/2569','warn');
+    syncSubDateText();
+    return;
+  }
+  native.value=iso;
+  text.value=formatSubDateInput_(iso);
+  loadSubstituteDay();
+}
+function openSubDatePicker(){
+  var el=document.getElementById('subDate');
+  if(!el) return;
+  if(typeof el.showPicker==='function') el.showPicker();
+  else el.click();
+}
 function setSubDateToday(){
   const today = new Date();
   const y = today.getFullYear();
@@ -29381,14 +29434,29 @@ function setSubDateToday(){
   const d = String(today.getDate()).padStart(2,'0');
   const iso = y+'-'+m+'-'+d;
   document.getElementById('subDate').value = iso;
+  syncSubDateText();
   loadSubstituteDay();
+}
+async function refreshLeaveRecords_(){
+  var url=window.SCHOOL_OS_API_URL||'';
+  if(!url) return;
+  try{
+    var sep=url.indexOf('?')>=0?'&':'?';
+    var res=await fetch(url+sep+'action=leaveRecords&_='+Date.now(),{method:'GET',redirect:'follow',cache:'no-store'});
+    if(!res.ok) return;
+    var out=await res.json();
+    if(out&&out.ok&&Array.isArray(out.leaveRecords)) DB.leaveRecords=out.leaveRecords;
+  }catch(e){
+    console.warn('Leave records refresh:',e);
+  }
 }
 
 // ── Render substitute page for a date ────────
-function loadSubstituteDay(){
-  const dateStr = document.getElementById('subDate').value;
+async function loadSubstituteDay(){
+  const dateStr = (document.getElementById('subDate')||{}).value||'';
   if(!dateStr){ return; }
   currentSubDate = dateStr;
+  await refreshLeaveRecords_();
   syncLeaveRecordsForDate(dateStr);
   const dayName = getDayNameThai(dateStr);
   const dayEl = document.getElementById('subDayName');
