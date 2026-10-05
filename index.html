@@ -1868,7 +1868,7 @@ label,.fg label{font-size:13px!important}
           <option value="ด่วน">ด่วน</option>
         </select>
       </div>
-      <div class="fg"><label>วันที่แสดง</label><input id="announcementDate" type="date"></div>
+      <div class="fg"><label>วันที่แสดง</label><div class="sub-v2-date-control"><input type="text" id="announcementDateText" class="sub-v2-date-input" inputmode="numeric" placeholder="วว/ดด/ปปปป" onkeydown="if(event.key==='Enter') applySchoolDateControl('announcementDate',false)" onblur="applySchoolDateControl('announcementDate',false)"><input id="announcementDate" type="date" class="sub-v2-date-native" onchange="syncSchoolDateControl('announcementDate')"><button type="button" class="sub-v2-date-picker-btn" onclick="openSchoolDatePicker('announcementDate')" title="เลือกวันที่จากปฏิทิน">📅</button></div></div>
       <div class="fg s2"><label>รายละเอียด <span class="req">*</span></label><textarea id="announcementBody" rows="5" placeholder="พิมพ์รายละเอียดประกาศ..."></textarea></div>
     </div>
     <input type="hidden" id="announcementEditId">
@@ -2351,7 +2351,7 @@ label,.fg label{font-size:13px!important}
   <div class="card">
     <div class="card-hd"><div class="card-title">📅 เลือกวันที่ต้องการตรวจสอบ</div></div>
     <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap">
-      <div class="fg" style="max-width:230px"><label>วันที่จัดสอนแทน</label><input id="leaveTestDate" type="date" onchange="renderLeaveTest()"></div>
+      <div class="fg" style="max-width:260px"><label>วันที่ตรวจสอบ</label><div class="sub-v2-date-control"><input type="text" id="leaveTestDateText" class="sub-v2-date-input" inputmode="numeric" placeholder="วว/ดด/ปปปป" onkeydown="if(event.key==='Enter'){applySchoolDateControl('leaveTestDate',true);renderLeaveTest()}" onblur="applySchoolDateControl('leaveTestDate',false)"><input id="leaveTestDate" type="date" class="sub-v2-date-native" onchange="syncSchoolDateControl('leaveTestDate');renderLeaveTest()"><button type="button" class="sub-v2-date-picker-btn" onclick="openSchoolDatePicker('leaveTestDate')" title="เลือกวันที่จากปฏิทิน">📅</button></div></div>
       <button type="button" class="btn btn-pri" onclick="renderLeaveTest()">ตรวจสอบครูลา</button>
     </div>
     <div class="alert a-info" style="margin-top:14px;margin-bottom:0">ใช้ข้อมูลจากฐานข้อมูลใบลาจริง โดยคัดกรองจากช่วง <b>จากวันที่–ถึงวันที่</b> ส่วน “กำหนดการ” แสดงเป็นข้อมูลประกอบและยังไม่นำมาประมวลผล</div>
@@ -26344,6 +26344,7 @@ function openAnnouncementEditor(id){
   document.getElementById('announcementTitle').value=item?item.title:'';
   document.getElementById('announcementType').value=item?item.type:'ทั่วไป';
   document.getElementById('announcementDate').value=item?item.date:new Date().toISOString().slice(0,10);
+  syncSchoolDateControl('announcementDate');
   document.getElementById('announcementBody').value=item?item.body:'';
   box.style.display='block';
   box.scrollIntoView({behavior:'smooth',block:'start'});
@@ -29476,14 +29477,14 @@ function mapDayNameToSched(dateStr){
   const dayMap = {0:'อาทิตย์',1:'จันทร์',2:'อังคาร',3:'พุธ',4:'พฤหัสบดี',5:'ศุกร์',6:'เสาร์'};
   return dayMap[d.getDay()]||'';
 }
-function formatSubDateInput_(iso){
+function formatSchoolDateInput_(iso){
   if(!iso) return '';
   var p=String(iso).split('-');
   if(p.length!==3) return '';
   var y=Number(p[0]);
   return String(p[2]).padStart(2,'0')+'/'+String(p[1]).padStart(2,'0')+'/'+String(y+543);
 }
-function parseSubDateInput_(text){
+function parseSchoolDateInput_(text){
   var m=String(text||'').trim().match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
   if(!m) return '';
   var d=Number(m[1]), mo=Number(m[2]), y=Number(m[3]);
@@ -29492,31 +29493,44 @@ function parseSubDateInput_(text){
   if(test.getFullYear()!==y || test.getMonth()!==mo-1 || test.getDate()!==d) return '';
   return String(y).padStart(4,'0')+'-'+String(mo).padStart(2,'0')+'-'+String(d).padStart(2,'0');
 }
+function syncSchoolDateControl(id){
+  var native=document.getElementById(id), text=document.getElementById(id+'Text');
+  if(native&&text) text.value=formatSchoolDateInput_(native.value||'');
+}
+function applySchoolDateControl(id,showWarning){
+  var native=document.getElementById(id), text=document.getElementById(id+'Text');
+  if(!native||!text) return false;
+  var iso=parseSchoolDateInput_(text.value);
+  if(!iso){
+    if(showWarning!==false) toast('กรุณากรอกวันที่เป็น วัน/เดือน/ปี เช่น 05/10/2569','warn');
+    syncSchoolDateControl(id); return false;
+  }
+  native.value=iso; text.value=formatSchoolDateInput_(iso); return true;
+}
+function openSchoolDatePicker(id){
+  var el=document.getElementById(id); if(!el) return;
+  if(typeof el.showPicker==='function') el.showPicker(); else el.click();
+}
 function syncSubDateText(){
   var iso=(document.getElementById('subDate')||{}).value||'';
   var text=document.getElementById('subDateText');
-  if(text) text.value=formatSubDateInput_(iso);
+  if(text) text.value=formatSchoolDateInput_(iso);
 }
 function applySubDateText(showWarning){
   var text=document.getElementById('subDateText');
   var native=document.getElementById('subDate');
   if(!text||!native) return;
-  var iso=parseSubDateInput_(text.value);
+  var iso=parseSchoolDateInput_(text.value);
   if(!iso){
     if(showWarning!==false) toast('กรุณากรอกวันที่เป็น วัน/เดือน/ปี เช่น 04/09/2569','warn');
     syncSubDateText();
     return;
   }
   native.value=iso;
-  text.value=formatSubDateInput_(iso);
+  text.value=formatSchoolDateInput_(iso);
   loadSubstituteDay();
 }
-function openSubDatePicker(){
-  var el=document.getElementById('subDate');
-  if(!el) return;
-  if(typeof el.showPicker==='function') el.showPicker();
-  else el.click();
-}
+function openSubDatePicker(){ openSchoolDatePicker('subDate'); }
 function setSubDateToday(){
   const today = new Date();
   const y = today.getFullYear();
@@ -31575,6 +31589,7 @@ async function renderLeaveTest(){
   if(!input.value){
     var now=new Date(); input.value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
   }
+  syncSchoolDateControl('leaveTestDate');
   box.innerHTML='<div style="padding:24px;text-align:center;color:#7787A2">กำลังอ่านฐานข้อมูลใบลา...</div>'; count.textContent='...';
   try{
     var base=String(window.SCHOOL_OS_API_URL||'').replace(/\/+$/,'');
