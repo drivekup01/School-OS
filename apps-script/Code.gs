@@ -1,4 +1,5 @@
 const SCHOOL_OS_SPREADSHEET_ID = '1f0vnm-dJHaVRRbPVXEIRuBYhXwyft_ceNraqs8XwqkY';
+const SCHOOL_OS_LEAVE_SPREADSHEET_ID = '1-7kDkMUb37QqGeCPNozsDTavOgxz-jrk8pzAXtl6cR4';
 
 function doGet(e) {
   try {
@@ -10,6 +11,7 @@ function doGet(e) {
       const data = loadDatabaseCached_();
       return json_({ ok: true, data: data, readOnly: true, systemMode: data.systemMode || 'DAILY', version: '1.2' });
     }
+    if (action === 'teacherLeave') return teacherLeave_(e.parameter || {});
     if (action === 'refresh') {
       clearBootstrapCache_();
       const data = loadDatabaseCached_();
@@ -19,6 +21,49 @@ function doGet(e) {
   } catch (err) {
     return json_({ ok: false, error: String(err && err.message ? err.message : err) });
   }
+}
+
+
+function teacherLeave_(p) {
+  const selected = parseIsoDateKey_(s_(p.date));
+  if (!selected) return json_({ok:false,error:'วันที่ไม่ถูกต้อง'});
+
+  const ss = SpreadsheetApp.openById(SCHOOL_OS_LEAVE_SPREADSHEET_ID);
+  const sh = ss.getSheetByName('data');
+  if (!sh) throw new Error('ไม่พบชีต data ในฐานข้อมูลใบลา');
+
+  const lastRow = sh.getLastRow();
+  if (lastRow < 2) return json_({ok:true,date:s_(p.date),rows:[]});
+
+  // Read only columns needed by the leave-history module: B,C,E,F,I,J,K,L.
+  const values = sh.getRange(2, 1, lastRow - 1, 12).getDisplayValues();
+  const rows = [];
+  values.forEach(function(r) {
+    const name=s_(r[5]), fromText=s_(r[9]), toText=s_(r[10]);
+    if (!name || !fromText || !toText) return;
+    const from=parseThaiDateKey_(fromText), to=parseThaiDateKey_(toText);
+    if (!from || !to || selected < from || selected > to) return;
+    rows.push({
+      row:s_(r[0]), headApproval:s_(r[1]), directorApproval:s_(r[2]),
+      submitted:s_(r[4]), name:name, type:s_(r[8]),
+      from:fromText, to:toText, duration:s_(r[11])
+    });
+  });
+  return json_({ok:true,date:s_(p.date),rows:rows});
+}
+
+function parseIsoDateKey_(text) {
+  const m=String(text||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return 0;
+  return Number(m[1])*10000+Number(m[2])*100+Number(m[3]);
+}
+
+function parseThaiDateKey_(text) {
+  const months={มกราคม:1,กุมภาพันธ์:2,มีนาคม:3,เมษายน:4,พฤษภาคม:5,มิถุนายน:6,กรกฎาคม:7,สิงหาคม:8,กันยายน:9,ตุลาคม:10,พฤศจิกายน:11,ธันวาคม:12};
+  const m=String(text||'').trim().replace(/\s+/g,' ').match(/^(\d{1,2})\s+([^\s]+)\s+(\d{4})$/);
+  if (!m || !months[m[2]]) return 0;
+  let year=Number(m[3]); if (year>2400) year-=543;
+  return year*10000+months[m[2]]*100+Number(m[1]);
 }
 
 function clearBootstrapCache_() {
