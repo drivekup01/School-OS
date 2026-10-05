@@ -12,7 +12,7 @@ function doGet(e) {
       return json_({ ok: true, data: data, readOnly: true, systemMode: data.systemMode || 'DAILY', version: '1.2' });
     }
     if (action === 'refresh') {
-      CacheService.getScriptCache().remove('school_os_bootstrap_v5');
+      CacheService.getScriptCache().remove('school_os_bootstrap_v6');
       const data = loadDatabaseCached_();
       return json_({ ok: true, data: data, readOnly: true, systemMode: data.systemMode || 'DAILY', version: '1.2', refreshed: true });
     }
@@ -24,7 +24,7 @@ function doGet(e) {
 
 function loadDatabaseCached_() {
   const cache = CacheService.getScriptCache();
-  const key = 'school_os_bootstrap_v5';
+  const key = 'school_os_bootstrap_v6';
   const cached = cache.get(key);
   if (cached) {
     try { return JSON.parse(cached); } catch (_) {}
@@ -155,35 +155,31 @@ function loadDatabase_() {
 function readLeaveRecords_(leaveSs) {
   const sh = leaveSs.getSheetByName('data');
   if (!sh) return [];
-  const range = sh.getDataRange();
-  const values = range.getValues();
-  const display = range.getDisplayValues();
-  if (values.length < 2) return [];
+  const display = sh.getDataRange().getDisplayValues();
+  if (display.length < 2) return [];
 
   const headers = display[0].map(String);
   const idxName = headers.indexOf('ชื่อสกุล');
   const idxType = headers.indexOf('ประเภทการลา');
   const idxStart = headers.indexOf('จากวันที่');
-  const idxEnd = headers.indexOf('ถึงวันที่');
+  const idxDuration = headers.indexOf('กำหนดการ');
   const idxNote = headers.indexOf('เนื่องจาก');
-  if (idxName < 0 || idxStart < 0 || idxEnd < 0) return [];
+  if (idxName < 0 || idxStart < 0 || idxDuration < 0) return [];
 
   const out = [];
-  for (let i = 1; i < values.length; i++) {
+  for (let i = 1; i < display.length; i++) {
     const teacherName = s_(display[i][idxName]);
     if (!teacherName) continue;
 
-    const startRaw = values[i][idxStart] || display[i][idxStart];
-    const endRaw = values[i][idxEnd] || display[i][idxEnd];
-    const startDate = parseThaiDateIso_(startRaw);
-    const endDate = parseThaiDateIso_(endRaw) || startDate;
-    if (!startDate || !endDate) continue;
+    const startDate = parseThaiDateIso_(display[i][idxStart]);
+    const duration = Number(s_(display[i][idxDuration]));
+    if (!startDate || !Number.isInteger(duration) || duration < 1) continue;
 
     out.push({
       teacherName: teacherName,
       leaveType: idxType >= 0 ? s_(display[i][idxType]) : '',
       startDate: startDate,
-      endDate: endDate,
+      endDate: addDaysToDateKey_(startDate, duration - 1),
       note: idxNote >= 0 ? s_(display[i][idxNote]) : ''
     });
   }
@@ -279,6 +275,15 @@ function validDateKey_(year, month, day) {
   return String(year).padStart(4,'0')+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0');
 }
 
+function addDaysToDateKey_(dateKey, daysToAdd) {
+  const m = String(dateKey || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return '';
+  const dt = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]) + Number(daysToAdd || 0)));
+  return String(dt.getUTCFullYear()).padStart(4,'0')+'-'+
+    String(dt.getUTCMonth()+1).padStart(2,'0')+'-'+
+    String(dt.getUTCDate()).padStart(2,'0');
+}
+
 function json_(obj) {
   return ContentService
     .createTextOutput(JSON.stringify(obj))
@@ -325,7 +330,7 @@ function saveDatabase_(p) {
       writeSubstitute_(ss, db.substitute || {});
       writeAnnouncements_(ss, db.announcements || []);
       SpreadsheetApp.flush();
-      CacheService.getScriptCache().remove('school_os_bootstrap_v5');
+      CacheService.getScriptCache().remove('school_os_bootstrap_v6');
       return json_({ok:true,mode:mode,saved:['Substitute','Announcements'],savedAt:new Date().toISOString()});
     }
 
@@ -345,7 +350,7 @@ function saveDatabase_(p) {
     setKeyValue_(ss, 'Config', 'subjectColorSchemeVersion', Number(db.subjectColorSchemeVersion || 2));
 
     SpreadsheetApp.flush();
-    CacheService.getScriptCache().remove('school_os_bootstrap_v5');
+    CacheService.getScriptCache().remove('school_os_bootstrap_v6');
 
     return json_({
       ok:true,
@@ -521,7 +526,7 @@ function setMode_(p) {
   if(mode!=='SETUP' && mode!=='DAILY') throw new Error('โหมดไม่ถูกต้อง');
   const ss=SpreadsheetApp.openById(SCHOOL_OS_SPREADSHEET_ID);
   setKeyValue_(ss,'Config','systemMode',mode);
-  CacheService.getScriptCache().remove('school_os_bootstrap_v5');
+  CacheService.getScriptCache().remove('school_os_bootstrap_v6');
   return json_({ok:true,systemMode:mode});
 }
 
