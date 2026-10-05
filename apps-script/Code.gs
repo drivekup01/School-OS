@@ -170,10 +170,8 @@ function readLeaveRecords_(leaveSs) {
 
   const headers = display[0].map(String);
   const idxName = headers.indexOf('ชื่อสกุล');
-  const idxType = headers.indexOf('ประเภทการลา');
   const idxStart = headers.indexOf('จากวันที่');
   const idxDuration = headers.indexOf('กำหนดการ');
-  const idxNote = headers.indexOf('เนื่องจาก');
   if (idxName < 0 || idxStart < 0 || idxDuration < 0) return [];
 
   const out = [];
@@ -187,10 +185,8 @@ function readLeaveRecords_(leaveSs) {
 
     out.push({
       teacherName: teacherName,
-      leaveType: idxType >= 0 ? s_(display[i][idxType]) : '',
       startDate: startDate,
-      endDate: addDaysToDateKey_(startDate, duration - 1),
-      note: idxNote >= 0 ? s_(display[i][idxNote]) : ''
+      endDate: addDaysToDateKey_(startDate, duration - 1)
     });
   }
   return out;
@@ -319,27 +315,25 @@ function readLeaveRecordsForDate_(dateStr) {
 
   const headers = display[0].map(String);
   const idxName = headers.indexOf('ชื่อสกุล');
-  const idxType = headers.indexOf('ประเภทการลา');
   const idxStart = headers.indexOf('จากวันที่');
   const idxDuration = headers.indexOf('กำหนดการ');
-  const idxNote = headers.indexOf('เนื่องจาก');
   if (idxName < 0 || idxStart < 0 || idxDuration < 0) return [];
 
   const out = [];
   for (let i = 1; i < display.length; i++) {
     const teacherName = s_(display[i][idxName]);
     if (!teacherName) continue;
+
     const startDate = parseThaiDateIso_(display[i][idxStart]);
     const duration = Number(s_(display[i][idxDuration]));
     if (!startDate || !Number.isInteger(duration) || duration < 1) continue;
+
     const endDate = addDaysToDateKey_(startDate, duration - 1);
     if (dateStr < startDate || dateStr > endDate) continue;
+
     out.push({
       teacherName: teacherName,
-      leaveType: idxType >= 0 ? s_(display[i][idxType]) : '',
-      startDate: startDate,
-      endDate: endDate,
-      note: idxNote >= 0 ? s_(display[i][idxNote]) : ''
+      date: dateStr
     });
   }
   return out;
