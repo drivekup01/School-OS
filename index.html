@@ -30716,10 +30716,10 @@ function renderSubContent(){
   });
   h+='</tr></thead><tbody>';
 
-  teachers.forEach(function(t){
+  teachers.forEach(function(t,ti){
     var absent=subV2AbsentForTeacher(day,t.id);
     h+='<tr class="'+(absent?'teacher-absent':'')+'"><td><div class="sub-v2-teacher">'+
-      '<div class="sub-v2-avatar">'+subV2Escape((t.first||'?').charAt(0))+'</div>'+
+      '<div class="sub-v2-avatar">'+(ti+1)+'</div>'+
       '<div><div class="sub-v2-tname">'+subV2Escape(subV2TeacherName(t))+
       (absent?'<span class="sub-v2-leave-badge">ลา</span>':'')+
       '</div><div class="sub-v2-tmeta">'+subV2Escape(t.dept||'ไม่ระบุกลุ่มสาระ')+'</div></div></div></td>';
@@ -30936,7 +30936,7 @@ if(_subV2OldSetSubTeacher){
       var dept=t&&t.dept?t.dept:'ไม่ระบุกลุ่มสาระ';
       var periods=a.periods||[];
       h+='<div class="sub-group-card"><div class="sub-group-head">'+
-        '<div class="sub-group-avatar">'+esc((t&&t.first?t.first.charAt(0):'?'))+'</div>'+
+        '<div class="sub-group-avatar">'+(ai+1)+'</div>'+
         '<div class="sub-group-main"><div class="sub-group-name">ครูลา: '+esc(name)+'</div>'+
         '<div class="sub-group-meta">กลุ่มสาระ: '+esc(dept)+' • สาเหตุ: '+esc(a.type||'ไม่ระบุ')+(a.note?' • '+esc(a.note):'')+'</div></div>'+
         '<span class="badge b-purple">'+periods.length+' คาบ</span></div>';
