@@ -12,7 +12,7 @@ function doGet(e) {
       return json_({ ok: true, data: data, readOnly: true, systemMode: data.systemMode || 'DAILY', version: '1.2' });
     }
     if (action === 'refresh') {
-      CacheService.getScriptCache().remove('school_os_bootstrap_v3');
+      CacheService.getScriptCache().remove('school_os_bootstrap_v4');
       const data = loadDatabaseCached_();
       return json_({ ok: true, data: data, readOnly: true, systemMode: data.systemMode || 'DAILY', version: '1.2', refreshed: true });
     }
@@ -24,7 +24,7 @@ function doGet(e) {
 
 function loadDatabaseCached_() {
   const cache = CacheService.getScriptCache();
-  const key = 'school_os_bootstrap_v3';
+  const key = 'school_os_bootstrap_v4';
   const cached = cache.get(key);
   if (cached) {
     try { return JSON.parse(cached); } catch (_) {}
@@ -153,17 +153,41 @@ function loadDatabase_() {
 }
 
 function readLeaveRecords_(leaveSs) {
-  return tableObjects_(leaveSs, 'data').map(r => {
-    const startDate = parseThaiDateIso_(r['จากวันที่']);
-    const endDate = parseThaiDateIso_(r['ถึงวันที่']);
-    return {
-      teacherName: s_(r['ชื่อสกุล']),
-      leaveType: s_(r['ประเภทการลา']),
+  const sh = leaveSs.getSheetByName('data');
+  if (!sh) return [];
+  const range = sh.getDataRange();
+  const values = range.getValues();
+  const display = range.getDisplayValues();
+  if (values.length < 2) return [];
+
+  const headers = display[0].map(String);
+  const idxName = headers.indexOf('ชื่อสกุล');
+  const idxType = headers.indexOf('ประเภทการลา');
+  const idxStart = headers.indexOf('จากวันที่');
+  const idxEnd = headers.indexOf('ถึงวันที่');
+  const idxNote = headers.indexOf('เนื่องจาก');
+  if (idxName < 0 || idxStart < 0 || idxEnd < 0) return [];
+
+  const out = [];
+  for (let i = 1; i < values.length; i++) {
+    const teacherName = s_(display[i][idxName]);
+    if (!teacherName) continue;
+
+    const startRaw = values[i][idxStart] || display[i][idxStart];
+    const endRaw = values[i][idxEnd] || display[i][idxEnd];
+    const startDate = parseThaiDateIso_(startRaw);
+    const endDate = parseThaiDateIso_(endRaw) || startDate;
+    if (!startDate || !endDate) continue;
+
+    out.push({
+      teacherName: teacherName,
+      leaveType: idxType >= 0 ? s_(display[i][idxType]) : '',
       startDate: startDate,
-      endDate: endDate || startDate,
-      note: s_(r['เนื่องจาก'])
-    };
-  }).filter(r => r.teacherName && r.startDate && r.endDate);
+      endDate: endDate,
+      note: idxNote >= 0 ? s_(display[i][idxNote]) : ''
+    });
+  }
+  return out;
 }
 
 function tableObjects_(ss, sheetName) {
@@ -203,19 +227,55 @@ function parseList_(v) {
 }
 
 function parseThaiDateIso_(v) {
+  if (v instanceof Date && !isNaN(v.getTime())) {
+    return Utilities.formatDate(v, Session.getScriptTimeZone() || 'Asia/Bangkok', 'yyyy-MM-dd');
+  }
+
   const text = s_(v);
   if (!text) return '';
-  const m = text.match(/(\d{1,2})\s+([^\s]+)\s+(\d{4})/);
-  if (!m) return '';
-  const months = {
-    'มกราคม':1,'กุมภาพันธ์':2,'มีนาคม':3,'เมษายน':4,'พฤษภาคม':5,'มิถุนายน':6,
-    'กรกฎาคม':7,'สิงหาคม':8,'กันยายน':9,'ตุลาคม':10,'พฤศจิกายน':11,'ธันวาคม':12
-  };
-  const day = Number(m[1]);
-  const month = months[m[2]];
-  let year = Number(m[3]);
-  if (!month || !day || !year) return '';
-  if (year > 2400) year -= 543;
+
+  let m = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (m) {
+    let y = Number(m[1]), mo = Number(m[2]), d = Number(m[3]);
+    if (y > 2400) y -= 543;
+    return validDateKey_(y, mo, d);
+  }
+
+  m = text.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+  if (m) {
+    let d = Number(m[1]), mo = Number(m[2]), y = Number(m[3]);
+    if (y > 2400) y -= 543;
+    return validDateKey_(y, mo, d);
+  }
+
+  m = text.match(/^(\d{1,2})\s+([^\s]+)\s+(\d{4})$/);
+  if (m) {
+    const months = {
+      'มกราคม':1,'ม.ค.':1,'มค':1,
+      'กุมภาพันธ์':2,'ก.พ.':2,'กพ':2,
+      'มีนาคม':3,'มี.ค.':3,'มีค':3,
+      'เมษายน':4,'เม.ย.':4,'เมย':4,
+      'พฤษภาคม':5,'พ.ค.':5,'พค':5,
+      'มิถุนายน':6,'มิ.ย.':6,'มิย':6,
+      'กรกฎาคม':7,'ก.ค.':7,'กค':7,
+      'สิงหาคม':8,'ส.ค.':8,'สค':8,
+      'กันยายน':9,'ก.ย.':9,'กย':9,
+      'ตุลาคม':10,'ต.ค.':10,'ตค':10,
+      'พฤศจิกายน':11,'พ.ย.':11,'พย':11,
+      'ธันวาคม':12,'ธ.ค.':12,'ธค':12
+    };
+    let d = Number(m[1]), mo = months[m[2]], y = Number(m[3]);
+    if (y > 2400) y -= 543;
+    return validDateKey_(y, mo, d);
+  }
+
+  return '';
+}
+
+function validDateKey_(year, month, day) {
+  if (!year || !month || !day) return '';
+  const dt = new Date(year, month - 1, day);
+  if (dt.getFullYear() !== year || dt.getMonth() !== month - 1 || dt.getDate() !== day) return '';
   return String(year).padStart(4,'0')+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0');
 }
 
@@ -265,7 +325,7 @@ function saveDatabase_(p) {
       writeSubstitute_(ss, db.substitute || {});
       writeAnnouncements_(ss, db.announcements || []);
       SpreadsheetApp.flush();
-      CacheService.getScriptCache().remove('school_os_bootstrap_v3');
+      CacheService.getScriptCache().remove('school_os_bootstrap_v4');
       return json_({ok:true,mode:mode,saved:['Substitute','Announcements'],savedAt:new Date().toISOString()});
     }
 
@@ -285,7 +345,7 @@ function saveDatabase_(p) {
     setKeyValue_(ss, 'Config', 'subjectColorSchemeVersion', Number(db.subjectColorSchemeVersion || 2));
 
     SpreadsheetApp.flush();
-    CacheService.getScriptCache().remove('school_os_bootstrap_v3');
+    CacheService.getScriptCache().remove('school_os_bootstrap_v4');
 
     return json_({
       ok:true,
@@ -461,7 +521,7 @@ function setMode_(p) {
   if(mode!=='SETUP' && mode!=='DAILY') throw new Error('โหมดไม่ถูกต้อง');
   const ss=SpreadsheetApp.openById(SCHOOL_OS_SPREADSHEET_ID);
   setKeyValue_(ss,'Config','systemMode',mode);
-  CacheService.getScriptCache().remove('school_os_bootstrap_v3');
+  CacheService.getScriptCache().remove('school_os_bootstrap_v4');
   return json_({ok:true,systemMode:mode});
 }
 
