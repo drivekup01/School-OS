@@ -1,5 +1,5 @@
 const SCHOOL_OS_SPREADSHEET_ID = '1f0vnm-dJHaVRRbPVXEIRuBYhXwyft_ceNraqs8XwqkY';
-const SCHOOL_OS_LEAVE_SPREADSHEET_ID = '1-7kDkMUb37QqGeCPNozsDTavOgxz-jrk8pzAXtl6cR4';
+const SCHOOL_OS_LEAVE_SPREADSHEET_ID = '1KA8ch40D0iFHN1nYNcgadWTQbxehEiyKtOdcivRupW0';
 
 function doGet(e) {
   try {
