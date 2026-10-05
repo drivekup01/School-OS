@@ -940,8 +940,8 @@ body{background:var(--bg)}
 .sb-collapse-btn:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.38)}
 .sidebar.sidebar-collapsed{width:58px!important;overflow-x:hidden}
 .sidebar.sidebar-collapsed .sb-collapse-wrap{padding:8px 7px 6px}
-.sidebar.sidebar-collapsed .sb-collapse-btn{padding:0;font-size:0}
-.sidebar.sidebar-collapsed .sb-collapse-btn .sb-collapse-arrow{font-size:19px}
+.sidebar.sidebar-collapsed .sb-collapse-btn{padding:0;font-size:13px}
+.sidebar.sidebar-collapsed .sb-collapse-btn .sb-collapse-arrow{display:none}
 .sidebar.sidebar-collapsed .sb-label,
 .sidebar.sidebar-collapsed .sb-divider,
 .sidebar.sidebar-collapsed .profile-bar{display:none!important}
@@ -30555,8 +30555,8 @@ function loadDemoData(){
     var txt=document.querySelector('#sbCollapseBtn .sb-collapse-text');
     if(!sb) return;
     sb.classList.toggle('sidebar-collapsed', !!collapsed);
-    if(arrow) arrow.textContent=collapsed?'»':'«';
-    if(txt) txt.textContent=collapsed?'ขยายเมนู':'ย่อเมนู';
+    if(arrow) arrow.textContent=collapsed?'':'«';
+    if(txt) txt.textContent=collapsed?'ขยาย':'ย่อเมนู';
     try{ localStorage.setItem('timetable_sidebar_collapsed', collapsed?'1':'0'); }catch(e){}
     document.querySelectorAll('.sb-item').forEach(function(el){
       if(!el.dataset.fullTitle) el.dataset.fullTitle=(el.textContent||'').replace(/\s+/g,' ').trim();
