@@ -1725,7 +1725,7 @@ label,.fg label{font-size:13px!important}
     <div class="sb-label">รายงานและส่งออก</div>
     <div class="sb-item" onclick="nav('export')" id="nav-export"><span class="icon">✨</span>ดูตัวอย่าง & ส่งออก</div>
     <div class="sb-item" onclick="nav('substitute')" id="nav-substitute"><span class="icon">🔄</span>ตารางสอนแทนรายวัน</div>
-    <div class="sb-item" onclick="nav('leave-test')" id="nav-leave-test"><span class="icon">🧪</span>ทดสอบฐานข้อมูลครูลา</div>
+    <div class="sb-item" onclick="nav('leave-test')" id="nav-leave-test"><span class="icon">📋</span>ประวัติการลาของครู</div>
     <div class="sb-item" onclick="nav('announcements')" id="nav-announcements"><span class="icon">📢</span>ประกาศ</div>
   </div>
   <hr class="sb-divider">
@@ -2346,7 +2346,7 @@ label,.fg label{font-size:13px!important}
 <!-- ═══════════ PAGE: LEAVE DATABASE TEST (isolated) ═══════════ -->
 <div class="page" id="page-leave-test">
   <div class="ph">
-    <div class="ph-left"><h1>🧪 ทดสอบฐานข้อมูลครูลา</h1><p>โมดูลทดสอบแยก · ไม่แก้ไขตารางสอนหลักและระบบสอนแทน</p></div>
+    <div class="ph-left"><h1>📋 ประวัติการลาของครู</h1><p>ข้อมูลใบลาจริง · แยกการโหลดจากระบบตารางสอนหลัก</p></div>
   </div>
   <div class="card">
     <div class="card-hd"><div class="card-title">📅 เลือกวันที่ต้องการตรวจสอบ</div></div>
@@ -2354,7 +2354,7 @@ label,.fg label{font-size:13px!important}
       <div class="fg" style="max-width:230px"><label>วันที่จัดสอนแทน</label><input id="leaveTestDate" type="date" onchange="renderLeaveTest()"></div>
       <button type="button" class="btn btn-pri" onclick="renderLeaveTest()">ตรวจสอบครูลา</button>
     </div>
-    <div class="alert a-info" style="margin-top:14px;margin-bottom:0">รอบทดสอบนี้ใช้ข้อมูลจำลองรูปแบบเดียวกับฐานข้อมูลใบลาเดิม โดยใช้เฉพาะช่วง <b>จากวันที่–ถึงวันที่</b> ในการคัดกรอง ส่วน “กำหนดการ” เก็บไว้แสดงเท่านั้น</div>
+    <div class="alert a-info" style="margin-top:14px;margin-bottom:0">ใช้ข้อมูลจากฐานข้อมูลใบลาจริง โดยคัดกรองจากช่วง <b>จากวันที่–ถึงวันที่</b> ส่วน “กำหนดการ” แสดงเป็นข้อมูลประกอบและยังไม่นำมาประมวลผล</div>
   </div>
   <div class="card" style="margin-top:14px">
     <div class="card-hd">
@@ -31567,40 +31567,25 @@ function renderTeacherAll(query){
   setTimeout(function(){ if(window.DB&&DB.systemMode&&!SCHOOL_AUTH.loggedIn){ /* guest stays read-only */ } applyAccessUI(); },1800);
 })();
 
-// ══ ISOLATED TEACHER LEAVE DATABASE TEST ══
-// This module intentionally does not read/write DB, substitute, bootstrap or online-save state.
-const LEAVE_TEST_ROWS=[
-  {name:'ครูตัวอย่าง A',type:'ลาป่วย',from:'5 ตุลาคม 2569',to:'7 ตุลาคม 2569',duration:'3'},
-  {name:'ครูตัวอย่าง B',type:'ลากิจ',from:'5 ตุลาคม 2569',to:'5 ตุลาคม 2569',duration:'1'},
-  {name:'ครูตัวอย่าง C',type:'ลาป่วย',from:'6 ตุลาคม 2569',to:'6 ตุลาคม 2569',duration:'0.5'},
-  {name:'ครูตัวอย่าง D',type:'ลากิจ',from:'8 ตุลาคม 2569',to:'9 ตุลาคม 2569',duration:'2'}
-];
-function parseThaiLeaveDate(value){
-  var s=String(value||'').trim().replace(/\s+/g,' ');
-  var months={'มกราคม':0,'กุมภาพันธ์':1,'มีนาคม':2,'เมษายน':3,'พฤษภาคม':4,'มิถุนายน':5,'กรกฎาคม':6,'สิงหาคม':7,'กันยายน':8,'ตุลาคม':9,'พฤศจิกายน':10,'ธันวาคม':11};
-  var m=s.match(/^(\d{1,2})\s+([^\s]+)\s+(\d{4})$/);
-  if(!m || months[m[2]]==null) return null;
-  var year=Number(m[3]); if(year>2400) year-=543;
-  var d=new Date(year,months[m[2]],Number(m[1]),12,0,0,0);
-  return isNaN(d.getTime())?null:d;
-}
-function leaveDateKey(d){return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();}
-function renderLeaveTest(){
+// ══ ISOLATED TEACHER LEAVE HISTORY ══
+// Loaded on demand only; separate from bootstrap/login/main DB save/substitute state.
+async function renderLeaveTest(){
   var input=document.getElementById('leaveTestDate'),box=document.getElementById('leaveTestResult'),count=document.getElementById('leaveTestCount');
   if(!input||!box||!count) return;
   if(!input.value){
     var now=new Date(); input.value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
   }
-  var parts=input.value.split('-'),selected=new Date(Number(parts[0]),Number(parts[1])-1,Number(parts[2]),12,0,0,0),key=leaveDateKey(selected);
-  var rows=LEAVE_TEST_ROWS.filter(function(r){
-    var from=parseThaiLeaveDate(r.from),to=parseThaiLeaveDate(r.to);
-    return from&&to&&leaveDateKey(from)<=key&&key<=leaveDateKey(to);
-  });
-  count.textContent=rows.length+' คน';
-  if(!rows.length){box.innerHTML='<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-text">ไม่พบครูลาในวันที่เลือก</div></div>';return;}
-  box.innerHTML='<div style="overflow:auto"><table class="tbl"><thead><tr><th>#</th><th>ชื่อ-สกุล</th><th>ประเภทการลา</th><th>จากวันที่</th><th>ถึงวันที่</th><th>กำหนดการ</th></tr></thead><tbody>'+
-    rows.map(function(r,i){return '<tr><td>'+(i+1)+'</td><td><b>'+r.name+'</b></td><td>'+r.type+'</td><td>'+r.from+'</td><td>'+r.to+'</td><td>'+r.duration+'</td></tr>';}).join('')+
-    '</tbody></table></div>';
+  box.innerHTML='<div style="padding:24px;text-align:center;color:#7787A2">กำลังอ่านฐานข้อมูลใบลา...</div>'; count.textContent='...';
+  try{
+    var base=String(window.SCHOOL_OS_API_URL||'').replace(/\/+$/,'');
+    var res=await fetch(base+'?action=teacherLeave&date='+encodeURIComponent(input.value),{method:'GET',cache:'no-store'});
+    var out=await res.json();
+    if(!out||out.ok===false) throw new Error((out&&out.error)||'อ่านข้อมูลใบลาไม่สำเร็จ');
+    var rows=Array.isArray(out.rows)?out.rows:[]; count.textContent=rows.length+' คน';
+    if(!rows.length){box.innerHTML='<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-text">ไม่พบครูลาในวันที่เลือก</div></div>';return;}
+    box.innerHTML='<div style="overflow:auto"><table class="tbl"><thead><tr><th>#</th><th>ชื่อ-สกุล</th><th>ประเภทการลา</th><th>จากวันที่</th><th>ถึงวันที่</th><th>กำหนดการ</th></tr></thead><tbody>'+
+      rows.map(function(r,i){return '<tr><td>'+(i+1)+'</td><td><b>'+escapeHtml(String(r.name||''))+'</b></td><td>'+escapeHtml(String(r.type||''))+'</td><td>'+escapeHtml(String(r.from||''))+'</td><td>'+escapeHtml(String(r.to||''))+'</td><td>'+escapeHtml(String(r.duration||''))+'</td></tr>';}).join('')+'</tbody></table></div>';
+  }catch(err){count.textContent='0 คน';box.innerHTML='<div class="alert a-warn">เชื่อมฐานข้อมูลใบลาไม่สำเร็จ: '+escapeHtml(String(err&&err.message?err.message:err))+'</div>';}
 }
 </script>
 </body>
