@@ -31393,7 +31393,7 @@ if(_subV2OldSetSubTeacher){
     try{
       var sep=url.indexOf('?')>=0?'&':'?';
       var ctrl=new AbortController();
-      var timer=setTimeout(function(){ctrl.abort();},10000);
+      var timer=setTimeout(function(){ctrl.abort();},30000);
       var res;
       try{
         res=await fetch(url+sep+'action=bootstrap',{method:'GET',redirect:'follow',cache:'no-store',signal:ctrl.signal});
