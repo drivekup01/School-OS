@@ -1,5 +1,4 @@
 const SCHOOL_OS_SPREADSHEET_ID = '1f0vnm-dJHaVRRbPVXEIRuBYhXwyft_ceNraqs8XwqkY';
-const LEAVE_SPREADSHEET_ID = '1KA8ch40D0iFHN1nYNcgadWTQbxehEiyKtOdcivRupW0'; // read only; queried only by leave endpoints
 
 function doGet(e) {
   try {
@@ -15,19 +14,6 @@ function doGet(e) {
       CacheService.getScriptCache().remove('school_os_bootstrap_v6');
       const data = loadDatabaseCached_();
       return json_({ ok: true, data: data, readOnly: true, systemMode: data.systemMode || 'DAILY', version: '1.2', refreshed: true });
-    }
-    if (action === 'leaveCount') {
-      const date = s_(e && e.parameter && e.parameter.date);
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error('วันที่ไม่ถูกต้อง');
-      const records = loadLeaveDayCached_(date);
-      const unique = {};
-      records.forEach(r => { if (r.teacherName) unique[normalizeLeaveName_(r.teacherName)] = true; });
-      return json_({ ok:true, date:date, count:Object.keys(unique).length });
-    }
-    if (action === 'leaveByDate') {
-      const date = s_(e && e.parameter && e.parameter.date);
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error('วันที่ไม่ถูกต้อง');
-      return json_({ ok:true, date:date, records:loadLeaveDayCached_(date) });
     }
     return json_({ ok: false, error: 'Unknown action' });
   } catch (err) {
@@ -162,36 +148,6 @@ function loadDatabase_() {
   };
 }
 
-function readLeaveRecords_(leaveSs) {
-  const sh = leaveSs.getSheetByName('data');
-  if (!sh) return [];
-  const display = sh.getDataRange().getDisplayValues();
-  if (display.length < 2) return [];
-
-  const headers = display[0].map(String);
-  const idxName = headers.indexOf('ชื่อสกุล');
-  const idxStart = headers.indexOf('จากวันที่');
-  const idxDuration = headers.indexOf('กำหนดการ');
-  if (idxName < 0 || idxStart < 0 || idxDuration < 0) return [];
-
-  const out = [];
-  for (let i = 1; i < display.length; i++) {
-    const teacherName = s_(display[i][idxName]);
-    if (!teacherName) continue;
-
-    const startDate = parseThaiDateIso_(display[i][idxStart]);
-    const duration = Number(s_(display[i][idxDuration]));
-    if (!startDate || !Number.isInteger(duration) || duration < 1) continue;
-
-    out.push({
-      teacherName: teacherName,
-      startDate: startDate,
-      endDate: addDaysToDateKey_(startDate, duration - 1)
-    });
-  }
-  return out;
-}
-
 function tableObjects_(ss, sheetName) {
   const sh = ss.getSheetByName(sheetName);
   if (!sh) return [];
@@ -226,117 +182,6 @@ function parseList_(v) {
   } catch (_) {
     return text.split('|').map(x => s_(x)).filter(Boolean);
   }
-}
-
-function parseThaiDateIso_(v) {
-  if (v instanceof Date && !isNaN(v.getTime())) {
-    return Utilities.formatDate(v, Session.getScriptTimeZone() || 'Asia/Bangkok', 'yyyy-MM-dd');
-  }
-
-  const text = s_(v);
-  if (!text) return '';
-
-  let m = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-  if (m) {
-    let y = Number(m[1]), mo = Number(m[2]), d = Number(m[3]);
-    if (y > 2400) y -= 543;
-    return validDateKey_(y, mo, d);
-  }
-
-  m = text.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
-  if (m) {
-    let d = Number(m[1]), mo = Number(m[2]), y = Number(m[3]);
-    if (y > 2400) y -= 543;
-    return validDateKey_(y, mo, d);
-  }
-
-  m = text.match(/^(\d{1,2})\s+([^\s]+)\s+(\d{4})$/);
-  if (m) {
-    const months = {
-      'มกราคม':1,'ม.ค.':1,'มค':1,
-      'กุมภาพันธ์':2,'ก.พ.':2,'กพ':2,
-      'มีนาคม':3,'มี.ค.':3,'มีค':3,
-      'เมษายน':4,'เม.ย.':4,'เมย':4,
-      'พฤษภาคม':5,'พ.ค.':5,'พค':5,
-      'มิถุนายน':6,'มิ.ย.':6,'มิย':6,
-      'กรกฎาคม':7,'ก.ค.':7,'กค':7,
-      'สิงหาคม':8,'ส.ค.':8,'สค':8,
-      'กันยายน':9,'ก.ย.':9,'กย':9,
-      'ตุลาคม':10,'ต.ค.':10,'ตค':10,
-      'พฤศจิกายน':11,'พ.ย.':11,'พย':11,
-      'ธันวาคม':12,'ธ.ค.':12,'ธค':12
-    };
-    let d = Number(m[1]), mo = months[m[2]], y = Number(m[3]);
-    if (y > 2400) y -= 543;
-    return validDateKey_(y, mo, d);
-  }
-
-  return '';
-}
-
-function validDateKey_(year, month, day) {
-  if (!year || !month || !day) return '';
-  const dt = new Date(year, month - 1, day);
-  if (dt.getFullYear() !== year || dt.getMonth() !== month - 1 || dt.getDate() !== day) return '';
-  return String(year).padStart(4,'0')+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0');
-}
-
-function addDaysToDateKey_(dateKey, daysToAdd) {
-  const m = String(dateKey || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (!m) return '';
-  const dt = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]) + Number(daysToAdd || 0)));
-  return String(dt.getUTCFullYear()).padStart(4,'0')+'-'+
-    String(dt.getUTCMonth()+1).padStart(2,'0')+'-'+
-    String(dt.getUTCDate()).padStart(2,'0');
-}
-
-function normalizeLeaveName_(v) {
-  return s_(v).replace(/\s+/g,'').replace(/^(นาย|นางสาว|นาง)/,'');
-}
-
-function loadLeaveDayCached_(dateStr) {
-  const cache = CacheService.getScriptCache();
-  const key = 'school_os_leave_day_' + dateStr.replace(/-/g,'_');
-  const cached = cache.get(key);
-  if (cached) {
-    try { return JSON.parse(cached); } catch (_) {}
-  }
-  const records = readLeaveRecordsForDate_(dateStr);
-  try { cache.put(key, JSON.stringify(records), 60); } catch (_) {}
-  return records;
-}
-
-function readLeaveRecordsForDate_(dateStr) {
-  const leaveSs = SpreadsheetApp.openById(LEAVE_SPREADSHEET_ID);
-  const sh = leaveSs.getSheetByName('data');
-  if (!sh) return [];
-  const display = sh.getDataRange().getDisplayValues();
-  if (display.length < 2) return [];
-
-  const headers = display[0].map(String);
-  const idxName = headers.indexOf('ชื่อสกุล');
-  const idxStart = headers.indexOf('จากวันที่');
-  const idxDuration = headers.indexOf('กำหนดการ');
-  if (idxName < 0 || idxStart < 0 || idxDuration < 0) return [];
-
-  const out = [];
-  for (let i = 1; i < display.length; i++) {
-    const teacherName = s_(display[i][idxName]);
-    if (!teacherName) continue;
-
-    const startDate = parseThaiDateIso_(display[i][idxStart]);
-    const duration = Number(s_(display[i][idxDuration]));
-    if (!startDate || !Number.isInteger(duration) || duration < 1) continue;
-
-    const endDate = addDaysToDateKey_(startDate, duration - 1);
-    if (dateStr < startDate || dateStr > endDate) continue;
-
-    out.push({
-      teacherName: teacherName,
-      date: dateStr
-    });
-  }
-  return out;
 }
 
 function json_(obj) {
