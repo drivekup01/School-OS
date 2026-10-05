@@ -119,6 +119,25 @@ function loadDatabase_() {
     }
   });
 
+  const leaveRecords = tableObjects_(ss, 'data').map(r => {
+    const startDate = parseThaiDateIso_(r['จากวันที่']);
+    const endDate = parseThaiDateIso_(r['ถึงวันที่']);
+    return {
+      sourceRow: s_(r['เลขที่']),
+      teacherName: s_(r['ชื่อสกุล']),
+      leaveType: s_(r['ประเภทการลา']),
+      startDate: startDate,
+      endDate: endDate || startDate,
+      duration: s_(r['กำหนดการ']),
+      reason: s_(r['เนื่องจาก']),
+      attachmentUrl: s_(r['ไฟลน์']),
+      contact: s_(r['ติดต่อ']),
+      approvedByHead: s_(r['หัวหน้าฝ่าย']),
+      approvedByDirector: s_(r['ผอ']),
+      permissionDate: s_(r['วันที่อนุญาต'])
+    };
+  }).filter(r => r.teacherName && r.startDate && r.endDate);
+
   const announcements = tableObjects_(ss, 'Announcements').map(r => ({
     id: s_(r.id),
     title: s_(r.title),
@@ -142,7 +161,7 @@ function loadDatabase_() {
     },
     teachers, subjects, rooms, slots,
     days: days.length ? days : ['จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์'],
-    sched, substitute, announcements, customDepts,
+    sched, substitute, leaveRecords, announcements, customDepts,
     subjectColorSchemeVersion: n_(configMap.subjectColorSchemeVersion) || 2,
     systemMode: (s_(configMap.systemMode) || 'DAILY').toUpperCase()
   };
@@ -182,6 +201,23 @@ function parseList_(v) {
   } catch (_) {
     return text.split('|').map(x => s_(x)).filter(Boolean);
   }
+}
+
+function parseThaiDateIso_(v) {
+  const text = s_(v);
+  if (!text) return '';
+  const m = text.match(/(\d{1,2})\s+([^\s]+)\s+(\d{4})/);
+  if (!m) return '';
+  const months = {
+    'มกราคม':1,'กุมภาพันธ์':2,'มีนาคม':3,'เมษายน':4,'พฤษภาคม':5,'มิถุนายน':6,
+    'กรกฎาคม':7,'สิงหาคม':8,'กันยายน':9,'ตุลาคม':10,'พฤศจิกายน':11,'ธันวาคม':12
+  };
+  const day = Number(m[1]);
+  const month = months[m[2]];
+  let year = Number(m[3]);
+  if (!month || !day || !year) return '';
+  if (year > 2400) year -= 543;
+  return String(year).padStart(4,'0')+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0');
 }
 
 function json_(obj) {
