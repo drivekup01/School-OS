@@ -385,10 +385,9 @@ function saveDatabase_(p) {
     // DAILY is operational mode: only daily substitute data may change.
     if (mode === 'DAILY') {
       writeSubstitute_(ss, db.substitute || {});
-      writeAnnouncements_(ss, db.announcements || []);
       SpreadsheetApp.flush();
       CacheService.getScriptCache().remove('school_os_bootstrap_v6');
-      return json_({ok:true,mode:mode,saved:['Substitute','Announcements'],savedAt:new Date().toISOString()});
+      return json_({ok:true,mode:mode,saved:['Substitute'],savedAt:new Date().toISOString()});
     }
 
     if (mode !== 'SETUP') throw new Error('โหมดระบบไม่อนุญาตให้แก้ไขข้อมูล');
@@ -401,7 +400,6 @@ function saveDatabase_(p) {
     writeDays_(ss, db.days || []);
     writeSchedule_(ss, db.sched || {});
     writeSubstitute_(ss, db.substitute || {});
-    writeAnnouncements_(ss, db.announcements || []);
 
     setKeyValue_(ss, 'Config', 'customDepts', JSON.stringify(db.customDepts || []));
     setKeyValue_(ss, 'Config', 'subjectColorSchemeVersion', Number(db.subjectColorSchemeVersion || 2));
@@ -412,7 +410,7 @@ function saveDatabase_(p) {
     return json_({
       ok:true,
       mode:mode,
-      saved:['School','Teachers','Subjects','Rooms','Slots','Days','Schedule','Substitute','Announcements'],
+      saved:['School','Teachers','Subjects','Rooms','Slots','Days','Schedule','Substitute'],
       savedAt:new Date().toISOString()
     });
   } finally {
