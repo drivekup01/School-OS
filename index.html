@@ -26168,6 +26168,9 @@ function nav(p){
   updateInlineBackButton(p);
   const mainEl=document.querySelector('.main');
   if(mainEl) mainEl.scrollTop=0;
+  document.documentElement.scrollTop=0;
+  document.body.scrollTop=0;
+  window.scrollTo(0,0);
 }
 
 function updateInlineBackButton(p){
