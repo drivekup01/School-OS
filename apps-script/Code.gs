@@ -151,8 +151,10 @@ function loadDatabase_() {
 function tableObjects_(ss, sheetName) {
   const sh = ss.getSheetByName(sheetName);
   if (!sh) return [];
-  const values = sh.getDataRange().getDisplayValues();
-  if (values.length < 2) return [];
+  const lastRow = sh.getLastRow();
+  const lastCol = sh.getLastColumn();
+  if (lastRow < 2 || lastCol < 1) return [];
+  const values = sh.getRange(1, 1, lastRow, lastCol).getDisplayValues();
   const headers = values[0].map(String);
   return values.slice(1).filter(row => row.some(v => String(v).trim() !== '')).map(row => {
     const obj = {};
@@ -227,15 +229,9 @@ function saveDatabase_(p) {
     const cfg = keyValueSheet_(ss, 'Config');
     const mode = (s_(cfg.systemMode) || 'DAILY').toUpperCase();
 
-    // DAILY is operational mode: only daily substitute data may change.
-    if (mode === 'DAILY') {
-      writeSubstitute_(ss, db.substitute || {});
-      SpreadsheetApp.flush();
-      CacheService.getScriptCache().remove('school_os_bootstrap_v6');
-      return json_({ok:true,mode:mode,saved:['Substitute'],savedAt:new Date().toISOString()});
+    if (mode !== 'SETUP') {
+      return json_({ok:true,mode:mode,saved:[],savedAt:new Date().toISOString()});
     }
-
-    if (mode !== 'SETUP') throw new Error('โหมดระบบไม่อนุญาตให้แก้ไขข้อมูล');
 
     writeSchool_(ss, db.school || {});
     writeTeachers_(ss, db.teachers || []);
@@ -244,7 +240,6 @@ function saveDatabase_(p) {
     writeSlots_(ss, db.slots || []);
     writeDays_(ss, db.days || []);
     writeSchedule_(ss, db.sched || {});
-    writeSubstitute_(ss, db.substitute || {});
 
     setKeyValue_(ss, 'Config', 'customDepts', JSON.stringify(db.customDepts || []));
     setKeyValue_(ss, 'Config', 'subjectColorSchemeVersion', Number(db.subjectColorSchemeVersion || 2));
@@ -255,7 +250,7 @@ function saveDatabase_(p) {
     return json_({
       ok:true,
       mode:mode,
-      saved:['School','Teachers','Subjects','Rooms','Slots','Days','Schedule','Substitute'],
+      saved:['School','Teachers','Subjects','Rooms','Slots','Days','Schedule'],
       savedAt:new Date().toISOString()
     });
   } finally {
@@ -449,8 +444,11 @@ function writeTable_(ss, sheetName, headers, rows) {
   if (sh.getMaxColumns() < width) sh.insertColumnsAfter(sh.getMaxColumns(), width - sh.getMaxColumns());
   if (sh.getMaxRows() < neededRows) sh.insertRowsAfter(sh.getMaxRows(), neededRows - sh.getMaxRows());
 
-  // Clear values only; preserve the sheet's formatting.
-  sh.getDataRange().clearContent();
+  const oldLastRow = sh.getLastRow();
+  const oldLastCol = sh.getLastColumn();
+  if (oldLastRow > 0 && oldLastCol > 0) {
+    sh.getRange(1, 1, oldLastRow, oldLastCol).clearContent();
+  }
   sh.getRange(1,1,1,width).setValues([headers]);
   if (rows.length) sh.getRange(2,1,rows.length,width).setValues(rows);
 }
