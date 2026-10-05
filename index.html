@@ -29437,34 +29437,16 @@ function setSubDateToday(){
   syncSubDateText();
   loadSubstituteDay();
 }
-async function refreshLeaveRecords_(){
-  var url=window.SCHOOL_OS_API_URL||'';
-  if(!url) return;
-  try{
-    var sep=url.indexOf('?')>=0?'&':'?';
-    var res=await fetch(url+sep+'action=leaveRecords&_='+Date.now(),{method:'GET',redirect:'follow',cache:'no-store'});
-    if(!res.ok) return;
-    var out=await res.json();
-    if(out&&out.ok&&Array.isArray(out.leaveRecords)) DB.leaveRecords=out.leaveRecords;
-  }catch(e){
-    console.warn('Leave records refresh:',e);
-  }
-}
 
 // ── Render substitute page for a date ────────
-async function loadSubstituteDay(){
+function loadSubstituteDay(){
   const dateStr = (document.getElementById('subDate')||{}).value||'';
   if(!dateStr){ return; }
   currentSubDate = dateStr;
-
   syncLeaveRecordsForDate(dateStr);
   const dayName = getDayNameThai(dateStr);
   const dayEl = document.getElementById('subDayName');
   if(dayEl) dayEl.textContent = dayName + '  |  ' + formatDateThai(dateStr);
-  renderSubContent();
-
-  await refreshLeaveRecords_();
-  syncLeaveRecordsForDate(dateStr);
   renderSubContent();
 }
 
