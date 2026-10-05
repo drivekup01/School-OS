@@ -31595,18 +31595,34 @@ function syncLeaveTestDay_(){
   if(el) el.textContent=iso ? getDayNameThai(iso)+'  |  '+formatDateThai(iso) : '–';
 }
 async function renderLeaveTest(){
-  var input=document.getElementById('leaveTestDate'),box=document.getElementById('leaveTestResult'),count=document.getElementById('leaveTestCount');
+  var input=document.getElementById('leaveTestDate'),textInput=document.getElementById('leaveTestDateText'),box=document.getElementById('leaveTestResult'),count=document.getElementById('leaveTestCount');
   if(!input||!box||!count) return;
-  if(!input.value){
+
+  // The visible Buddhist-date field is the source of truth when the user types a date.
+  // Convert it to ISO before calling the isolated Leave API.
+  var typed=String((textInput&&textInput.value)||'').trim();
+  if(typed){
+    var typedIso=parseSchoolDateInput_(typed);
+    if(!typedIso){
+      toast('กรุณากรอกวันที่เป็น วัน/เดือน/ปี เช่น 08/10/2569','warn');
+      return;
+    }
+    input.value=typedIso;
+    if(textInput) textInput.value=formatSchoolDateInput_(typedIso);
+  }else if(!input.value){
     var now=new Date(); input.value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+    syncSchoolDateControl('leaveTestDate');
+  }else{
+    syncSchoolDateControl('leaveTestDate');
   }
-  syncSchoolDateControl('leaveTestDate');
+
+  var requestDate=input.value;
   syncLeaveTestDay_();
   box.innerHTML='<div style="padding:24px;text-align:center;color:#7787A2">กำลังอ่านฐานข้อมูลใบลา...</div>'; count.textContent='...';
   try{
     var base=String(window.SCHOOL_OS_LEAVE_API_URL||'').replace(/\/+$/,'');
     if(!base) throw new Error('ยังไม่ได้เชื่อม Leave API แยก');
-    var res=await fetch(base+'?action=teacherLeave&date='+encodeURIComponent(input.value),{method:'GET',cache:'no-store'});
+    var res=await fetch(base+'?action=teacherLeave&date='+encodeURIComponent(requestDate)+'&_='+Date.now(),{method:'GET',cache:'no-store'});
     var out=await res.json();
     if(!out||out.ok===false) throw new Error((out&&out.error)||'อ่านข้อมูลใบลาไม่สำเร็จ');
     var rows=Array.isArray(out.rows)?out.rows:[]; count.textContent=rows.length+' คน';
