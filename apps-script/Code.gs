@@ -1,5 +1,4 @@
 const SCHOOL_OS_SPREADSHEET_ID = '1f0vnm-dJHaVRRbPVXEIRuBYhXwyft_ceNraqs8XwqkY';
-const LEAVE_SPREADSHEET_ID = '1KA8ch40D0iFHN1nYNcgadWTQbxehEiyKtOdcivRupW0'; // READ ONLY: never write to this workbook
 
 function doGet(e) {
   try {
@@ -44,7 +43,6 @@ function loadDatabaseCached_() {
 
 function loadDatabase_() {
   const ss = SpreadsheetApp.openById(SCHOOL_OS_SPREADSHEET_ID);
-  const leaveSs = SpreadsheetApp.openById(LEAVE_SPREADSHEET_ID);
   const schoolMap = keyValueSheet_(ss, 'School');
   const configMap = keyValueSheet_(ss, 'Config');
 
@@ -121,8 +119,6 @@ function loadDatabase_() {
     }
   });
 
-  const leaveRecords = readLeaveRecords_(leaveSs);
-
   const announcements = tableObjects_(ss, 'Announcements').map(r => ({
     id: s_(r.id),
     title: s_(r.title),
@@ -146,7 +142,7 @@ function loadDatabase_() {
     },
     teachers, subjects, rooms, slots,
     days: days.length ? days : ['จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์'],
-    sched, substitute, leaveRecords, announcements, customDepts,
+    sched, substitute, announcements, customDepts,
     subjectColorSchemeVersion: n_(configMap.subjectColorSchemeVersion) || 2,
     systemMode: (s_(configMap.systemMode) || 'DAILY').toUpperCase()
   };
