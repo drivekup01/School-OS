@@ -31604,7 +31604,8 @@ async function renderLeaveTest(){
   syncLeaveTestDay_();
   box.innerHTML='<div style="padding:24px;text-align:center;color:#7787A2">กำลังอ่านฐานข้อมูลใบลา...</div>'; count.textContent='...';
   try{
-    var base=String(window.SCHOOL_OS_API_URL||'').replace(/\/+$/,'');
+    var base=String(window.SCHOOL_OS_LEAVE_API_URL||'').replace(/\/+$/,'');
+    if(!base) throw new Error('ยังไม่ได้เชื่อม Leave API แยก');
     var res=await fetch(base+'?action=teacherLeave&date='+encodeURIComponent(input.value),{method:'GET',cache:'no-store'});
     var out=await res.json();
     if(!out||out.ok===false) throw new Error((out&&out.error)||'อ่านข้อมูลใบลาไม่สำเร็จ');
