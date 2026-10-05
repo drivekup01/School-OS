@@ -1,4 +1,5 @@
-const SPREADSHEET_ID = '1-7kDkMUb37QqGeCPNozsDTavOgxz-jrk8pzAXtl6cR4';
+const SCHOOL_OS_SPREADSHEET_ID = '1f0vnm-dJHaVRRbPVXEIRuBYhXwyft_ceNraqs8XwqkY';
+const LEAVE_SPREADSHEET_ID = '1-7kDkMUb37QqGeCPNozsDTavOgxz-jrk8pzAXtl6cR4'; // READ ONLY: never write to this workbook
 
 function doGet(e) {
   try {
@@ -42,7 +43,8 @@ function loadDatabaseCached_() {
 }
 
 function loadDatabase_() {
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const ss = SpreadsheetApp.openById(SCHOOL_OS_SPREADSHEET_ID);
+  const leaveSs = SpreadsheetApp.openById(LEAVE_SPREADSHEET_ID);
   const schoolMap = keyValueSheet_(ss, 'School');
   const configMap = keyValueSheet_(ss, 'Config');
 
@@ -119,7 +121,7 @@ function loadDatabase_() {
     }
   });
 
-  const leaveRecords = tableObjects_(ss, 'data').map(r => {
+  const leaveRecords = tableObjects_(leaveSs, 'data').map(r => {
     const startDate = parseThaiDateIso_(r['จากวันที่']);
     const endDate = parseThaiDateIso_(r['ถึงวันที่']);
     return {
@@ -257,7 +259,7 @@ function saveDatabase_(p) {
   if (!lock.tryLock(30000)) throw new Error('ระบบกำลังบันทึกข้อมูล กรุณาลองใหม่');
 
   try {
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const ss = SpreadsheetApp.openById(SCHOOL_OS_SPREADSHEET_ID);
     const cfg = keyValueSheet_(ss, 'Config');
     const mode = (s_(cfg.systemMode) || 'DAILY').toUpperCase();
 
@@ -433,7 +435,7 @@ function writeTable_(ss, sheetName, headers, rows) {
 }
 
 function login_(p) {
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const ss = SpreadsheetApp.openById(SCHOOL_OS_SPREADSHEET_ID);
   const cfg = keyValueSheet_(ss, 'Config');
   const id = s_(p.id);
   const password = String(p.password == null ? '' : p.password);
@@ -460,7 +462,7 @@ function setMode_(p) {
   requireAdmin_(p.token);
   const mode=s_(p.mode).toUpperCase();
   if(mode!=='SETUP' && mode!=='DAILY') throw new Error('โหมดไม่ถูกต้อง');
-  const ss=SpreadsheetApp.openById(SPREADSHEET_ID);
+  const ss=SpreadsheetApp.openById(SCHOOL_OS_SPREADSHEET_ID);
   setKeyValue_(ss,'Config','systemMode',mode);
   CacheService.getScriptCache().remove('school_os_bootstrap_v1');
   return json_({ok:true,systemMode:mode});
