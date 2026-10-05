@@ -1725,6 +1725,7 @@ label,.fg label{font-size:13px!important}
     <div class="sb-label">รายงานและส่งออก</div>
     <div class="sb-item" onclick="nav('export')" id="nav-export"><span class="icon">✨</span>ดูตัวอย่าง & ส่งออก</div>
     <div class="sb-item" onclick="nav('substitute')" id="nav-substitute"><span class="icon">🔄</span>ตารางสอนแทนรายวัน</div>
+    <div class="sb-item" onclick="nav('leave-test')" id="nav-leave-test"><span class="icon">🧪</span>ทดสอบฐานข้อมูลครูลา</div>
     <div class="sb-item" onclick="nav('announcements')" id="nav-announcements"><span class="icon">📢</span>ประกาศ</div>
   </div>
   <hr class="sb-divider">
@@ -2341,6 +2342,28 @@ label,.fg label{font-size:13px!important}
   </div>
 </div>
 
+
+<!-- ═══════════ PAGE: LEAVE DATABASE TEST (isolated) ═══════════ -->
+<div class="page" id="page-leave-test">
+  <div class="ph">
+    <div class="ph-left"><h1>🧪 ทดสอบฐานข้อมูลครูลา</h1><p>โมดูลทดสอบแยก · ไม่แก้ไขตารางสอนหลักและระบบสอนแทน</p></div>
+  </div>
+  <div class="card">
+    <div class="card-hd"><div class="card-title">📅 เลือกวันที่ต้องการตรวจสอบ</div></div>
+    <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap">
+      <div class="fg" style="max-width:230px"><label>วันที่จัดสอนแทน</label><input id="leaveTestDate" type="date" onchange="renderLeaveTest()"></div>
+      <button type="button" class="btn btn-pri" onclick="renderLeaveTest()">ตรวจสอบครูลา</button>
+    </div>
+    <div class="alert a-info" style="margin-top:14px;margin-bottom:0">รอบทดสอบนี้ใช้ข้อมูลจำลองรูปแบบเดียวกับฐานข้อมูลใบลาเดิม โดยใช้เฉพาะช่วง <b>จากวันที่–ถึงวันที่</b> ในการคัดกรอง ส่วน “กำหนดการ” เก็บไว้แสดงเท่านั้น</div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <div class="card-hd">
+      <div class="card-title">👨‍🏫 ครูลาในวันที่เลือก</div>
+      <span class="badge b-blue" id="leaveTestCount">0 คน</span>
+    </div>
+    <div id="leaveTestResult"></div>
+  </div>
+</div>
 
 <!-- ═══════════ PAGE: SUBSTITUTE ═══════════ -->
 <div class="page" id="page-substitute">
@@ -26184,6 +26207,7 @@ function nav(p){
   else if(p==='export') renderExportPage();
   else if(p==='storage') renderStoragePage();
   else if(p==='substitute'){ if(currentSubDate){ renderSubContent(); } else { setSubDateToday(); } }
+  else if(p==='leave-test') renderLeaveTest();
   else if(p==='announcements') renderAnnouncements();
   else if(p==='sub-history') renderSubHistoryPage();
   else if(p==='conflict') renderConflictPage();
@@ -31410,7 +31434,7 @@ function setModeButtons(){
 }
 function canAccessPage(p){
   var guestAllowed=['dashboard','teacher-view','teacher-all','substitute','export','announcements'];
-  var dailyAllowed=['dashboard','teacher-view','teacher-all','substitute','sub-history','announcements'];
+  var dailyAllowed=['dashboard','teacher-view','teacher-all','substitute','sub-history','announcements','leave-test'];
   if(!SCHOOL_AUTH.loggedIn) return guestAllowed.indexOf(p)>=0;
   if(SCHOOL_AUTH.mode==='DAILY') return dailyAllowed.indexOf(p)>=0;
   return true;
@@ -31542,6 +31566,42 @@ function renderTeacherAll(query){
   setTimeout(applyAccessUI,800);
   setTimeout(function(){ if(window.DB&&DB.systemMode&&!SCHOOL_AUTH.loggedIn){ /* guest stays read-only */ } applyAccessUI(); },1800);
 })();
+
+// ══ ISOLATED TEACHER LEAVE DATABASE TEST ══
+// This module intentionally does not read/write DB, substitute, bootstrap or online-save state.
+const LEAVE_TEST_ROWS=[
+  {name:'ครูตัวอย่าง A',type:'ลาป่วย',from:'5 ตุลาคม 2569',to:'7 ตุลาคม 2569',duration:'3'},
+  {name:'ครูตัวอย่าง B',type:'ลากิจ',from:'5 ตุลาคม 2569',to:'5 ตุลาคม 2569',duration:'1'},
+  {name:'ครูตัวอย่าง C',type:'ลาป่วย',from:'6 ตุลาคม 2569',to:'6 ตุลาคม 2569',duration:'0.5'},
+  {name:'ครูตัวอย่าง D',type:'ลากิจ',from:'8 ตุลาคม 2569',to:'9 ตุลาคม 2569',duration:'2'}
+];
+function parseThaiLeaveDate(value){
+  var s=String(value||'').trim().replace(/\s+/g,' ');
+  var months={'มกราคม':0,'กุมภาพันธ์':1,'มีนาคม':2,'เมษายน':3,'พฤษภาคม':4,'มิถุนายน':5,'กรกฎาคม':6,'สิงหาคม':7,'กันยายน':8,'ตุลาคม':9,'พฤศจิกายน':10,'ธันวาคม':11};
+  var m=s.match(/^(\d{1,2})\s+([^\s]+)\s+(\d{4})$/);
+  if(!m || months[m[2]]==null) return null;
+  var year=Number(m[3]); if(year>2400) year-=543;
+  var d=new Date(year,months[m[2]],Number(m[1]),12,0,0,0);
+  return isNaN(d.getTime())?null:d;
+}
+function leaveDateKey(d){return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();}
+function renderLeaveTest(){
+  var input=document.getElementById('leaveTestDate'),box=document.getElementById('leaveTestResult'),count=document.getElementById('leaveTestCount');
+  if(!input||!box||!count) return;
+  if(!input.value){
+    var now=new Date(); input.value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  }
+  var parts=input.value.split('-'),selected=new Date(Number(parts[0]),Number(parts[1])-1,Number(parts[2]),12,0,0,0),key=leaveDateKey(selected);
+  var rows=LEAVE_TEST_ROWS.filter(function(r){
+    var from=parseThaiLeaveDate(r.from),to=parseThaiLeaveDate(r.to);
+    return from&&to&&leaveDateKey(from)<=key&&key<=leaveDateKey(to);
+  });
+  count.textContent=rows.length+' คน';
+  if(!rows.length){box.innerHTML='<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-text">ไม่พบครูลาในวันที่เลือก</div></div>';return;}
+  box.innerHTML='<div style="overflow:auto"><table class="tbl"><thead><tr><th>#</th><th>ชื่อ-สกุล</th><th>ประเภทการลา</th><th>จากวันที่</th><th>ถึงวันที่</th><th>กำหนดการ</th></tr></thead><tbody>'+
+    rows.map(function(r,i){return '<tr><td>'+(i+1)+'</td><td><b>'+r.name+'</b></td><td>'+r.type+'</td><td>'+r.from+'</td><td>'+r.to+'</td><td>'+r.duration+'</td></tr>';}).join('')+
+    '</tbody></table></div>';
+}
 </script>
 </body>
 </html>
@@ -31602,3 +31662,4 @@ function renderTeacherAll(query){
   width:100%;height:100%;object-fit:contain;padding:10px;display:block;
 }
 </style>
+<style id="leave-test-isolated-style">body.guest-mode #nav-leave-test{display:none!important}#page-leave-test .tbl{width:100%;border-collapse:collapse}#page-leave-test .tbl th{background:#103B70;color:#fff;padding:9px 10px;text-align:left}#page-leave-test .tbl td{border-bottom:1px solid #E6ECF4;padding:9px 10px}#page-leave-test .tbl tr:hover td{background:#F8FAFD}</style>
