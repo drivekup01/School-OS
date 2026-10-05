@@ -29456,11 +29456,15 @@ async function loadSubstituteDay(){
   const dateStr = (document.getElementById('subDate')||{}).value||'';
   if(!dateStr){ return; }
   currentSubDate = dateStr;
-  await refreshLeaveRecords_();
+
   syncLeaveRecordsForDate(dateStr);
   const dayName = getDayNameThai(dateStr);
   const dayEl = document.getElementById('subDayName');
   if(dayEl) dayEl.textContent = dayName + '  |  ' + formatDateThai(dateStr);
+  renderSubContent();
+
+  await refreshLeaveRecords_();
+  syncLeaveRecordsForDate(dateStr);
   renderSubContent();
 }
 
