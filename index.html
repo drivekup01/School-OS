@@ -29389,12 +29389,67 @@ function loadSubstituteDay(){
   const dateStr = document.getElementById('subDate').value;
   if(!dateStr){ return; }
   currentSubDate = dateStr;
+  syncLeaveRecordsForDate(dateStr);
   const dayName = getDayNameThai(dateStr);
   const dayEl = document.getElementById('subDayName');
   if(dayEl) dayEl.textContent = dayName + '  |  ' + formatDateThai(dateStr);
   renderSubContent();
 }
 
+
+function normalizeTeacherNameForMatch_(v){
+  return String(v||'').replace(/\s+/g,'').replace(/^(นาย|นางสาว|นาง)/,'');
+}
+function buildScheduledPeriodsForTeacher_(teacher,dateStr,existingPeriods){
+  var schedDay=mapDayNameToSched(dateStr);
+  var teacherName=subV2TeacherName(teacher);
+  var existing={};
+  (existingPeriods||[]).forEach(function(p){existing[String(p.slotId)+'|'+String(p.roomId||'')]=p;});
+  var periods=[];
+  (DB.rooms||[]).forEach(function(room){
+    (DB.slots||[]).forEach(function(slot){
+      if(slot.isBreak) return;
+      var cv=DB.sched[room.id+'_'+slot.id+'_'+schedDay];
+      if(!cv) return;
+      if(cv.teacher!==teacherName && cv.teacher2!==teacherName && cv.teacher3!==teacherName) return;
+      var key=String(slot.id)+'|'+String(room.id);
+      var old=existing[key]||{};
+      periods.push({
+        slotId:slot.id,day:schedDay,roomId:room.id,subject:cv.subject||'',
+        subTeacher:old.subTeacher||'',subNote:old.subNote||'',
+        workType:old.workType||'',messageStatus:old.messageStatus||''
+      });
+    });
+  });
+  return periods;
+}
+function syncLeaveRecordsForDate(dateStr){
+  var records=Array.isArray(DB.leaveRecords)?DB.leaveRecords:[];
+  var day=getSubDay(dateStr);
+  day.absentList=Array.isArray(day.absentList)?day.absentList:[];
+  records.forEach(function(r){
+    if(!r.startDate||!r.endDate||dateStr<r.startDate||dateStr>r.endDate) return;
+    var director=String(r.approvedByDirector||'');
+    if(director && director.indexOf('อนุญาต')<0) return;
+    var target=normalizeTeacherNameForMatch_(r.teacherName);
+    var t=(DB.teachers||[]).find(function(x){
+      return normalizeTeacherNameForMatch_(subV2TeacherName(x))===target;
+    });
+    if(!t) return;
+    var absent=day.absentList.find(function(a){return String(a.teacherId)===String(t.id);});
+    if(!absent){
+      absent={teacherId:t.id,type:r.leaveType||'ลา',note:r.reason||'',periods:[]};
+      day.absentList.push(absent);
+    }
+    absent.type=r.leaveType||absent.type||'ลา';
+    absent.note=r.reason||absent.note||'';
+    absent.leaveSource='sheet';
+    absent.leaveAttachment=r.attachmentUrl||'';
+    absent.leaveDuration=r.duration||'';
+    absent.leavePermissionDate=r.permissionDate||'';
+    absent.periods=buildScheduledPeriodsForTeacher_(t,dateStr,absent.periods);
+  });
+}
 
 // ══════════════════════════════════════════════════════════════
 //  SMART SUBSTITUTE: Teacher availability analyzer
@@ -30795,6 +30850,25 @@ function renderSubSidePanel(){
       '<div class="sub-v2-detail-box"><div class="sub-v2-detail-label">เวลา</div><div class="sub-v2-detail-value">'+subV2Escape((slot.start||'')+'–'+(slot.end||''))+'</div></div>'+
       '<div class="sub-v2-detail-box"><div class="sub-v2-detail-label">สถานะ</div><div class="sub-v2-detail-value">'+subV2Escape(status)+'</div></div>'+
     '</div>';
+
+  if(absent){
+    h+='<div class="sub-v2-side-section"><div class="sub-v2-side-section-title"><span>📝 รายละเอียดการลา</span></div>'+
+      '<div class="sub-v2-info-note"><strong>'+subV2Escape(absent.type||'ลา')+'</strong>'+
+      (absent.note?' • '+subV2Escape(absent.note):'')+
+      (absent.leaveDuration?' • '+subV2Escape(absent.leaveDuration)+' วัน':'')+
+      '</div>'+
+      (absent.leaveAttachment?'<a href="'+subV2Escape(absent.leaveAttachment)+'" target="_blank" rel="noopener" class="btn btn-out btn-xs" style="margin-top:8px">📎 เปิดไฟล์แนบการลา</a>':'')+
+      '</div>';
+  }
+
+  if(p){
+    h+='<div class="sub-v2-side-section"><div class="sub-v2-side-section-title"><span>📚 งาน/ใบงานของคาบนี้</span></div>'+
+      '<div class="sub-v2-info-note">'+
+      '<div><strong>รูปแบบงาน:</strong> '+subV2Escape(p.workType||'ยังไม่ระบุ')+'</div>'+
+      '<div><strong>หมายเหตุ:</strong> '+subV2Escape(p.subNote||'–')+'</div>'+
+      '<div><strong>สถานะข้อความ:</strong> '+subV2Escape(p.messageStatus||'ยังไม่ระบุ')+'</div>'+
+      '</div></div>';
+  }
 
   if(!(absent && teach)){
     h+='<div class="sub-v2-side-section"><div class="sub-v2-info-note">'+
