@@ -64,8 +64,10 @@ function loadDatabaseCached_() {
       for (let i = 0; i < count; i++) {
         values['school_os_bootstrap_v7_' + i] = raw.slice(i * chunkSize, (i + 1) * chunkSize);
       }
-      cache.putAll(values, 600);
-      cache.put(metaKey, String(count), 600);
+      // Keep bootstrap warm longer. Save/refresh paths still clear this cache
+      // explicitly, so a longer TTL avoids unnecessary full-sheet reloads.
+      cache.putAll(values, 3600);
+      cache.put(metaKey, String(count), 3600);
     }
   } catch (_) {}
 
