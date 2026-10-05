@@ -26037,6 +26037,7 @@ let activeProfileId = null;
 let saveTimer = null;
 let onlineSaveInFlight = false;
 let onlineSavePending = false;
+let onlineSaveGeneration = 0;
 
 function lsGet(key){ try{ return JSON.parse(localStorage.getItem(key)||'null'); }catch(e){ return null; } }
 function lsSet(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); }catch(e){ toast('⚠️ พื้นที่เก็บข้อมูลเต็ม กรุณา Backup แล้วล้างข้อมูล','err'); } }
@@ -26079,22 +26080,26 @@ async function persistOnlineNow(){
     return;
   }
 
+  const saveGeneration=onlineSaveGeneration;
+  const saveToken=SCHOOL_AUTH.token;
   onlineSaveInFlight=true;
   try{
     await postSchoolApi({
       action:'saveDatabase',
-      token:SCHOOL_AUTH.token,
+      token:saveToken,
       data:JSON.stringify(DB)
     });
+    if(saveGeneration!==onlineSaveGeneration || !SCHOOL_AUTH.loggedIn || SCHOOL_AUTH.token!==saveToken) return;
     setSaveInd('saved','บันทึกออนไลน์แล้ว · '+fmtTime(Date.now()));
   }catch(e){
+    if(saveGeneration!==onlineSaveGeneration || !SCHOOL_AUTH.loggedIn || SCHOOL_AUTH.token!==saveToken) return;
     console.error('School-OS online save:',e);
     setSaveInd('unsaved','บันทึกออนไลน์ไม่สำเร็จ');
     toast('บันทึกออนไลน์ไม่สำเร็จ: '+e.message,'err');
     if(/Session หมดอายุ/.test(String(e.message||''))) academicLogout();
   }finally{
     onlineSaveInFlight=false;
-    if(onlineSavePending){
+    if(saveGeneration===onlineSaveGeneration && SCHOOL_AUTH.loggedIn && onlineSavePending){
       onlineSavePending=false;
       setTimeout(persistOnlineNow,0);
     }
@@ -31446,6 +31451,10 @@ async function academicLogin(){
 }
 async function academicLogout(){
   var oldToken=SCHOOL_AUTH.token||'';
+  onlineSaveGeneration++;
+  onlineSavePending=false;
+  clearTimeout(saveTimer);
+  saveTimer=null;
   SCHOOL_AUTH={loggedIn:false,token:'',role:'guest',mode:'DAILY'};
   window.SCHOOL_AUTH=SCHOOL_AUTH;
   sessionStorage.removeItem('school_os_admin_token');sessionStorage.removeItem('school_os_admin_mode');
