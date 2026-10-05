@@ -29567,16 +29567,14 @@ function getSubViewDay(dateStr){
       return normalizeTeacherNameForMatch_(subV2TeacherName(x))===target;
     });
     if(!t) return;
+
     var absent=day.absentList.find(function(a){return String(a.teacherId)===String(t.id);});
-    if(absent){
-      if(!absent.type) absent.type=r.leaveType||'ลา';
-      if(!absent.note) absent.note=r.note||'';
-      return;
-    }
+    if(absent) return;
+
     day.absentList.push({
       teacherId:t.id,
-      type:r.leaveType||'ลา',
-      note:r.note||'',
+      type:'ลา',
+      note:'',
       leaveSource:'external-readonly',
       periods:buildScheduledPeriodsForTeacher_(t,dateStr,[])
     });
