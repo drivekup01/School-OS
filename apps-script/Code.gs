@@ -119,6 +119,16 @@ function loadDatabase_() {
     }
   });
 
+  const announcements = tableObjects_(ss, 'Announcements').map(r => ({
+    id: s_(r.id),
+    title: s_(r.title),
+    body: s_(r.body),
+    type: s_(r.type) || 'ทั่วไป',
+    date: s_(r.date),
+    createdAt: n_(r.createdAt),
+    updatedAt: n_(r.updatedAt)
+  }));
+
   let customDepts = [];
   try { customDepts = JSON.parse(configMap.customDepts || '[]'); } catch (_) {}
 
@@ -132,7 +142,7 @@ function loadDatabase_() {
     },
     teachers, subjects, rooms, slots,
     days: days.length ? days : ['จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์'],
-    sched, substitute, customDepts,
+    sched, substitute, announcements, customDepts,
     subjectColorSchemeVersion: n_(configMap.subjectColorSchemeVersion) || 2,
     systemMode: (s_(configMap.systemMode) || 'DAILY').toUpperCase()
   };
@@ -218,9 +228,10 @@ function saveDatabase_(p) {
     // DAILY is operational mode: only daily substitute data may change.
     if (mode === 'DAILY') {
       writeSubstitute_(ss, db.substitute || {});
+      writeAnnouncements_(ss, db.announcements || []);
       SpreadsheetApp.flush();
       CacheService.getScriptCache().remove('school_os_bootstrap_v1');
-      return json_({ok:true,mode:mode,saved:['Substitute'],savedAt:new Date().toISOString()});
+      return json_({ok:true,mode:mode,saved:['Substitute','Announcements'],savedAt:new Date().toISOString()});
     }
 
     if (mode !== 'SETUP') throw new Error('โหมดระบบไม่อนุญาตให้แก้ไขข้อมูล');
@@ -233,6 +244,7 @@ function saveDatabase_(p) {
     writeDays_(ss, db.days || []);
     writeSchedule_(ss, db.sched || {});
     writeSubstitute_(ss, db.substitute || {});
+    writeAnnouncements_(ss, db.announcements || []);
 
     setKeyValue_(ss, 'Config', 'customDepts', JSON.stringify(db.customDepts || []));
     setKeyValue_(ss, 'Config', 'subjectColorSchemeVersion', Number(db.subjectColorSchemeVersion || 2));
@@ -243,7 +255,7 @@ function saveDatabase_(p) {
     return json_({
       ok:true,
       mode:mode,
-      saved:['School','Teachers','Subjects','Rooms','Slots','Days','Schedule','Substitute'],
+      saved:['School','Teachers','Subjects','Rooms','Slots','Days','Schedule','Substitute','Announcements'],
       savedAt:new Date().toISOString()
     });
   } finally {
@@ -347,6 +359,26 @@ function writeSubstitute_(ss, substitute) {
   });
 
   writeTable_(ss, 'Substitute', headers, rows);
+}
+
+function writeAnnouncements_(ss, list) {
+  const headers = ['id','title','body','type','date','createdAt','updatedAt'];
+  const rows = (Array.isArray(list) ? list : []).map(a => [
+    s_(a.id), s_(a.title), s_(a.body), s_(a.type) || 'ทั่วไป',
+    s_(a.date), n_(a.createdAt), n_(a.updatedAt)
+  ]);
+  ensureAnnouncementsSheet_(ss);
+  writeTable_(ss, 'Announcements', headers, rows);
+}
+
+function ensureAnnouncementsSheet_(ss) {
+  let sh = ss.getSheetByName('Announcements');
+  if (!sh) {
+    sh = ss.insertSheet('Announcements');
+    sh.getRange(1,1,1,7).setValues([['id','title','body','type','date','createdAt','updatedAt']]);
+    sh.setFrozenRows(1);
+  }
+  return sh;
 }
 
 function writeTable_(ss, sheetName, headers, rows) {
