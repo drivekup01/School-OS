@@ -31419,14 +31419,18 @@ async function postSchoolApi(params){
   var body=new URLSearchParams();
   Object.keys(params||{}).forEach(function(k){body.append(k,params[k]==null?'':params[k]);});
   var ctrl=new AbortController();
-  var timer=setTimeout(function(){ctrl.abort();},10000);
+  var timeoutMs=(params&&params.action==='login')?25000:10000;
+  var timer=setTimeout(function(){ctrl.abort();},timeoutMs);
   try{
     var res=await fetch(url,{method:'POST',body:body,redirect:'follow',signal:ctrl.signal});
     var out=await res.json();
     if(!out.ok) throw new Error(out.error||'ดำเนินการไม่สำเร็จ');
     return out;
   }catch(e){
-    if(e&&e.name==='AbortError') throw new Error('เซิร์ฟเวอร์ตอบช้าเกิน 10 วินาที');
+    if(e&&e.name==='AbortError'){
+      if(params&&params.action==='login') throw new Error('ระบบ Login ตอบช้า กรุณาลองอีกครั้ง');
+      throw new Error('เซิร์ฟเวอร์ตอบช้าเกิน 10 วินาที');
+    }
     throw e;
   }finally{
     clearTimeout(timer);
