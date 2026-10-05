@@ -2348,11 +2348,18 @@ label,.fg label{font-size:13px!important}
   <div class="ph">
     <div class="ph-left"><h1>📋 ประวัติการลาของครู</h1><p>ข้อมูลใบลาจริง · แยกการโหลดจากระบบตารางสอนหลัก</p></div>
   </div>
-  <div class="card">
-    <div class="card-hd"><div class="card-title">📅 เลือกวันที่ต้องการตรวจสอบ</div></div>
-    <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap">
-      <div class="fg" style="max-width:260px"><label>วันที่ตรวจสอบ</label><div class="sub-v2-date-control"><input type="text" id="leaveTestDateText" class="sub-v2-date-input" inputmode="numeric" placeholder="วว/ดด/ปปปป" onkeydown="if(event.key==='Enter'){applySchoolDateControl('leaveTestDate',true);renderLeaveTest()}" onblur="applySchoolDateControl('leaveTestDate',false)"><input id="leaveTestDate" type="date" class="sub-v2-date-native" onchange="syncSchoolDateControl('leaveTestDate');renderLeaveTest()"><button type="button" class="sub-v2-date-picker-btn" onclick="openSchoolDatePicker('leaveTestDate')" title="เลือกวันที่จากปฏิทิน">📅</button></div></div>
-      <button type="button" class="btn btn-pri" onclick="renderLeaveTest()">ตรวจสอบครูลา</button>
+  <div class="sub-v2-toolbar">
+    <div class="sub-v2-date">
+      <span class="sub-v2-label">📅 วันที่ตรวจสอบ</span>
+      <div class="sub-v2-date-control">
+        <input type="text" id="leaveTestDateText" class="sub-v2-date-input" inputmode="numeric" placeholder="วว/ดด/ปปปป" aria-label="วันที่ตรวจสอบ วัน เดือน ปี" onkeydown="if(event.key==='Enter'){if(applySchoolDateControl('leaveTestDate',true)){syncLeaveTestDay_();renderLeaveTest();}}" onblur="if(applySchoolDateControl('leaveTestDate',false)) syncLeaveTestDay_()">
+        <input id="leaveTestDate" type="date" class="sub-v2-date-native" onchange="syncSchoolDateControl('leaveTestDate');syncLeaveTestDay_();renderLeaveTest()">
+        <button type="button" class="sub-v2-date-picker-btn" onclick="openSchoolDatePicker('leaveTestDate')" title="เลือกวันที่จากปฏิทิน">📅</button>
+      </div>
+      <div class="sub-v2-day" id="leaveTestDayName">–</div>
+    </div>
+    <div class="sub-v2-toolbar-actions">
+      <button type="button" class="btn btn-pri btn-sm" onclick="renderLeaveTest()">ตรวจสอบครูลา</button>
     </div>
   </div>
   <div class="card" style="margin-top:14px">
@@ -31582,6 +31589,11 @@ function renderTeacherAll(query){
 
 // ══ ISOLATED TEACHER LEAVE HISTORY ══
 // Loaded on demand only; separate from bootstrap/login/main DB save/substitute state.
+function syncLeaveTestDay_(){
+  var iso=(document.getElementById('leaveTestDate')||{}).value||'';
+  var el=document.getElementById('leaveTestDayName');
+  if(el) el.textContent=iso ? getDayNameThai(iso)+'  |  '+formatDateThai(iso) : '–';
+}
 async function renderLeaveTest(){
   var input=document.getElementById('leaveTestDate'),box=document.getElementById('leaveTestResult'),count=document.getElementById('leaveTestCount');
   if(!input||!box||!count) return;
@@ -31589,6 +31601,7 @@ async function renderLeaveTest(){
     var now=new Date(); input.value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
   }
   syncSchoolDateControl('leaveTestDate');
+  syncLeaveTestDay_();
   box.innerHTML='<div style="padding:24px;text-align:center;color:#7787A2">กำลังอ่านฐานข้อมูลใบลา...</div>'; count.textContent='...';
   try{
     var base=String(window.SCHOOL_OS_API_URL||'').replace(/\/+$/,'');
