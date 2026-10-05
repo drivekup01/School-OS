@@ -26241,7 +26241,8 @@ function updateSidebarCounts(){
   const now=new Date();
   const subDateForDashboard=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
   const subDay=(DB.substitute&&DB.substitute[subDateForDashboard])?DB.substitute[subDateForDashboard]:null;
-  const absentCount=(subDay&&Array.isArray(subDay.absentList))?subDay.absentList.length:0;
+  const savedAbsentCount=(subDay&&Array.isArray(subDay.absentList))?subDay.absentList.length:0;
+  const absentCount=(typeof window.SCHOOL_TODAY_LEAVE_COUNT==='number')?window.SCHOOL_TODAY_LEAVE_COUNT:savedAbsentCount;
   set('stFilled',absentCount);
 }
 function renderProfileSidebar(){
@@ -29358,6 +29359,9 @@ const TH_DAYS = ['อาทิตย์','จันทร์','อังคา�
 const ABSENCE_ICONS = {'ลาป่วย':'🤒','ลากิจ':'📋','ลาพักผ่อน':'🌴','ราชการ':'🏛️','อบรม':'📚','อื่นๆ':'📝'};
 
 let currentSubDate = '';
+let currentLeaveLookupDate = '';
+let currentLeaveLookupRecords = [];
+let currentLeaveLookupRequest = 0;
 
 function getSubDB(){
   if(!DB.substitute) DB.substitute = {};
@@ -29447,11 +29451,13 @@ function loadSubstituteDay(){
   const dateStr = (document.getElementById('subDate')||{}).value||'';
   if(!dateStr){ return; }
   currentSubDate = dateStr;
-  // Selecting a date is read-only. Do not create/sync leave history here.
+  currentLeaveLookupDate = dateStr;
+  currentLeaveLookupRecords = [];
   const dayName = getDayNameThai(dateStr);
   const dayEl = document.getElementById('subDayName');
   if(dayEl) dayEl.textContent = dayName + '  |  ' + formatDateThai(dateStr);
   renderSubContent();
+  loadLeaveDetailsForDate_(dateStr);
 }
 
 
@@ -29481,28 +29487,72 @@ function buildScheduledPeriodsForTeacher_(teacher,dateStr,existingPeriods){
   });
   return periods;
 }
-function syncLeaveRecordsForDate(dateStr){
-  var records=Array.isArray(DB.leaveRecords)?DB.leaveRecords:[];
-  var day=getSubDay(dateStr);
-  day.absentList=Array.isArray(day.absentList)?day.absentList:[];
-  records.forEach(function(r){
-    if(!r.startDate||!r.endDate||dateStr<r.startDate||dateStr>r.endDate) return;
+
+function getSubViewDay(dateStr){
+  var saved=peekSubDay(dateStr);
+  var day={absentList:[]};
+  if(saved && Array.isArray(saved.absentList)){
+    day.absentList=saved.absentList.map(function(a){
+      return Object.assign({},a,{periods:(a.periods||[]).map(function(p){return Object.assign({},p);})});
+    });
+  }
+  if(currentLeaveLookupDate!==dateStr || !Array.isArray(currentLeaveLookupRecords)) return day;
+
+  currentLeaveLookupRecords.forEach(function(r){
     var target=normalizeTeacherNameForMatch_(r.teacherName);
     var t=(DB.teachers||[]).find(function(x){
       return normalizeTeacherNameForMatch_(subV2TeacherName(x))===target;
     });
     if(!t) return;
     var absent=day.absentList.find(function(a){return String(a.teacherId)===String(t.id);});
-    if(!absent){
-      absent={teacherId:t.id,type:r.leaveType||'ลา',note:r.note||'',periods:[]};
-      day.absentList.push(absent);
+    if(absent){
+      if(!absent.type) absent.type=r.leaveType||'ลา';
+      if(!absent.note) absent.note=r.note||'';
+      return;
     }
-    absent.type=r.leaveType||absent.type||'ลา';
-    absent.note=r.note||absent.note||'';
-    absent.leaveSource='sheet';
-    absent.periods=buildScheduledPeriodsForTeacher_(t,dateStr,absent.periods);
+    day.absentList.push({
+      teacherId:t.id,
+      type:r.leaveType||'ลา',
+      note:r.note||'',
+      leaveSource:'external-readonly',
+      periods:buildScheduledPeriodsForTeacher_(t,dateStr,[])
+    });
   });
+  return day;
 }
+
+async function loadLeaveDetailsForDate_(dateStr){
+  var req=++currentLeaveLookupRequest;
+  try{
+    var out=await getSchoolApiJson_('leaveByDate',{date:dateStr},8000);
+    if(req!==currentLeaveLookupRequest || currentSubDate!==dateStr) return;
+    currentLeaveLookupDate=dateStr;
+    currentLeaveLookupRecords=Array.isArray(out.records)?out.records:[];
+  }catch(e){
+    if(req!==currentLeaveLookupRequest || currentSubDate!==dateStr) return;
+    currentLeaveLookupDate=dateStr;
+    currentLeaveLookupRecords=[];
+    console.warn('School-OS leave details:',e);
+    toast('โหลดข้อมูลการลาของวันนี้ไม่สำเร็จ แต่ตารางหลักยังใช้งานได้','warn');
+  }
+  renderSubContent();
+}
+
+function ensurePersistentAbsentFromView_(teacherId){
+  var day=getSubDay(currentSubDate);
+  var existing=(day.absentList||[]).find(function(a){return String(a.teacherId)===String(teacherId);});
+  if(existing) return existing;
+  var view=getSubViewDay(currentSubDate);
+  var source=(view.absentList||[]).find(function(a){return String(a.teacherId)===String(teacherId);});
+  if(!source) return null;
+  var copy=Object.assign({},source,{
+    leaveSource:source.leaveSource==='external-readonly'?'external-confirmed':source.leaveSource,
+    periods:(source.periods||[]).map(function(p){return Object.assign({},p);})
+  });
+  day.absentList.push(copy);
+  return copy;
+}
+
 
 // ══════════════════════════════════════════════════════════════
 //  SMART SUBSTITUTE: Teacher availability analyzer
@@ -29659,7 +29709,7 @@ function removePeriodFromAbsent(ai,pi){
 function addAbsentTeacher(){
   if(!currentSubDate){ toast('⚠️ กรุณาเลือกวันที่ก่อน','warn'); return; }
   const sel = document.getElementById('absentTeacherSel');
-  const day = peekSubDay(currentSubDate) || {absentList:[]};
+  const day = getSubViewDay(currentSubDate);
   const alreadyAbsent = (day.absentList||[]).map(a=>a.teacherId);
   if(sel){
     sel.innerHTML = '<option value="">-- เลือกครู --</option>'+
@@ -30794,7 +30844,7 @@ function renderSubContent(){
   var content=document.getElementById('subContent');
   if(!content) return;
 
-  var day=peekSubDay(dateStr) || {absentList:[]};
+  var day=getSubViewDay(dateStr);
   var schedDay=mapDayNameToSched(dateStr);
   var teachers=DB.teachers||[];
   var slots=(DB.slots||[]);
@@ -30886,7 +30936,7 @@ function renderSubSidePanel(){
     return;
   }
 
-  var day=peekSubDay(currentSubDate) || {absentList:[]};
+  var day=getSubViewDay(currentSubDate);
   var schedDay=mapDayNameToSched(currentSubDate);
   var t=(DB.teachers||[]).find(function(x){return String(x.id)===String(subV2SelectedTeacherId);});
   var slot=(DB.slots||[]).find(function(x){return String(x.id)===String(subV2SelectedSlotId);});
@@ -30966,8 +31016,7 @@ function renderSubSidePanel(){
 function confirmSubV2Teacher(){
   var picked=document.querySelector('input[name="subV2Candidate"]:checked');
   if(!picked){ toast('กรุณาเลือกครูสอนแทน','warn'); return; }
-  var day=getSubDay(currentSubDate);
-  var absent=subV2AbsentForTeacher(day,subV2SelectedTeacherId);
+  var absent=ensurePersistentAbsentFromView_(subV2SelectedTeacherId);
   var p=subV2PeriodForAbsent(absent,subV2SelectedSlotId);
   if(!absent || !p) return;
   p.subTeacher=picked.value;
@@ -31315,6 +31364,7 @@ if(_subV2OldSetSubTeacher){
       if(typeof renderAllUI==='function') renderAllUI();
       else {updateTopbar();updateSidebarCounts();renderDashboard();renderProfileSidebar();}
       badge('● ฐานข้อมูลโรงเรียนออนไลน์','ok');
+      if(typeof refreshTodayLeaveCount_==='function') refreshTodayLeaveCount_();
     }catch(err){
       badge('ฐานข้อมูลออนไลน์เชื่อมต่อไม่ได้ · ใช้ข้อมูลในเครื่อง','err');
       console.error('School-OS Online DB:',err);
@@ -31328,6 +31378,41 @@ if(_subV2OldSetSubTeacher){
 window.SCHOOL_AUTH = window.SCHOOL_AUTH || {loggedIn:false,token:'',role:'guest',mode:'DAILY'};
 
 function publicApiUrl(){ return window.SCHOOL_OS_API_URL || ''; }
+
+async function getSchoolApiJson_(action, params, timeoutMs){
+  var url=publicApiUrl();
+  if(!url) throw new Error('ยังไม่ได้เชื่อม School-OS API');
+  var q=new URLSearchParams();
+  q.set('action',action);
+  Object.keys(params||{}).forEach(function(k){q.set(k,params[k]==null?'':params[k]);});
+  var ctrl=new AbortController();
+  var timer=setTimeout(function(){ctrl.abort();},timeoutMs||8000);
+  try{
+    var res=await fetch(url+(url.indexOf('?')>=0?'&':'?')+q.toString(),{
+      method:'GET',redirect:'follow',cache:'no-store',signal:ctrl.signal
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    var out=await res.json();
+    if(!out||!out.ok) throw new Error((out&&out.error)||'โหลดข้อมูลไม่สำเร็จ');
+    return out;
+  }finally{
+    clearTimeout(timer);
+  }
+}
+
+async function refreshTodayLeaveCount_(){
+  try{
+    var now=new Date();
+    var date=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+    var out=await getSchoolApiJson_('leaveCount',{date:date},5000);
+    window.SCHOOL_TODAY_LEAVE_COUNT=Number(out.count)||0;
+    var el=document.getElementById('stFilled');
+    if(el) el.textContent=window.SCHOOL_TODAY_LEAVE_COUNT;
+  }catch(e){
+    console.warn('School-OS leave count:',e);
+  }
+}
+
 async function postSchoolApi(params){
   var url=publicApiUrl();
   if(!url) throw new Error('ยังไม่ได้เชื่อม School-OS API');
