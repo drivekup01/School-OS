@@ -1,5 +1,5 @@
 const SCHOOL_OS_SPREADSHEET_ID = '1f0vnm-dJHaVRRbPVXEIRuBYhXwyft_ceNraqs8XwqkY';
-const LEAVE_SPREADSHEET_ID = '1-7kDkMUb37QqGeCPNozsDTavOgxz-jrk8pzAXtl6cR4'; // READ ONLY: never write to this workbook
+const LEAVE_SPREADSHEET_ID = '1KA8ch40D0iFHN1nYNcgadWTQbxehEiyKtOdcivRupW0'; // READ ONLY: never write to this workbook
 
 function doGet(e) {
   try {
@@ -12,7 +12,7 @@ function doGet(e) {
       return json_({ ok: true, data: data, readOnly: true, systemMode: data.systemMode || 'DAILY', version: '1.2' });
     }
     if (action === 'refresh') {
-      CacheService.getScriptCache().remove('school_os_bootstrap_v4');
+      CacheService.getScriptCache().remove('school_os_bootstrap_v5');
       const data = loadDatabaseCached_();
       return json_({ ok: true, data: data, readOnly: true, systemMode: data.systemMode || 'DAILY', version: '1.2', refreshed: true });
     }
@@ -24,7 +24,7 @@ function doGet(e) {
 
 function loadDatabaseCached_() {
   const cache = CacheService.getScriptCache();
-  const key = 'school_os_bootstrap_v4';
+  const key = 'school_os_bootstrap_v5';
   const cached = cache.get(key);
   if (cached) {
     try { return JSON.parse(cached); } catch (_) {}
@@ -325,7 +325,7 @@ function saveDatabase_(p) {
       writeSubstitute_(ss, db.substitute || {});
       writeAnnouncements_(ss, db.announcements || []);
       SpreadsheetApp.flush();
-      CacheService.getScriptCache().remove('school_os_bootstrap_v4');
+      CacheService.getScriptCache().remove('school_os_bootstrap_v5');
       return json_({ok:true,mode:mode,saved:['Substitute','Announcements'],savedAt:new Date().toISOString()});
     }
 
@@ -345,7 +345,7 @@ function saveDatabase_(p) {
     setKeyValue_(ss, 'Config', 'subjectColorSchemeVersion', Number(db.subjectColorSchemeVersion || 2));
 
     SpreadsheetApp.flush();
-    CacheService.getScriptCache().remove('school_os_bootstrap_v4');
+    CacheService.getScriptCache().remove('school_os_bootstrap_v5');
 
     return json_({
       ok:true,
@@ -521,7 +521,7 @@ function setMode_(p) {
   if(mode!=='SETUP' && mode!=='DAILY') throw new Error('โหมดไม่ถูกต้อง');
   const ss=SpreadsheetApp.openById(SCHOOL_OS_SPREADSHEET_ID);
   setKeyValue_(ss,'Config','systemMode',mode);
-  CacheService.getScriptCache().remove('school_os_bootstrap_v4');
+  CacheService.getScriptCache().remove('school_os_bootstrap_v5');
   return json_({ok:true,systemMode:mode});
 }
 
