@@ -31178,32 +31178,21 @@ if(_subV2OldSetSubTeacher){
     var url=window.SCHOOL_OS_API_URL||'';
     if(!url) throw new Error('ยังไม่ได้เชื่อม School-OS API');
     var sep=url.indexOf('?')>=0?'&':'?';
-    var lastErr=null;
-    for(var attempt=1;attempt<=3;attempt++){
-      var ctrl=new AbortController();
-      var timer=setTimeout(function(){ctrl.abort();},timeoutMs||10000);
-      try{
-        var req=url+sep+'action='+encodeURIComponent(action)+'&_='+Date.now();
-        var res=await fetch(req,{method:'GET',redirect:'follow',cache:'no-store',signal:ctrl.signal});
-        if(!res.ok){
-          var httpErr=new Error('HTTP '+res.status);
-          httpErr.status=res.status;
-          throw httpErr;
-        }
-        var payload=await res.json();
-        if(!payload||!payload.ok) throw new Error((payload&&payload.error)||'ข้อมูลไม่ถูกต้อง');
-        return payload;
-      }catch(err){
-        lastErr=err;
-        var status=err&&err.status;
-        var retryable=(err&&err.name==='AbortError') || status===404 || status===429 || (status>=500&&status<600) || !status;
-        if(!retryable || attempt===3) throw err;
-        await new Promise(function(resolve){setTimeout(resolve,attempt*900);});
-      }finally{
-        clearTimeout(timer);
-      }
+    var ctrl=new AbortController();
+    var timer=setTimeout(function(){ctrl.abort();},timeoutMs||12000);
+    try{
+      var req=url+sep+'action='+encodeURIComponent(action)+'&_='+Date.now();
+      var res=await fetch(req,{method:'GET',redirect:'follow',cache:'no-store',signal:ctrl.signal});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      var payload=await res.json();
+      if(!payload||!payload.ok) throw new Error((payload&&payload.error)||'ข้อมูลไม่ถูกต้อง');
+      return payload;
+    }catch(err){
+      if(err&&err.name==='AbortError') throw new Error(action+' โหลดเกินเวลาที่กำหนด');
+      throw err;
+    }finally{
+      clearTimeout(timer);
     }
-    throw lastErr||new Error('โหลดข้อมูลไม่สำเร็จ');
   }
   function applyHome(data){
     data=data||{};
@@ -31253,26 +31242,35 @@ if(_subV2OldSetSubTeacher){
     if(fullReady && !force) return true;
     if(fullLoadPromise) return fullLoadPromise;
 
-    badge(force?'กำลังรีเฟรชฐานข้อมูล...':'กำลังโหลดฐานข้อมูลครั้งเดียว...','');
+    badge(force?'กำลังรีเฟรชฐานข้อมูล...':'กำลังโหลดฐานข้อมูลหลัก...','');
     fullLoadPromise=(async function(){
       try{
-        var parts=await Promise.all([
-          getApi('core',30000),
-          getApi('schedule',30000),
-          getApi('substitute',30000)
+        // ข้อมูลที่จำเป็นต่อเว็บหลัก: โหลดพร้อมกันและต้องเสร็จก่อนเข้าใช้งาน
+        var mainParts=await Promise.all([
+          getApi('core',15000),
+          getApi('schedule',15000)
         ]);
-        mergeData(parts[0].data);
-        mergeData(parts[1].data);
-        mergeData(parts[2].data);
+        mergeData(mainParts[0].data);
+        mergeData(mainParts[1].data);
 
         fullReady=true;
         finalizeLoadedDatabase();
         if(typeof rememberCurrentSaveState==='function') rememberCurrentSaveState();
         badge('● ฐานข้อมูลพร้อมใช้งาน','ok');
+
+        // ตารางสอนแทนเป็นข้อมูลรอง: โหลดต่อโดยไม่ขวาง Login/เว็บหลัก
+        getApi('substitute',8000).then(function(payload){
+          mergeData(payload.data);
+          if(currentPage==='substitute'&&typeof renderSubContent==='function') renderSubContent();
+          if(currentPage==='sub-history'&&typeof renderSubHistoryPage==='function') renderSubHistoryPage();
+        }).catch(function(err){
+          console.warn('School-OS substitute data skipped:',err);
+        });
+
         return true;
       }catch(err){
         fullReady=false;
-        badge('โหลดฐานข้อมูลไม่สำเร็จ','err');
+        badge('โหลดฐานข้อมูลหลักไม่สำเร็จ','err');
         console.error('School-OS DB:',err);
         throw err;
       }finally{
