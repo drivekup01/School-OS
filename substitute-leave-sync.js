@@ -75,6 +75,29 @@
     });
   };
 
+  // Keep all substitute exports in sync with the daily table view.
+  // The legacy exporters read getSubDay(), which contains only saved substitute data
+  // and therefore misses leave records that come from the read-only Leave API.
+  function withViewDay(dateStr, fn){
+    var savedGetSubDay=window.getSubDay;
+    window.getSubDay=getSubDay=function(ds){
+      return String(ds)===String(dateStr) ? getSubViewDay(ds) : savedGetSubDay(ds);
+    };
+    try{return fn();}finally{window.getSubDay=getSubDay=savedGetSubDay;}
+  }
+
+  function wrapExport(name){
+    var original=window[name];
+    if(typeof original!=='function') return;
+    window[name]=function(){
+      var dateStr=currentSubDate || ((document.getElementById('subDate')||{}).value||'');
+      if(!dateStr) return original.apply(this,arguments);
+      var self=this,args=arguments;
+      return withViewDay(dateStr,function(){return original.apply(self,args);});
+    };
+  }
+  ['downloadSubstitutePNG','copySubstituteSummary','shareSubstituteOnline','exportSubstituteDocx'].forEach(wrapExport);
+
   // V1 display rule requested: leave row/cells are gray; teaching cells keep subject+room and show "ลา".
   var style=document.createElement('style');
   style.textContent=
