@@ -1257,8 +1257,8 @@ body.guest-mode #page-teacher-view .no-print{display:none!important}
 
 .dashboard-login-card{background:linear-gradient(180deg,#fff 0%,#fbfcff 100%)}
 .dashboard-login-head{display:flex;flex-direction:column;align-items:center;text-align:center}
-.dashboard-login-logo{width:66px;height:66px;object-fit:contain;margin:0 auto 8px;filter:drop-shadow(0 3px 5px rgba(20,50,90,.12))}
-.dashboard-login-head .card-title{font-size:17px}
+.dashboard-login-logo{width:92px;height:92px;object-fit:contain;margin:0 auto 8px;filter:drop-shadow(0 3px 5px rgba(20,50,90,.12))}
+.dashboard-login-head .card-title{font-size:22px}
 .dashboard-login-head .dashboard-card-sub{margin-top:3px}
 body.admin-mode .dashboard-login-card,body.support-mode .dashboard-login-card{min-height:0}
 body.admin-mode .dashboard-login-head,body.support-mode .dashboard-login-head{padding-bottom:10px;margin-bottom:10px}
@@ -1268,10 +1268,14 @@ body.admin-mode .dashboard-admin-icon,body.support-mode .dashboard-admin-icon{di
 body.admin-mode .dashboard-admin-title,body.support-mode .dashboard-admin-title{font-size:15px}
 body.admin-mode .dashboard-admin-sub,body.support-mode .dashboard-admin-sub{font-size:10.5px}
 body.admin-mode .logout-top-btn,body.support-mode .logout-top-btn{height:32px;padding:0 14px;font-size:11px;margin-top:5px}
-.academic-login-box{display:flex;flex-direction:column;gap:5px;flex:1}
+.academic-login-box{display:flex;flex-direction:column;gap:10px;flex:1}
 .academic-login-box label{font-size:12px;font-weight:800;color:var(--pri);text-transform:none;letter-spacing:0;margin-top:3px}
-.academic-login-box input{width:100%;height:40px;border:1.5px solid #d4deeb;background:#fff;border-radius:9px;padding:0 12px;font-family:inherit;font-size:13px;outline:none;box-shadow:0 2px 7px rgba(28,58,100,.06);transition:.15s}
+.academic-login-box input{width:100%;height:46px;border:1.5px solid #d4deeb;background:#fff;border-radius:9px;padding:0 12px;font-family:inherit;font-size:13px;outline:none;box-shadow:0 2px 7px rgba(28,58,100,.06);transition:.15s}
 .academic-login-box input:focus{border-color:var(--pri2);box-shadow:0 0 0 3px rgba(42,82,152,.10)}
+.login-secret-wrap{position:relative;width:100%}
+.login-secret-wrap input{padding-right:48px}
+.login-secret-toggle{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:34px;height:34px;border:0;border-radius:8px;background:transparent;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;opacity:.65}
+.login-secret-toggle:hover{background:#eef3fa;opacity:1}
 .dashboard-login-btn{height:42px;border:0;border-radius:9px;margin-top:8px;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,var(--pri2),var(--pri3));color:#fff;box-shadow:0 4px 12px rgba(42,82,152,.22)}
 .dashboard-login-btn:hover{filter:brightness(1.05)}
 .dashboard-login-note{text-align:center;font-size:10px;color:#8a96aa;margin-top:6px}
@@ -1827,10 +1831,11 @@ label,.fg label{font-size:13px!important}
       </div>
 
       <div id="guestLoginBox" class="academic-login-box">
-        <label for="academicLoginId">รหัสผู้ใช้งาน (User ID)</label>
-        <input id="academicLoginId" type="text" autocomplete="username" placeholder="กรอกรหัสผู้ใช้งาน" aria-label="ID ฝ่ายวิชาการ">
-        <label for="academicLoginPass">รหัสผ่าน (Password)</label>
-        <input id="academicLoginPass" type="password" autocomplete="current-password" placeholder="กรอกรหัสผ่าน" aria-label="Password ฝ่ายวิชาการ" onkeydown="if(event.key==='Enter') academicLogin()">
+        <input id="academicLoginId" type="text" autocomplete="username" placeholder="รหัสผู้ใช้งาน (User ID)" aria-label="ID ฝ่ายวิชาการ">
+        <div class="login-secret-wrap">
+          <input id="academicLoginPass" type="password" autocomplete="current-password" placeholder="รหัสผ่าน (Password)" aria-label="Password ฝ่ายวิชาการ" onkeydown="if(event.key==='Enter') academicLogin()">
+          <button type="button" class="login-secret-toggle" onclick="toggleLoginSecret()" aria-label="แสดงหรือซ่อนข้อความ">👁</button>
+        </div>
         <button type="button" class="dashboard-login-btn" onclick="academicLogin()">🔑 เข้าสู่ระบบ</button>
         <div class="dashboard-login-note">สำหรับฝ่ายวิชาการและผู้ดูแลระบบ</div>
       </div>
@@ -31391,6 +31396,15 @@ function applyAccessUI(){
   if(loginLogo&&window.DB&&DB.school){
     loginLogo.src=DB.school.logoDataUrl||DB.school.logoUrl||'https://drivekup01.github.io/School-OS/assets/school-logo.svg';
   }
+}
+function toggleLoginSecret(){
+  var el=document.getElementById('academicLoginPass');
+  if(!el) return;
+  var reveal=el.type==='password';
+  el.type=reveal?'text':'password';
+  var btn=document.querySelector('.login-secret-toggle');
+  if(btn) btn.textContent=reveal?'🙈':'👁';
+  el.focus();
 }
 async function academicLogin(){
   var id=(document.getElementById('academicLoginId')||{}).value||'';
