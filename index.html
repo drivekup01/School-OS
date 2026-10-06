@@ -26172,6 +26172,7 @@ function nav(p){
   if(pg) pg.classList.add('active');
   if(nb) nb.classList.add('active');
   currentPage=p;
+  try{ sessionStorage.setItem('school_os_current_page',p); }catch(e){}
   // render the page
   if(p==='dashboard')   renderDashboard();
   else if(p==='school') fillSchoolForm();
@@ -31443,6 +31444,9 @@ function renderTeacherAll(query){
     SCHOOL_AUTH.mode='DAILY';
   }
   applyAccessUI();
+  var savedPage='';
+  try{ savedPage=sessionStorage.getItem('school_os_current_page')||''; }catch(e){}
+  if(savedPage && savedPage!=='dashboard' && canAccessPage(savedPage)) nav(savedPage);
   setTimeout(applyAccessUI,800);
   setTimeout(function(){ if(window.DB&&DB.systemMode&&!SCHOOL_AUTH.loggedIn){ /* guest stays read-only */ } applyAccessUI(); },1800);
 })();
