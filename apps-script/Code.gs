@@ -121,6 +121,22 @@ function loadDatabase_() {
   });
 
   const substitute = {};
+  tableObjects_(ss, 'Substitute').forEach(r => {
+    const date=s_(r.date), teacherId=s_(r.teacherId);
+    if(!date || !teacherId) return;
+    if(!substitute[date]) substitute[date]={absentList:[]};
+    let a=substitute[date].absentList.find(x => x.teacherId===teacherId && x.type===s_(r.leaveType) && x.note===s_(r.leaveNote));
+    if(!a){
+      a={teacherId:teacherId,type:s_(r.leaveType),note:s_(r.leaveNote),periods:[]};
+      substitute[date].absentList.push(a);
+    }
+    if(s_(r.slotId)!==''){
+      a.periods.push({
+        slotId:n_(r.slotId),day:s_(r.day),roomId:s_(r.roomId),subject:s_(r.subject),
+        subTeacher:s_(r.subTeacher),subNote:s_(r.subNote),workType:s_(r.workType),messageStatus:s_(r.messageStatus)
+      });
+    }
+  });
 
   const announcements = tableObjects_(ss, 'Announcements').map(r => ({
     id: s_(r.id),
@@ -204,6 +220,7 @@ function doPost(e) {
     if (action === 'setMode') return setMode_(p);
     if (action === 'logout') return logout_(p);
     if (action === 'saveDatabase') return saveDatabase_(p);
+    if (action === 'saveSubstitute') return saveSubstituteApi_(p);
     if (action === 'saveAnnouncement') return saveAnnouncementApi_(p);
     if (action === 'deleteAnnouncement') return deleteAnnouncementApi_(p);
     return json_({ ok:false, error:'Unknown action' });
@@ -462,7 +479,11 @@ function getAuthConfigCached_() {
   if (saved) {
     try {
       const auth = JSON.parse(saved);
-      if (auth && auth.adminId && auth.adminPasswordHash) return auth;
+      if (auth && auth.adminId && auth.adminPasswordHash) {
+        if(!auth.supportId) auth.supportId='support1';
+        if(!auth.supportPasswordHash) auth.supportPasswordHash=sha256Hex_('support1');
+        return auth;
+      }
     } catch (_) {}
   }
 
@@ -471,7 +492,9 @@ function getAuthConfigCached_() {
   const auth = {
     adminId: s_(cfg.adminId),
     adminPasswordHash: s_(cfg.adminPasswordHash).toLowerCase(),
-    systemMode: (s_(cfg.systemMode)||'DAILY').toUpperCase()
+    systemMode: (s_(cfg.systemMode)||'DAILY').toUpperCase(),
+    supportId: 'support1',
+    supportPasswordHash: sha256Hex_('support1')
   };
   if (auth.adminId && auth.adminPasswordHash) {
     props.setProperty('school_os_auth_config_v1', JSON.stringify(auth));
@@ -487,19 +510,48 @@ function login_(p) {
   const storedHash = s_(cfg.adminPasswordHash).toLowerCase();
   if (!storedId || !storedHash) return json_({ok:false,error:'ยังไม่ได้ตั้งค่าบัญชีฝ่ายวิชาการ'});
   const actualHash = sha256Hex_(password);
-  if (id !== storedId || actualHash !== storedHash) {
+  let role='';
+  if(id===storedId && actualHash===storedHash) role='admin';
+  else if(id===s_(cfg.supportId) && actualHash===s_(cfg.supportPasswordHash).toLowerCase()) role='support';
+  if(!role){
     Utilities.sleep(250);
     return json_({ok:false,error:'ID หรือ Password ไม่ถูกต้อง'});
   }
   const token = Utilities.getUuid().replace(/-/g,'') + Utilities.getUuid().replace(/-/g,'');
-  CacheService.getScriptCache().put('school_os_session_' + token, 'admin', 21600);
-  return json_({ok:true,token:token,role:'admin',systemMode:cfg.systemMode||'DAILY',expiresIn:21600});
+  CacheService.getScriptCache().put('school_os_session_' + token, role, 21600);
+  return json_({ok:true,token:token,role:role,systemMode:cfg.systemMode||'DAILY',expiresIn:21600});
 }
 
 function logout_(p) {
   const token=s_(p.token);
   if(token) CacheService.getScriptCache().remove('school_os_session_'+token);
   return json_({ok:true});
+}
+
+function requireRole_(token, allowed) {
+  token=s_(token);
+  const role=token ? CacheService.getScriptCache().get('school_os_session_'+token) : '';
+  if(!role || allowed.indexOf(role)<0) throw new Error('Session หมดอายุหรือไม่มีสิทธิ์ใช้งาน');
+  return role;
+}
+
+function saveSubstituteApi_(p) {
+  requireRole_(p.token,['admin','support']);
+  const raw=String(p.substitute==null?'':p.substitute);
+  if(!raw) throw new Error('ไม่มีข้อมูลตารางสอนแทน');
+  let substitute;
+  try{substitute=JSON.parse(raw);}catch(_){throw new Error('รูปแบบข้อมูลตารางสอนแทนไม่ถูกต้อง');}
+  if(!substitute || typeof substitute!=='object' || Array.isArray(substitute)) throw new Error('ข้อมูลตารางสอนแทนไม่ถูกต้อง');
+
+  const lock=LockService.getScriptLock();
+  if(!lock.tryLock(30000)) throw new Error('ระบบกำลังบันทึกข้อมูล กรุณาลองใหม่');
+  try{
+    const ss=SpreadsheetApp.openById(SCHOOL_OS_SPREADSHEET_ID);
+    writeSubstitute_(ss,substitute);
+    SpreadsheetApp.flush();
+    clearBootstrapCache_();
+    return json_({ok:true,saved:['Substitute'],savedAt:new Date().toISOString()});
+  }finally{lock.releaseLock();}
 }
 
 function setMode_(p) {
