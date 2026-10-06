@@ -10,10 +10,6 @@ function doGet(e) {
       const data = loadDatabaseCached_();
       return json_({ ok: true, data: data, readOnly: true, systemMode: data.systemMode || 'DAILY', version: '1.2' });
     }
-    if (action === 'substitute') {
-      const ss = SpreadsheetApp.openById(SCHOOL_OS_SPREADSHEET_ID);
-      return json_({ok:true,substitute:loadSubstitute_(ss)});
-    }
     if (action === 'refresh') {
       clearBootstrapCache_();
       const data = loadDatabaseCached_();
@@ -125,6 +121,23 @@ function loadDatabase_() {
   });
 
   const substitute = {};
+  tableObjects_(ss,'Substitute').forEach(r => {
+    const date=s_(r.date), teacherId=s_(r.teacherId);
+    if(!date || !teacherId) return;
+    if(!substitute[date]) substitute[date]={absentList:[]};
+    let item=substitute[date].absentList.find(x => x.teacherId===teacherId && x.type===s_(r.leaveType) && x.note===s_(r.leaveNote));
+    if(!item){
+      item={teacherId:teacherId,type:s_(r.leaveType),note:s_(r.leaveNote),periods:[]};
+      substitute[date].absentList.push(item);
+    }
+    if(s_(r.slotId)!==''){
+      item.periods.push({
+        slotId:n_(r.slotId),day:s_(r.day),roomId:s_(r.roomId),subject:s_(r.subject),
+        subTeacher:s_(r.subTeacher),subNote:s_(r.subNote),workType:s_(r.workType),messageStatus:s_(r.messageStatus)
+      });
+    }
+  });
+
 
   const announcements = tableObjects_(ss, 'Announcements').map(r => ({
     id: s_(r.id),
@@ -153,27 +166,6 @@ function loadDatabase_() {
     subjectColorSchemeVersion: n_(configMap.subjectColorSchemeVersion) || 2,
     systemMode: (s_(configMap.systemMode) || 'DAILY').toUpperCase()
   };
-}
-
-function loadSubstitute_(ss) {
-  const substitute={};
-  tableObjects_(ss,'Substitute').forEach(r => {
-    const date=s_(r.date), teacherId=s_(r.teacherId);
-    if(!date || !teacherId) return;
-    if(!substitute[date]) substitute[date]={absentList:[]};
-    let item=substitute[date].absentList.find(x => x.teacherId===teacherId && x.type===s_(r.leaveType) && x.note===s_(r.leaveNote));
-    if(!item){
-      item={teacherId:teacherId,type:s_(r.leaveType),note:s_(r.leaveNote),periods:[]};
-      substitute[date].absentList.push(item);
-    }
-    if(s_(r.slotId)!==''){
-      item.periods.push({
-        slotId:n_(r.slotId),day:s_(r.day),roomId:s_(r.roomId),subject:s_(r.subject),
-        subTeacher:s_(r.subTeacher),subNote:s_(r.subNote),workType:s_(r.workType),messageStatus:s_(r.messageStatus)
-      });
-    }
-  });
-  return substitute;
 }
 
 function tableObjects_(ss, sheetName) {
