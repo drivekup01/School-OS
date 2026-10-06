@@ -2324,31 +2324,25 @@ label,.fg label{font-size:13px!important}
 </div>
 
 
-<!-- ═══════════ PAGE: LEAVE DATABASE TEST (isolated) ═══════════ -->
+<!-- ═══════════ PAGE: LEAVE HISTORY (isolated) ═══════════ -->
 <div class="page" id="page-leave-test">
   <div class="ph">
-    <div class="ph-left"><h1>📋 ประวัติการลาของครู</h1><p>ข้อมูลใบลาจริง · แยกการโหลดจากระบบตารางสอนหลัก</p></div>
-  </div>
-  <div class="sub-v2-toolbar">
-    <div class="sub-v2-date">
-      <span class="sub-v2-label">📅 วันที่ตรวจสอบ</span>
-      <div class="sub-v2-date-control">
-        <input type="text" id="leaveTestDateText" class="sub-v2-date-input" inputmode="numeric" placeholder="วว/ดด/ปปปป" aria-label="วันที่ตรวจสอบ วัน เดือน ปี" onkeydown="if(event.key==='Enter'){if(applySchoolDateControl('leaveTestDate',true)){syncLeaveTestDay_();renderLeaveTest();}}" onblur="if(applySchoolDateControl('leaveTestDate',false)) syncLeaveTestDay_()">
-        <input id="leaveTestDate" type="date" class="sub-v2-date-native" onchange="syncSchoolDateControl('leaveTestDate');syncLeaveTestDay_();renderLeaveTest()">
-        <button type="button" class="sub-v2-date-picker-btn" onclick="openSchoolDatePicker('leaveTestDate')" title="เลือกวันที่จากปฏิทิน">📅</button>
-      </div>
-      <div class="sub-v2-day" id="leaveTestDayName">–</div>
+    <div class="ph-left">
+      <h1>📋 ประวัติการลาของครู</h1>
+      <p>ข้อมูลใบลาจากฐานข้อมูล · แสดงรายการโดยตรงจาก Sheet</p>
     </div>
-    <div class="sub-v2-toolbar-actions">
-      <button type="button" class="btn btn-pri btn-sm" onclick="renderLeaveTest()">ตรวจสอบครูลา</button>
+    <div class="ph-actions">
+      <button type="button" class="btn btn-out btn-sm" onclick="renderLeaveTest()">🔄 โหลดข้อมูลใหม่</button>
     </div>
   </div>
   <div class="card" style="margin-top:14px">
     <div class="card-hd">
-      <div class="card-title">👨‍🏫 ครูลาในวันที่เลือก</div>
-      <span class="badge b-blue" id="leaveTestCount">0 คน</span>
+      <div class="card-title">📄 รายการใบลา</div>
+      <span class="badge b-blue" id="leaveTestCount">0 รายการ</span>
     </div>
-    <div id="leaveTestResult"></div>
+    <div id="leaveTestResult">
+      <div style="padding:24px;text-align:center;color:#7787A2">กำลังโหลดประวัติการลา...</div>
+    </div>
   </div>
 </div>
 
@@ -31499,7 +31493,7 @@ async function renderLeaveTest(){
   }finally{ clearTimeout(timer); }
 }
 </script>
-<script src="leave-timetable-bridge.js?v=20261006-1"></script>\n<script src="substitute-leave-sync.js?v=20261006-1"></script>\n<script src="leave-history.js?v=20261006-1"></script>\n</body>
+<script src="leave-timetable-bridge.js?v=20261006-1"></script>\n<script src="substitute-leave-sync.js?v=20261006-1"></script>\n<script src="leave-history.js?v=20261006-2"></script>\n</body>
 </html>
 <style id="builder-full-height-fix">
 /* Make the Builder use the remaining viewport instead of leaving a large blank area below. */
