@@ -31204,16 +31204,35 @@ if(_subV2OldSetSubTeacher){
     if(typeof renderDashboardAnnouncements==='function') renderDashboardAnnouncements();
     if(currentPage==='announcements'&&typeof renderAnnouncements==='function') renderAnnouncements();
   }
+  async function getStaticJson(path,timeoutMs){
+    var ctrl=new AbortController();
+    var timer=setTimeout(function(){ctrl.abort();},timeoutMs||8000);
+    try{
+      var res=await fetch(path,{method:'GET',cache:'no-cache',signal:ctrl.signal});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      return await res.json();
+    }finally{
+      clearTimeout(timer);
+    }
+  }
   async function loadHome(){
     badge('กำลังโหลดข้อมูลหน้าแรก...','');
     try{
-      var payload=await getApi('home',10000);
-      applyHome(payload.data);
-      badge('● ฐานข้อมูลโรงเรียนออนไลน์','ok');
-    }catch(err){
-      // หน้า Login/หน้าแรกต้องเบา: ห้าม fallback ไปโหลดฐานข้อมูลเต็มก่อน Login
-      badge('ฐานข้อมูลหน้าแรกเชื่อมต่อไม่ได้','err');
-      console.warn('School-OS Home API:',err);
+      var data=await getStaticJson('database/home.json',5000);
+      applyHome(data);
+      badge('● ฐานข้อมูลพร้อมใช้งาน','ok');
+      return true;
+    }catch(staticErr){
+      try{
+        var payload=await getApi('home',10000);
+        applyHome(payload.data);
+        badge('● ฐานข้อมูลโรงเรียนออนไลน์','ok');
+        return true;
+      }catch(err){
+        badge('ฐานข้อมูลหน้าแรกเชื่อมต่อไม่ได้','err');
+        console.warn('School-OS Home JSON/API:',staticErr,err);
+        return false;
+      }
     }
   }
   function mergeData(part){
@@ -31238,16 +31257,47 @@ if(_subV2OldSetSubTeacher){
     else {updateTopbar();updateSidebarCounts();renderDashboard();}
   }
 
+  async function loadMainFromStatic(){
+    var parts=await Promise.all([
+      getStaticJson('database/core.json',8000),
+      getStaticJson('database/schedule.json',8000)
+    ]);
+    mergeData(parts[0]);
+    mergeData(parts[1]);
+    ready.core=true;
+    ready.schedule=true;
+    return true;
+  }
+
+  async function loadMainFromApi(){
+    var parts=await Promise.all([
+      getApi('core',20000),
+      getApi('schedule',20000)
+    ]);
+    mergeData(parts[0].data);
+    mergeData(parts[1].data);
+    ready.core=true;
+    ready.schedule=true;
+    return true;
+  }
+
   async function loadDatabaseOnce(force){
     if(fullReady && !force) return true;
     if(fullLoadPromise) return fullLoadPromise;
 
-    badge(force?'กำลังรีเฟรชฐานข้อมูล...':'กำลังโหลดฐานข้อมูลครั้งเดียว...','');
+    badge(force?'กำลังรีเฟรชฐานข้อมูล...':'กำลังโหลดฐานข้อมูล...','');
     fullLoadPromise=(async function(){
       try{
-        // ใช้เส้นทางเดียวหลัง Login: โหลดฐานข้อมูลเต็มเพียงครั้งเดียว
-        var payload=await getApi('bootstrap',15000);
-        DB=payload.data||emptyDB();
+        if(force){
+          await loadMainFromApi();
+        }else{
+          try{
+            await loadMainFromStatic();
+          }catch(staticErr){
+            console.warn('School-OS static JSON unavailable; using API fallback:',staticErr);
+            await loadMainFromApi();
+          }
+        }
 
         fullReady=true;
         finalizeLoadedDatabase();
