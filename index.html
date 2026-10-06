@@ -26224,6 +26224,16 @@ function loadProfile(id){
   return true;
 }
 
+function initFirstProfile(){
+  const id = uid();
+  const profiles = {};
+  profiles[id] = {id, name:'โรงเรียนของฉัน', data:emptyDB(), savedAt:Date.now(), year:'2568'};
+  saveProfiles(profiles);
+  activeProfileId = id;
+  localStorage.setItem(LS_ACTIVE,id);
+  DB = emptyDB();
+}
+
 // ════════════════════════════════════════════
 //  TOAST
 // ════════════════════════════════════════════
@@ -30730,10 +30740,25 @@ function loadDemoData(){
   document.querySelectorAll('.modal-bg').forEach(m=>{
     m.addEventListener('click',e=>{if(e.target===m) m.classList.remove('open');});
   });
-  // Online-first startup: do not create legacy first-entry/local profile data.
-  // Keep the in-memory DB empty until the online database adapter loads the real school data.
-  setSaveInd('saved','พร้อมเชื่อมฐานข้อมูล');
+  // bootstrap storage
+  const profiles=getProfiles(), ids=Object.keys(profiles);
+  let loaded=false;
+  if(ids.length>0){
+    const lastActive=localStorage.getItem(LS_ACTIVE);
+    const targetId=(lastActive&&profiles[lastActive])?lastActive:ids[0];
+    loaded=loadProfile(targetId);
+  }
+  if(!loaded){ initFirstProfile(); }
+  const p=getProfiles()[activeProfileId];
+  setSaveInd('saved',p?'บันทึกแล้ว · '+fmtTime(p.savedAt):'พร้อมใช้งาน');
+  // first render
   updateTopbar(); updateSidebarCounts(); renderDashboard(); renderProfileSidebar();
+  if(loaded){
+    toast('📂 โหลดข้อมูลจากเครื่องแล้ว','info');
+  } else {
+    // new user → show wizard automatically
+    setTimeout(()=>showWizard(), 600);
+  }
 })();
 
 </script>
