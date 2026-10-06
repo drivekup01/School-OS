@@ -2350,15 +2350,6 @@ body.support-mode .logout-top-btn{
 <div class="page" id="page-storage">
   <div class="ph"><div class="ph-left"><h1>💾 บันทึก & สำรองข้อมูล</h1><p>ระบบบันทึกข้อมูลลงเครื่องผู้ใช้แบบ Offline โดยอัตโนมัติ</p></div></div>
 
-  <!-- PROFILES -->
-  <div class="card">
-    <div class="card-hd"><div class="card-title">🏫 โปรไฟล์โรงเรียน (Multi-School)</div>
-      <button class="btn btn-pri btn-sm" onclick="createNewProfile()">+ สร้างโรงเรียนใหม่</button>
-    </div>
-    <div class="alert a-info">💡 สามารถบันทึกข้อมูลหลายโรงเรียนไว้ในเครื่องเดียวกันได้ สลับโปรไฟล์เพื่อใช้งานได้ทันที</div>
-    <div id="profileList"></div>
-  </div>
-
   <!-- STORAGE STATUS -->
   <div class="storage-card">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
@@ -2408,14 +2399,6 @@ body.support-mode .logout-top-btn{
     </div>
   </div>
 
-  <!-- DANGER ZONE -->
-  <div class="card" style="border:1.5px solid #ffcdd2">
-    <div class="card-hd"><div class="card-title" style="color:var(--err)">⚠️ โซนอันตราย</div></div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn btn-danger" onclick="clearCurrentProfile()">🗑️ ล้างข้อมูลโปรไฟล์นี้</button>
-      <button class="btn btn-danger" onclick="clearAllProfiles()">💥 ล้างข้อมูลทั้งหมดในเครื่อง</button>
-    </div>
-  </div>
 </div>
 
 
@@ -26127,21 +26110,12 @@ let editingRoomId = null;
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 
 // ════════════════════════════════════════════
-//  LOCALSTORAGE
+//  SAVE STATE
 // ════════════════════════════════════════════
-const LS_KEY    = 'timetable_v3_profiles';
-const LS_ACTIVE = 'timetable_v3_active';
-let activeProfileId = null;
 let saveTimer = null;
 let onlineSaveInFlight = false;
 let onlineSavePending = false;
 let onlineSaveGeneration = 0;
-
-function lsGet(key){ try{ return JSON.parse(localStorage.getItem(key)||'null'); }catch(e){ return null; } }
-function lsSet(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); }catch(e){ toast('⚠️ พื้นที่เก็บข้อมูลเต็ม กรุณา Backup แล้วล้างข้อมูล','err'); } }
-
-function getProfiles(){ return lsGet(LS_KEY)||{}; }
-function saveProfiles(p){ lsSet(LS_KEY,p); }
 
 function markDirty(){
   setSaveInd('saving','กำลังบันทึก...');
@@ -26149,24 +26123,12 @@ function markDirty(){
   saveTimer = setTimeout(persistNow, 900);
 }
 function persistNow(){
-  if(!activeProfileId) return;
-  const profiles = getProfiles();
-  if(!profiles[activeProfileId]) profiles[activeProfileId]={id:activeProfileId,name:'',savedAt:0};
-  profiles[activeProfileId].data     = JSON.parse(JSON.stringify(DB));
-  profiles[activeProfileId].savedAt  = Date.now();
-  profiles[activeProfileId].name     = DB.school.name || profiles[activeProfileId].name || 'ไม่ระบุ';
-  profiles[activeProfileId].year     = DB.school.year || '2568';
-  saveProfiles(profiles);
-
   if(window.SCHOOL_AUTH && SCHOOL_AUTH.loggedIn){
-    setSaveInd('saving','บันทึกในเครื่องแล้ว · กำลังส่งออนไลน์...');
+    setSaveInd('saving','กำลังบันทึกออนไลน์...');
     persistOnlineNow();
   }else{
-    setSaveInd('saved','บันทึกในเครื่องแล้ว · '+fmtTime(Date.now()));
+    setSaveInd('saved','พร้อมใช้งาน');
   }
-
-  if(currentPage==='storage') updateStorageUI();
-  renderProfileSidebar();
 }
 
 async function persistOnlineNow(){
@@ -26217,30 +26179,6 @@ function setSaveInd(status,label){
   if(lbl){ lbl.textContent=label; }
 }
 function fmtTime(ts){ return ts ? new Date(ts).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}) : '–'; }
-
-function loadProfile(id){
-  const profiles = getProfiles();
-  const p = profiles[id];
-  if(!p||!p.data) return false;
-  DB = JSON.parse(JSON.stringify(p.data));
-  activeProfileId = id;
-  localStorage.setItem(LS_ACTIVE, id);
-  // ย้ายสีวิชาเก่าเข้าโครงสีแบบหมวดเพียงครั้งเดียว
-  if(typeof applySubjectColorScheme==='function') applySubjectColorScheme(false);
-  if(typeof refreshAllDeptDropdowns==="function") refreshAllDeptDropdowns();
-  if(typeof renderCustomDeptList==="function") renderCustomDeptList();
-  return true;
-}
-
-function initFirstProfile(){
-  const id = uid();
-  const profiles = {};
-  profiles[id] = {id, name:'โรงเรียนของฉัน', data:emptyDB(), savedAt:Date.now(), year:'2568'};
-  saveProfiles(profiles);
-  activeProfileId = id;
-  localStorage.setItem(LS_ACTIVE,id);
-  DB = emptyDB();
-}
 
 // ════════════════════════════════════════════
 //  TOAST
@@ -26530,7 +26468,7 @@ function saveSchool(){
   // update profile name
   const profiles=getProfiles();
   if(profiles[activeProfileId]){ profiles[activeProfileId].name=DB.school.name||profiles[activeProfileId].name; saveProfiles(profiles); }
-  renderProfileSidebar();
+  
   showMsg('schoolSaveMsg','✅ บันทึกข้อมูลโรงเรียนแล้ว','succ');
 }
 
@@ -28856,90 +28794,14 @@ async function exportAllDocx(){ nav('export'); }
 // ════════════════════════════════════════════
 function renderStoragePage(){
   updateStorageUI();
-  renderProfileList();
 }
 function updateStorageUI(){
-  try{
-    const raw=localStorage.getItem(LS_KEY)||'';
-    const used=new Blob([raw]).size;
-    const usedKB=(used/1024).toFixed(1);
-    const pct=Math.min(100,used/(5*1024*1024)*100).toFixed(1);
-    const el=document.getElementById('storageUsed'), bar=document.getElementById('storageBar');
-    if(el) el.textContent=usedKB+' KB';
-    if(bar) bar.style.width=pct+'%';
-    const profiles=getProfiles(), p=profiles[activeProfileId];
-    const lst=document.getElementById('lastSavedTime'), apn=document.getElementById('activeProfileName');
-    if(lst) lst.textContent=p?fmtTime(p.savedAt):'–';
-    if(apn) apn.textContent=p?(p.name||'ไม่ระบุ'):'–';
-  }catch(e){}
+  const lst=document.getElementById('lastSavedTime');
+  const apn=document.getElementById('activeProfileName');
+  if(lst) lst.textContent='ออนไลน์';
+  if(apn) apn.textContent=(DB.school&&DB.school.name)||'School-OS';
 }
-function renderProfileList(){
-  const el=document.getElementById('profileList'); if(!el) return;
-  const profiles=getProfiles(), ids=Object.keys(profiles);
-  if(!ids.length){el.innerHTML='<div class="empty-state" style="padding:20px"><div class="empty-icon">🏫</div><div class="empty-text">ยังไม่มีโปรไฟล์</div></div>';return;}
-  el.innerHTML=`<div class="tbl-wrap"><table class="tbl">
-    <thead><tr><th>โรงเรียน</th><th>ปีการศึกษา</th><th>ครู</th><th>ห้อง</th><th>บันทึกล่าสุด</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
-    <tbody>${ids.map(id=>{
-      const p=profiles[id], d=p.data||{}, isA=id===activeProfileId;
-      return`<tr style="${isA?'background:#eef3ff':''}">
-        <td><strong>${p.name||'ไม่ระบุ'}</strong>${isA?'<span class="badge b-green" style="margin-left:6px">ใช้งานอยู่</span>':''}</td>
-        <td>${p.year||'–'}</td><td>${(d.teachers||[]).length}</td><td>${(d.rooms||[]).length}</td>
-        <td style="font-size:12px;color:var(--muted)">${p.savedAt?new Date(p.savedAt).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'}):'–'}</td>
-        <td>${isA?'<span class="badge b-green">Active</span>':'<span class="badge" style="background:#f3f4f6;color:#6b7280">Inactive</span>'}</td>
-        <td><div style="display:flex;gap:4px">
-          ${!isA?`<button class="btn btn-pri btn-xs" onclick="switchProfile('${id}')">สลับ</button>`:''}
-          <button class="btn btn-out btn-xs" onclick="duplicateProfile('${id}')">📋</button>
-          ${ids.length>1?`<button class="btn btn-danger btn-xs" onclick="deleteProfileById('${id}')">🗑️</button>`:''}
-        </div></td>
-      </tr>`;
-    }).join('')}</tbody></table></div>`;
-}
-
-// ════════════════════════════════════════════
-//  PROFILE MANAGEMENT
-// ════════════════════════════════════════════
-function createNewProfile(){
-  const name=prompt('ชื่อโรงเรียน:','');
-  if(name===null) return;
-  const id=uid();
-  const profiles=getProfiles();
-  persistNow(); // save current first
-  profiles[id]={id,name:name||'โรงเรียนใหม่',data:emptyDB(),savedAt:Date.now(),year:'2568'};
-  saveProfiles(profiles);
-  DB=emptyDB(); DB.school.name=name||'';
-  activeProfileId=id; localStorage.setItem(LS_ACTIVE,id);
-  toast('✅ สร้างโปรไฟล์ใหม่แล้ว','succ');
-  renderAllUI(); if(currentPage==='storage') renderStoragePage();
-}
-function switchProfile(id){
-  if(id===activeProfileId) return;
-  persistNow();
-  if(!loadProfile(id)){toast('ไม่พบโปรไฟล์','err');return;}
-  toast('🏫 สลับโปรไฟล์แล้ว','info');
-  renderAllUI(); if(currentPage==='storage') renderStoragePage();
-}
-function deleteProfileById(id){
-  const profiles=getProfiles(), p=profiles[id];
-  if(!p) return;
-  if(!confirm('ลบโปรไฟล์ "'+p.name+'" ?')) return;
-  delete profiles[id]; saveProfiles(profiles);
-  if(id===activeProfileId){
-    const rem=Object.keys(profiles);
-    if(rem.length>0) loadProfile(rem[0]);
-    else initFirstProfile();
-  }
-  toast('🗑️ ลบโปรไฟล์แล้ว','warn');
-  renderAllUI(); if(currentPage==='storage') renderStoragePage();
-}
-function duplicateProfile(id){
-  const profiles=getProfiles(), p=profiles[id]; if(!p) return;
-  const newId=uid();
-  profiles[newId]=JSON.parse(JSON.stringify(p));
-  profiles[newId].id=newId; profiles[newId].name=(p.name||'')+'(สำเนา)'; profiles[newId].savedAt=Date.now();
-  saveProfiles(profiles);
-  toast('📋 คัดลอกโปรไฟล์แล้ว','succ'); renderStoragePage();
-}
-function saveNow(){ persistNow(); showMsg('saveNowMsg','✅ บันทึกข้อมูลสำเร็จ','succ'); renderStoragePage(); }
+function saveNow(){ persistNow(); showMsg('saveNowMsg','✅ ส่งคำสั่งบันทึกข้อมูลแล้ว','succ'); renderStoragePage(); }
 async function reloadFromStorage(){
   if(window.SCHOOL_AUTH&&SCHOOL_AUTH.loggedIn&&window.SCHOOL_ONLINE&&typeof SCHOOL_ONLINE.refreshDatabase==='function'){
     if(!confirm('รีเฟรชข้อมูลล่าสุดจากฐานข้อมูลออนไลน์?')) return;
@@ -28955,42 +28817,33 @@ async function reloadFromStorage(){
   if(loadProfile(activeProfileId)){ toast('🔄 โหลดข้อมูลแล้ว','info'); renderAllUI(); }
 }
 function exportBackup(){
-  const data={version:'3.0',exportedAt:new Date().toISOString(),profiles:getProfiles(),activeProfileId};
+  const data={version:'4.0',exportedAt:new Date().toISOString(),data:DB};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  dlBlob(blob,'timetable_backup_'+new Date().toISOString().slice(0,10)+'.json');
+  dlBlob(blob,'school_os_backup_'+new Date().toISOString().slice(0,10)+'.json');
   toast('📤 ส่งออก Backup สำเร็จ','succ');
 }
 function importBackup(event){
-  const file=event.target.files[0]; if(!file) return;  const reader=new FileReader();
+  const file=event.target.files[0]; if(!file) return;
+  const reader=new FileReader();
   reader.onload=e=>{
     try{
-      const data=JSON.parse(e.target.result);
-      if(!data.profiles) throw new Error('รูปแบบไฟล์ไม่ถูกต้อง');
-      const existing=getProfiles(), incoming=data.profiles;
-      const count=Object.keys(incoming).length;
-      if(!confirm('นำเข้า '+count+' โปรไฟล์?')) return;
-      Object.assign(existing,incoming); saveProfiles(existing);
-      const firstId=Object.keys(incoming)[0];
-      if(firstId) loadProfile(firstId);
-      toast('✅ นำเข้า '+count+' โปรไฟล์สำเร็จ','succ');
-      renderAllUI(); renderStoragePage();
+      const raw=JSON.parse(e.target.result);
+      const incoming=raw&&raw.data?raw.data:raw;
+      if(!incoming||typeof incoming!=='object'||!incoming.school) throw new Error('รูปแบบไฟล์ไม่ถูกต้อง');
+      if(!confirm('นำเข้าข้อมูล Backup นี้และแทนที่ข้อมูลที่กำลังเปิดอยู่?')) return;
+      DB=JSON.parse(JSON.stringify(incoming));
+      if(typeof applySubjectColorScheme==='function') applySubjectColorScheme(false);
+      if(typeof refreshAllDeptDropdowns==='function') refreshAllDeptDropdowns();
+      if(typeof renderCustomDeptList==='function') renderCustomDeptList();
+      renderAllUI();
+      markDirty();
+      toast('✅ นำเข้า Backup สำเร็จ และกำลังบันทึกออนไลน์','succ');
       showMsg('importMsg','✅ นำเข้าข้อมูลสำเร็จ','succ');
-    }catch(err){ showMsg('importMsg','❌ ไฟล์ไม่ถูกต้อง: '+err.message,'err'); }
+    }catch(err){
+      showMsg('importMsg','❌ ไฟล์ไม่ถูกต้อง: '+err.message,'err');
+    }
   };
   reader.readAsText(file,'UTF-8');
-}
-function clearCurrentProfile(){
-  if(!confirm('ล้างข้อมูลโปรไฟล์นี้ทั้งหมด?')) return;
-  const name=DB.school.name;
-  DB=emptyDB(); DB.school.name=name;
-  markDirty(); toast('🗑️ ล้างข้อมูลแล้ว','warn'); renderAllUI();
-}
-function clearAllProfiles(){
-  if(!confirm('⚠️ ลบข้อมูลทั้งหมดในเครื่องนี้?')) return;
-  if(!confirm('ยืนยันอีกครั้ง: ลบทุกโรงเรียน?')) return;
-  localStorage.removeItem(LS_KEY); localStorage.removeItem(LS_ACTIVE);
-  DB=emptyDB(); initFirstProfile();
-  toast('💥 ล้างข้อมูลทั้งหมดแล้ว','err'); renderAllUI(); renderStoragePage();
 }
 
 // ════════════════════════════════════════════
@@ -29284,7 +29137,7 @@ function getConflictCells(){
 }
 
 function renderAllUI(){
-  updateTopbar(); updateSidebarCounts(); renderProfileSidebar();
+  updateTopbar(); updateSidebarCounts(); 
   const p=currentPage;
   if(p==='dashboard') renderDashboard();
   else if(p==='school') fillSchoolForm();
@@ -30733,29 +30586,14 @@ function loadDemoData(){
 }
 
 (function init(){
-  // close modal on backdrop click
   document.querySelectorAll('.modal-bg').forEach(m=>{
     m.addEventListener('click',e=>{if(e.target===m) m.classList.remove('open');});
   });
-  // bootstrap storage
-  const profiles=getProfiles(), ids=Object.keys(profiles);
-  let loaded=false;
-  if(ids.length>0){
-    const lastActive=localStorage.getItem(LS_ACTIVE);
-    const targetId=(lastActive&&profiles[lastActive])?lastActive:ids[0];
-    loaded=loadProfile(targetId);
-  }
-  if(!loaded){ initFirstProfile(); }
-  const p=getProfiles()[activeProfileId];
-  setSaveInd('saved',p?'บันทึกแล้ว · '+fmtTime(p.savedAt):'พร้อมใช้งาน');
-  // first render
-  updateTopbar(); updateSidebarCounts(); renderDashboard(); renderProfileSidebar();
-  if(loaded){
-    toast('📂 โหลดข้อมูลจากเครื่องแล้ว','info');
-  } else {
-    // new user → show wizard automatically
-    setTimeout(()=>showWizard(), 600);
-  }
+  DB=emptyDB();
+  setSaveInd('saved','พร้อมใช้งาน');
+  updateTopbar();
+  updateSidebarCounts();
+  renderDashboard();
 })();
 
 </script>
@@ -31393,19 +31231,6 @@ if(_subV2OldSetSubTeacher){
     if(!DB.school.logoDataUrl) DB.school.logoDataUrl=DB.school.logoUrl||SAFE_LOGO_URL;
     if(!DB.school.logoUrl) DB.school.logoUrl=DB.school.logoDataUrl||SAFE_LOGO_URL;
     DB.customDepts=DB.customDepts||[];
-
-    var profiles=getProfiles();
-    if(!activeProfileId) activeProfileId='online-school-os';
-    profiles[activeProfileId]={
-      id:activeProfileId,
-      name:DB.school.name||'School-OS Online',
-      year:DB.school.year||'',
-      data:JSON.parse(JSON.stringify(DB)),
-      savedAt:Date.now(),
-      onlineSource:true
-    };
-    saveProfiles(profiles);
-    localStorage.setItem(LS_ACTIVE,activeProfileId);
 
     var wiz=document.getElementById('setupWizard');
     if(wiz) wiz.style.display='none';
