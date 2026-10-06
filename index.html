@@ -1694,6 +1694,14 @@ body.support-mode .dashboard-login-head .card-title{
   font-weight:900!important;
 }
 /* Logged-in role panel stays compact; branding above it does not shrink. */
+/* Support dashboard: hide room-schedule shortcut only for Support. */
+body.support-mode .guest-shortcut-grid .guest-shortcut-card[onclick="nav('export')"]{
+  display:none!important;
+}
+body.support-mode .guest-shortcut-grid{
+  grid-template-rows:repeat(2,minmax(0,1fr))!important;
+}
+
 body.admin-mode .dashboard-admin-box,
 body.support-mode .dashboard-admin-box{
   padding:6px 10px!important;
