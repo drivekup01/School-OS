@@ -31256,7 +31256,8 @@ if(_subV2OldSetSubTeacher){
         return true;
       }catch(err){
         fullReady=false;
-        badge('โหลดฐานข้อมูลไม่สำเร็จ','err');
+        var detail=(err&&err.message)?err.message:String(err||'ไม่ทราบสาเหตุ');
+        badge('โหลดฐานข้อมูลไม่สำเร็จ: '+detail,'err');
         console.error('School-OS DB:',err);
         throw err;
       }finally{
