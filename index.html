@@ -1278,6 +1278,7 @@ body.admin-mode .logout-top-btn,body.support-mode .logout-top-btn{height:28px;pa
 .login-secret-toggle:hover{background:#eef3fa;opacity:1}
 .dashboard-login-btn{height:42px;border:0;border-radius:9px;margin-top:8px;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,var(--pri2),var(--pri3));color:#fff;box-shadow:0 4px 12px rgba(42,82,152,.22)}
 .dashboard-login-btn:hover{filter:brightness(1.05)}
+.dashboard-login-btn:disabled{cursor:wait;opacity:.78;filter:none}
 .dashboard-login-note{text-align:center;font-size:10px;color:#8a96aa;margin-top:6px}
 .admin-top-box{align-items:center;justify-content:center;gap:9px}
 .dashboard-admin-box{flex:1;flex-direction:column;text-align:center;padding:32px 20px;border:1.5px solid #d8e8dd;background:#f5fbf7;border-radius:12px}
@@ -1893,8 +1894,8 @@ body.support-mode .logout-top-btn{
           <input id="academicLoginPass" type="password" autocomplete="current-password" placeholder="รหัสผ่าน (Password)" aria-label="Password ฝ่ายวิชาการ" onkeydown="if(event.key==='Enter') academicLogin()">
           <button type="button" class="login-secret-toggle" onclick="toggleLoginSecret()" aria-label="แสดงหรือซ่อนข้อความ">👁</button>
         </div>
-        <button type="button" class="dashboard-login-btn" onclick="academicLogin()">🔑 เข้าสู่ระบบ</button>
-        <div class="dashboard-login-note">สำหรับฝ่ายวิชาการและผู้ดูแลระบบ</div>
+        <button type="button" id="academicLoginBtn" class="dashboard-login-btn" onclick="academicLogin()">🔑 เข้าสู่ระบบ</button>
+        <div class="dashboard-login-note" id="academicLoginStatus">สำหรับฝ่ายวิชาการและผู้ดูแลระบบ</div>
       </div>
 
       <div id="adminTopBox" class="admin-top-box dashboard-admin-box" style="display:none">
@@ -31520,10 +31521,22 @@ function toggleLoginSecret(){
   if(btn) btn.textContent=reveal?'🙈':'👁';
   el.focus();
 }
+var academicLoginPending=false;
 async function academicLogin(){
+  if(academicLoginPending) return;
   var id=(document.getElementById('academicLoginId')||{}).value||'';
   var pass=(document.getElementById('academicLoginPass')||{}).value||'';
   if(!id||!pass){toast('กรุณากรอก ID และ Password','warn');return;}
+
+  var btn=document.getElementById('academicLoginBtn');
+  var status=document.getElementById('academicLoginStatus');
+  var slowTimer=null;
+  academicLoginPending=true;
+  if(btn){btn.disabled=true;btn.textContent='⏳ กำลังเข้าสู่ระบบ...';}
+  if(status){status.textContent='กำลังตรวจสอบบัญชี...';status.setAttribute('aria-live','polite');}
+  slowTimer=setTimeout(function(){
+    if(academicLoginPending&&status) status.textContent='ระบบกำลังตอบกลับ กรุณารอสักครู่...';
+  },4000);
 
   try{
     var out=await postSchoolApi({action:'login',id:id,password:pass});
@@ -31532,9 +31545,22 @@ async function academicLogin(){
     sessionStorage.setItem('school_os_admin_mode',SCHOOL_AUTH.mode);
     sessionStorage.setItem('school_os_auth_role',SCHOOL_AUTH.role);
     document.getElementById('academicLoginPass').value='';
+    if(status) status.textContent='เข้าสู่ระบบสำเร็จ';
     applyAccessUI();
     toast('✅ เข้าสู่ระบบฝ่ายวิชาการแล้ว','succ');
-  }catch(e){toast('เข้าสู่ระบบไม่สำเร็จ: '+e.message,'warn');}
+  }catch(e){
+    if(status) status.textContent='เข้าสู่ระบบไม่สำเร็จ กรุณาตรวจสอบแล้วลองอีกครั้ง';
+    toast('เข้าสู่ระบบไม่สำเร็จ: '+e.message,'warn');
+  }finally{
+    clearTimeout(slowTimer);
+    academicLoginPending=false;
+    if(btn){btn.disabled=false;btn.textContent='🔑 เข้าสู่ระบบ';}
+    if(!SCHOOL_AUTH.loggedIn&&status){
+      setTimeout(function(){
+        if(!academicLoginPending&&!SCHOOL_AUTH.loggedIn) status.textContent='สำหรับฝ่ายวิชาการและผู้ดูแลระบบ';
+      },3500);
+    }
+  }
 }
 async function academicLogout(){
   var oldToken=SCHOOL_AUTH.token||'';
