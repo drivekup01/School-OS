@@ -26220,7 +26220,7 @@ function nav(p){
   else if(p==='workload') renderWorkload();
   else if(p==='export') renderExportPage();
   else if(p==='storage') renderStoragePage();
-  else if(p==='substitute'){ loadOnlineSubstitute().then(function(){ if(currentSubDate){ renderSubContent(); } else { setSubDateToday(); } }); }
+  else if(p==='substitute'){ if(currentSubDate){ renderSubContent(); } else { setSubDateToday(); } }
   else if(p==='leave-test') renderLeaveTest();
   else if(p==='announcements') renderAnnouncements();
   else if(p==='sub-history') renderSubHistoryPage();
@@ -31266,11 +31266,13 @@ if(_subV2OldSetSubTeacher){
   async function loadOnlineDatabase(){
     var url=window.SCHOOL_OS_API_URL||'';
     if(!url){badge('ฐานข้อมูลออนไลน์: รอเชื่อม Apps Script','');return;}
-    badge('กำลังเชื่อมฐานข้อมูลออนไลน์...','');
+    var localSub={};
+    try{localSub=(DB&&DB.substitute)?JSON.parse(JSON.stringify(DB.substitute)):{};}catch(_){}
+    badge('กำลังอัปเดตฐานข้อมูลโรงเรียน...','');
     try{
       var sep=url.indexOf('?')>=0?'&':'?';
       var ctrl=new AbortController();
-      var timer=setTimeout(function(){ctrl.abort();},15000);
+      var timer=setTimeout(function(){ctrl.abort();},30000);
       var res;
       try{
         res=await fetch(url+sep+'action=bootstrap',{method:'GET',redirect:'follow',cache:'no-store',signal:ctrl.signal});
@@ -31286,7 +31288,8 @@ if(_subV2OldSetSubTeacher){
       if(loginLogo) loginLogo.src=DB.school.logoDataUrl||DB.school.logoUrl||SAFE_LOGO_URL;
       if(!DB.school.logoDataUrl) DB.school.logoDataUrl=DB.school.logoUrl||SAFE_LOGO_URL;
       if(!DB.school.logoUrl) DB.school.logoUrl=DB.school.logoDataUrl||SAFE_LOGO_URL;
-      DB.substitute=DB.substitute||{};
+      var remoteSub=DB.substitute||{};
+      DB.substitute=Object.keys(remoteSub).length?remoteSub:localSub;
       DB.customDepts=DB.customDepts||[];
       var profiles=getProfiles();
       if(!activeProfileId) activeProfileId='online-school-os';
@@ -31308,19 +31311,6 @@ if(_subV2OldSetSubTeacher){
       console.error('School-OS Online DB:',err);
     }
   }
-  async function loadOnlineSubstitute(){
-    var url=window.SCHOOL_OS_API_URL||'';
-    if(!url) return;
-    try{
-      var sep=url.indexOf('?')>=0?'&':'?';
-      var res=await fetch(url+sep+'action=substitute&_='+Date.now(),{method:'GET',redirect:'follow',cache:'no-store'});
-      if(!res.ok) throw new Error('HTTP '+res.status);
-      var out=await res.json();
-      if(!out||out.ok===false) throw new Error((out&&out.error)||'โหลดตารางสอนแทนไม่สำเร็จ');
-      DB.substitute=out.substitute||{};
-    }catch(err){ console.error('School-OS Substitute DB:',err); }
-  }
-  window.loadOnlineSubstitute=loadOnlineSubstitute;
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',loadOnlineDatabase);
   else setTimeout(loadOnlineDatabase,0);
 })();
