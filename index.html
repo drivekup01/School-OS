@@ -31426,16 +31426,60 @@ if(_subV2OldSetSubTeacher){
     badge('กำลังโหลดฐานข้อมูลครั้งเดียว...','');
     fullLoadPromise=(async function(){
       try{
-        var payload=await getApi('bootstrap',30000);
-        applyFull(payload.data);
+        var parts=await Promise.all([
+          getApi('core',30000),
+          getApi('schedule',30000),
+          getApi('substitute',30000)
+        ]);
+        mergeData(parts[0].data);
+        mergeData(parts[1].data);
+        mergeData(parts[2].data);
+
+        DB.school=DB.school||{};
+        if(!DB.school.logoDataUrl) DB.school.logoDataUrl=DB.school.logoUrl||SAFE_LOGO_URL;
+        if(!DB.school.logoUrl) DB.school.logoUrl=DB.school.logoDataUrl||SAFE_LOGO_URL;
+        DB.customDepts=DB.customDepts||[];
+
         ready.core=ready.schedule=ready.substitute=true;
         fullReady=true;
+
+        var profiles=getProfiles();
+        if(!activeProfileId) activeProfileId='online-school-os';
+        profiles[activeProfileId]={
+          id:activeProfileId,
+          name:DB.school.name||'School-OS Online',
+          year:DB.school.year||'',
+          data:JSON.parse(JSON.stringify(DB)),
+          savedAt:Date.now(),
+          onlineSource:true
+        };
+        saveProfiles(profiles);
+        localStorage.setItem(LS_ACTIVE,activeProfileId);
+
+        var wiz=document.getElementById('setupWizard');
+        if(wiz) wiz.style.display='none';
+        if(typeof applySubjectColorScheme==='function') applySubjectColorScheme(false);
+        if(typeof refreshAllDeptDropdowns==='function') refreshAllDeptDropdowns();
+        if(typeof renderCustomDeptList==='function') renderCustomDeptList();
+        if(typeof renderAllUI==='function') renderAllUI();
+        else {updateTopbar();updateSidebarCounts();renderDashboard();}
+
         badge('● ฐานข้อมูลพร้อมใช้งาน','ok');
         return true;
       }catch(err){
-        badge('โหลดฐานข้อมูลไม่สำเร็จ','err');
-        console.error('School-OS full DB:',err);
-        throw err;
+        console.warn('School-OS split load failed, trying bootstrap fallback:',err);
+        try{
+          var fallback=await getApi('bootstrap',30000);
+          applyFull(fallback.data);
+          ready.core=ready.schedule=ready.substitute=true;
+          fullReady=true;
+          badge('● ฐานข้อมูลพร้อมใช้งาน','ok');
+          return true;
+        }catch(fallbackErr){
+          badge('โหลดฐานข้อมูลไม่สำเร็จ','err');
+          console.error('School-OS full DB:',fallbackErr);
+          throw fallbackErr;
+        }
       }finally{
         fullLoadPromise=null;
       }
