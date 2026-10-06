@@ -31332,6 +31332,8 @@ if(_subV2OldSetSubTeacher){
   var SAFE_LOGO_URL='https://drivekup01.github.io/School-OS/assets/school-logo.svg';
   var ready={core:false,schedule:false,substitute:false};
   var pending={};
+  var fullReady=false;
+  var fullLoadPromise=null;
 
   function badge(text,cls){
     var el=document.getElementById('onlineDbBadge');
@@ -31369,16 +31371,9 @@ if(_subV2OldSetSubTeacher){
       applyHome(payload.data);
       badge('● ฐานข้อมูลโรงเรียนออนไลน์','ok');
     }catch(err){
+      // หน้า Login/หน้าแรกต้องเบา: ห้าม fallback ไปโหลดฐานข้อมูลเต็มก่อน Login
+      badge('ฐานข้อมูลหน้าแรกเชื่อมต่อไม่ได้','err');
       console.warn('School-OS Home API:',err);
-      // Compatibility fallback until the new Apps Script deployment is active.
-      try{
-        var legacy=await getApi('bootstrap',30000);
-        applyFull(legacy.data);
-        badge('● ฐานข้อมูลโรงเรียนออนไลน์','ok');
-      }catch(fallbackErr){
-        badge('ฐานข้อมูลออนไลน์เชื่อมต่อไม่ได้','err');
-        console.error('School-OS Online DB:',fallbackErr);
-      }
     }
   }
   function applyFull(data){
@@ -31424,36 +31419,39 @@ if(_subV2OldSetSubTeacher){
     })();
     return pending[name];
   }
+  async function loadDatabaseOnce(){
+    if(fullReady) return true;
+    if(fullLoadPromise) return fullLoadPromise;
+    badge('กำลังโหลดฐานข้อมูลครั้งเดียว...','');
+    fullLoadPromise=(async function(){
+      try{
+        var payload=await getApi('bootstrap',30000);
+        applyFull(payload.data);
+        ready.core=ready.schedule=ready.substitute=true;
+        fullReady=true;
+        badge('● ฐานข้อมูลพร้อมใช้งาน','ok');
+        return true;
+      }catch(err){
+        badge('โหลดฐานข้อมูลไม่สำเร็จ','err');
+        console.error('School-OS full DB:',err);
+        throw err;
+      }finally{
+        fullLoadPromise=null;
+      }
+    })();
+    return fullLoadPromise;
+  }
   async function loadForPage(page){
-    var parts=(page==='substitute'||page==='sub-history'||page==='leave-test')
-      ?['core','schedule','substitute']:['core','schedule'];
-    badge('กำลังโหลดข้อมูลที่จำเป็น...','');
-    try{
-      await Promise.all(parts.map(loadPart));
-      if(typeof applySubjectColorScheme==='function') applySubjectColorScheme(false);
-      if(typeof refreshAllDeptDropdowns==='function') refreshAllDeptDropdowns();
-      if(typeof renderCustomDeptList==='function') renderCustomDeptList();
-      updateTopbar();updateSidebarCounts();
-      badge('● ฐานข้อมูลโรงเรียนออนไลน์','ok');
-      return true;
-    }catch(err){
-      console.warn('School-OS split API:',err);
-      var legacy=await getApi('bootstrap',30000);
-      applyFull(legacy.data);
-      ready.core=ready.schedule=ready.substitute=true;
-      badge('● ฐานข้อมูลโรงเรียนออนไลน์','ok');
-      return true;
-    }
+    return loadDatabaseOnce();
   }
   function needsData(page){
     return ['teacher-view','teacher-all','substitute','sub-history','leave-test','school','teachers','import-teachers','subjects','rooms','timeslots','builder','auto-schedule','workload','export','storage','conflict'].indexOf(page)>=0;
   }
   function pageReady(page){
     if(!needsData(page)) return true;
-    if(page==='substitute'||page==='sub-history'||page==='leave-test') return ready.core&&ready.schedule&&ready.substitute;
-    return ready.core&&ready.schedule;
+    return fullReady;
   }
-  window.SCHOOL_ONLINE={loadHome:loadHome,loadForPage:loadForPage,needsData:needsData,pageReady:pageReady};
+  window.SCHOOL_ONLINE={loadHome:loadHome,loadDatabaseOnce:loadDatabaseOnce,loadForPage:loadForPage,needsData:needsData,pageReady:pageReady};
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',loadHome);
   else setTimeout(loadHome,0);
 })();
@@ -31559,7 +31557,18 @@ async function academicLogin(){
     sessionStorage.setItem('school_os_admin_mode',SCHOOL_AUTH.mode);
     sessionStorage.setItem('school_os_auth_role',SCHOOL_AUTH.role);
     document.getElementById('academicLoginPass').value='';
-    if(status) status.textContent='เข้าสู่ระบบสำเร็จ';
+    if(status) status.textContent='เข้าสู่ระบบสำเร็จ · กำลังโหลดฐานข้อมูล...';
+    if(window.SCHOOL_ONLINE&&typeof SCHOOL_ONLINE.loadDatabaseOnce==='function'){
+      try{
+        await SCHOOL_ONLINE.loadDatabaseOnce();
+      }catch(loadErr){
+        applyAccessUI();
+        if(status) status.textContent='เข้าสู่ระบบสำเร็จ แต่โหลดฐานข้อมูลไม่สำเร็จ';
+        toast('เข้าสู่ระบบแล้ว แต่โหลดฐานข้อมูลไม่สำเร็จ: '+(loadErr.message||loadErr),'warn');
+        return;
+      }
+    }
+    if(status) status.textContent='พร้อมใช้งาน';
     applyAccessUI();
     toast('✅ เข้าสู่ระบบฝ่ายวิชาการแล้ว','succ');
   }catch(e){
@@ -31666,6 +31675,11 @@ function renderTeacherAll(query){
     SCHOOL_AUTH.mode='DAILY';
   }
   applyAccessUI();
+  if(token && window.SCHOOL_ONLINE && typeof SCHOOL_ONLINE.loadDatabaseOnce==='function'){
+    SCHOOL_ONLINE.loadDatabaseOnce().catch(function(e){
+      if(typeof toast==='function') toast('โหลดฐานข้อมูลไม่สำเร็จ: '+(e.message||e),'warn');
+    });
+  }
   var savedPage='';
   try{ savedPage=sessionStorage.getItem('school_os_current_page')||''; }catch(e){}
   if(savedPage && savedPage!=='dashboard' && canAccessPage(savedPage)) nav(savedPage);
