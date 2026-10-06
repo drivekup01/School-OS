@@ -14,6 +14,7 @@ function doGet(e) {
     const action=String(p.action||'health');
     if(action==='health') return leaveJson_({ok:true,service:'School-OS Leave API'});
     if(action==='teacherLeave') return teacherLeave_(p);
+    if(action==='leaveHistory') return leaveHistory_();
     return leaveJson_({ok:false,error:'Unknown action'});
   } catch(err) {
     return leaveJson_({ok:false,error:String(err&&err.message?err.message:err)});
@@ -59,6 +60,46 @@ function teacherLeave_(p) {
     });
   });
   return leaveJson_({ok:true,date:String(p.date||''),rows:rows});
+}
+
+
+function leaveHistory_() {
+  const ss=SpreadsheetApp.openById(LEAVE_SPREADSHEET_ID);
+  const sh=ss.getSheetByName('data');
+  if(!sh) throw new Error('ไม่พบชีต data');
+
+  const maxRow=sh.getLastRow();
+  if(maxRow<2) return leaveJson_({ok:true,rows:[]});
+
+  const names=sh.getRange(2,6,maxRow-1,1).getDisplayValues();
+  let dataRowCount=0;
+  for(let i=names.length-1;i>=0;i--){
+    if(String(names[i][0]||'').trim()){
+      dataRowCount=i+1;
+      break;
+    }
+  }
+  if(!dataRowCount) return leaveJson_({ok:true,rows:[]});
+
+  // Same verified leave columns as the daily API: F=name, I=type, J=from, K=to, L=duration.
+  // No date filtering here: this endpoint is only for the Leave History page.
+  const values=sh.getRange(2,6,dataRowCount,7).getDisplayValues();
+  const rows=[];
+  values.forEach(function(r,i){
+    const name=String(r[0]||'').trim();
+    const type=String(r[3]||'').trim();
+    const fromText=String(r[4]||'').trim();
+    const toText=String(r[5]||'').trim();
+    const duration=String(r[6]||'').trim();
+    if(!name||!fromText||!toText) return;
+    rows.push({
+      row:String(i+2),
+      teacherId:LEAVE_TEACHER_ID_MAP[name]||'',
+      name:name,type:type,from:fromText,to:toText,duration:duration
+    });
+  });
+  rows.reverse();
+  return leaveJson_({ok:true,rows:rows});
 }
 
 function parseIsoDateKey_(text) {
