@@ -26291,20 +26291,6 @@ function updateSidebarCounts(){
   set('stSubject',DB.subjects.length);
   set('stRoom',DB.rooms.length);
 }
-function renderProfileSidebar(){
-  const bar=document.getElementById('profileBar'); if(!bar) return;
-  const profiles=getProfiles(), ids=Object.keys(profiles);
-  bar.innerHTML='<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.4);margin-bottom:6px;padding:0 2px">โรงเรียน</div>'+
-    ids.slice(0,5).map(id=>{
-      const p=profiles[id], isA=id===activeProfileId;
-      return `<div class="profile-item${isA?' active-prof':''}" onclick="switchProfile('${id}')">
-        <div class="profile-dot" style="background:${isA?'var(--gold2)':'rgba(255,255,255,.3)'}"></div>
-        <span style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name||'ไม่ระบุ'}</span>
-      </div>`;
-    }).join('')+
-    `<div class="profile-item" onclick="createNewProfile()" style="font-size:12px;color:rgba(255,255,255,.5)"><span style="font-size:14px">＋</span> สร้างโรงเรียนใหม่</div>`;
-}
-
 // ════════════════════════════════════════════
 //  DASHBOARD
 // ════════════════════════════════════════════
@@ -26397,15 +26383,6 @@ async function saveAnnouncement(){
     if(i>=0) DB.announcements[i]=item;
     else DB.announcements.push(item);
 
-    // keep local mirror after the server confirms the write
-    const profiles=getProfiles();
-    if(activeProfileId){
-      if(!profiles[activeProfileId]) profiles[activeProfileId]={id:activeProfileId,name:'',savedAt:0};
-      profiles[activeProfileId].data=JSON.parse(JSON.stringify(DB));
-      profiles[activeProfileId].savedAt=Date.now();
-      saveProfiles(profiles);
-    }
-
     closeAnnouncementEditor();
     renderAnnouncements();
     renderDashboardAnnouncements();
@@ -26425,13 +26402,6 @@ async function deleteAnnouncement(id){
     setSaveInd('saving','กำลังลบประกาศ...');
     await postSchoolApi({action:'deleteAnnouncement',token:SCHOOL_AUTH.token,id:id});
     DB.announcements=(DB.announcements||[]).filter(x=>x.id!==id);
-
-    const profiles=getProfiles();
-    if(activeProfileId&&profiles[activeProfileId]){
-      profiles[activeProfileId].data=JSON.parse(JSON.stringify(DB));
-      profiles[activeProfileId].savedAt=Date.now();
-      saveProfiles(profiles);
-    }
 
     renderAnnouncements();
     renderDashboardAnnouncements();
@@ -26465,10 +26435,6 @@ function saveSchool(){
     logoDataUrl:DB.school.logoDataUrl||'',logoSize:'medium'
   };
   updateTopbar(); markDirty();
-  // update profile name
-  const profiles=getProfiles();
-  if(profiles[activeProfileId]){ profiles[activeProfileId].name=DB.school.name||profiles[activeProfileId].name; saveProfiles(profiles); }
-  
   showMsg('schoolSaveMsg','✅ บันทึกข้อมูลโรงเรียนแล้ว','succ');
 }
 
@@ -28803,18 +28769,21 @@ function updateStorageUI(){
 }
 function saveNow(){ persistNow(); showMsg('saveNowMsg','✅ ส่งคำสั่งบันทึกข้อมูลแล้ว','succ'); renderStoragePage(); }
 async function reloadFromStorage(){
-  if(window.SCHOOL_AUTH&&SCHOOL_AUTH.loggedIn&&window.SCHOOL_ONLINE&&typeof SCHOOL_ONLINE.refreshDatabase==='function'){
-    if(!confirm('รีเฟรชข้อมูลล่าสุดจากฐานข้อมูลออนไลน์?')) return;
-    try{
-      await SCHOOL_ONLINE.refreshDatabase();
-      toast('🔄 รีเฟรชฐานข้อมูลล่าสุดแล้ว','succ');
-    }catch(e){
-      toast('รีเฟรชฐานข้อมูลไม่สำเร็จ: '+(e.message||e),'warn');
-    }
+  if(!window.SCHOOL_AUTH||!SCHOOL_AUTH.loggedIn){
+    toast('กรุณาเข้าสู่ระบบก่อนรีเฟรชฐานข้อมูล','warn');
     return;
   }
-  if(!confirm('โหลดข้อมูลจากเครื่องใหม่? (ข้อมูลที่ยังไม่บันทึกจะหาย)')) return;
-  if(loadProfile(activeProfileId)){ toast('🔄 โหลดข้อมูลแล้ว','info'); renderAllUI(); }
+  if(!window.SCHOOL_ONLINE||typeof SCHOOL_ONLINE.refreshDatabase!=='function'){
+    toast('ระบบรีเฟรชฐานข้อมูลยังไม่พร้อม','warn');
+    return;
+  }
+  if(!confirm('รีเฟรชข้อมูลล่าสุดจากฐานข้อมูลออนไลน์?')) return;
+  try{
+    await SCHOOL_ONLINE.refreshDatabase();
+    toast('🔄 รีเฟรชฐานข้อมูลล่าสุดแล้ว','succ');
+  }catch(e){
+    toast('รีเฟรชฐานข้อมูลไม่สำเร็จ: '+(e.message||e),'warn');
+  }
 }
 function exportBackup(){
   const data={version:'4.0',exportedAt:new Date().toISOString(),data:DB};
