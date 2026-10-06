@@ -6,9 +6,13 @@ function doGet(e) {
     if (action === 'health') {
       return json_({ ok: true, service: 'School-OS API', version: '1.0', time: new Date().toISOString() });
     }
+    if (action === 'home') {
+      const data = loadHomeDataCached_();
+      return json_({ ok: true, data: data, readOnly: true, systemMode: data.systemMode || 'DAILY', version: '1.3' });
+    }
     if (action === 'bootstrap') {
       const data = loadDatabaseCached_();
-      return json_({ ok: true, data: data, readOnly: true, systemMode: data.systemMode || 'DAILY', version: '1.2' });
+      return json_({ ok: true, data: data, readOnly: true, systemMode: data.systemMode || 'DAILY', version: '1.3' });
     }
     if (action === 'refresh') {
       clearBootstrapCache_();
@@ -72,6 +76,35 @@ function loadDatabaseCached_() {
   } catch (_) {}
 
   return data;
+}
+
+function loadHomeDataCached_() {
+  const cache = CacheService.getScriptCache();
+  const key = 'school_os_home_v1';
+  try {
+    const raw = cache.get(key);
+    if (raw) return JSON.parse(raw);
+  } catch (_) {}
+
+  const ss = SpreadsheetApp.openById(SCHOOL_OS_SPREADSHEET_ID);
+  const schoolMap = keyValueSheet_(ss, 'School');
+  const configMap = keyValueSheet_(ss, 'Config');
+  const announcements = tableObjects_(ss, 'Announcements').map(r => ({
+    id: s_(r.id), title: s_(r.title), body: s_(r.body),
+    type: s_(r.type) || 'ทั่วไป', date: s_(r.date),
+    createdAt: n_(r.createdAt), updatedAt: n_(r.updatedAt)
+  }));
+  const data = {
+    year: s_(schoolMap.year),
+    announcements: announcements,
+    systemMode: (s_(configMap.systemMode) || 'DAILY').toUpperCase()
+  };
+  try { cache.put(key, JSON.stringify(data), 600); } catch (_) {}
+  return data;
+}
+
+function clearHomeCache_() {
+  try { CacheService.getScriptCache().remove('school_os_home_v1'); } catch (_) {}
 }
 
 function loadDatabase_() {
@@ -420,6 +453,7 @@ function saveAnnouncementApi_(p) {
     writeAnnouncements_(ss, list);
     SpreadsheetApp.flush();
     clearBootstrapCache_();
+    clearHomeCache_();
     return json_({ok:true,announcement:row,savedAt:new Date().toISOString()});
   } finally {
     lock.releaseLock();
@@ -440,6 +474,7 @@ function deleteAnnouncementApi_(p) {
     writeAnnouncements_(ss, list);
     SpreadsheetApp.flush();
     clearBootstrapCache_();
+    clearHomeCache_();
     return json_({ok:true,id:id,savedAt:new Date().toISOString()});
   } finally {
     lock.releaseLock();
@@ -566,6 +601,7 @@ function setMode_(p) {
   auth.systemMode = mode;
   props.setProperty('school_os_auth_config_v1', JSON.stringify(auth));
   clearBootstrapCache_();
+  clearHomeCache_();
   return json_({ok:true,systemMode:mode});
 }
 
