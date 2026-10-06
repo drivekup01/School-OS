@@ -1750,12 +1750,6 @@ label,.fg label{font-size:13px!important}
 
   </div>
 
-  <div class="stats-row" id="statsRow">
-    <div class="stat-card c1"><div class="stat-num" id="stTeacher">0</div><div class="stat-label">👨‍🏫 ครูทั้งหมด</div></div>
-    <div class="stat-card c2"><div class="stat-num" id="stSubject">0</div><div class="stat-label">📚 วิชาทั้งหมด</div></div>
-    <div class="stat-card c3"><div class="stat-num" id="stRoom">0</div><div class="stat-label">🚪 ห้องเรียน</div></div>
-  </div>
-
   <div class="dashboard-action-grid">
     <section class="card dashboard-action-card">
       <div class="dashboard-card-head">
@@ -1825,7 +1819,7 @@ label,.fg label{font-size:13px!important}
 
     <section class="card dashboard-action-card dashboard-login-card">
       <div class="dashboard-card-head dashboard-login-head">
-        <img id="dashboardLoginLogo" class="dashboard-login-logo" src="" alt="โลโก้โรงเรียน">
+        <img id="dashboardLoginLogo" class="dashboard-login-logo" src="assets/school-logo.svg" alt="โลโก้โรงเรียน">
         <div class="card-title">🔐 เข้าสู่ระบบ</div>
         <div class="dashboard-card-sub" id="loginCardSubtitle">เข้าสู่ระบบเพื่อใช้งานตามสิทธิ์ของผู้ใช้งาน</div>
       </div>
@@ -31284,8 +31278,6 @@ if(_subV2OldSetSubTeacher){
       if(!payload||!payload.ok||!payload.data) throw new Error((payload&&payload.error)||'ข้อมูลไม่ถูกต้อง');
       DB=payload.data;
       DB.school=DB.school||{};
-      var loginLogo=document.getElementById('dashboardLoginLogo');
-      if(loginLogo) loginLogo.src=DB.school.logoDataUrl||DB.school.logoUrl||SAFE_LOGO_URL;
       if(!DB.school.logoDataUrl) DB.school.logoDataUrl=DB.school.logoUrl||SAFE_LOGO_URL;
       if(!DB.school.logoUrl) DB.school.logoUrl=DB.school.logoDataUrl||SAFE_LOGO_URL;
       var remoteSub=DB.substitute||{};
@@ -31382,10 +31374,6 @@ function applyAccessUI(){
   setModeButtons();
   var title=document.getElementById('publicSchoolTitle');
   if(title&&window.DB&&DB.school&&DB.school.name) title.textContent=DB.school.name;
-  var loginLogo=document.getElementById('dashboardLoginLogo');
-  if(loginLogo&&window.DB&&DB.school){
-    loginLogo.src=DB.school.logoDataUrl||DB.school.logoUrl||'https://drivekup01.github.io/School-OS/assets/school-logo.svg';
-  }
 }
 function toggleLoginSecret(){
   var el=document.getElementById('academicLoginPass');
