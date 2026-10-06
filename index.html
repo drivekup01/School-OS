@@ -31310,7 +31310,7 @@ if(_subV2OldSetSubTeacher){
   }
 })();
 </script>
-<script src="config.js?v=6b2cacd"></script>
+<script src="config.js?v=52aada5"></script>
 <script id="school-os-online-adapter">
 (function(){
   var SAFE_LOGO_URL='https://drivekup01.github.io/School-OS/assets/school-logo.svg';
@@ -31328,15 +31328,32 @@ if(_subV2OldSetSubTeacher){
     var url=window.SCHOOL_OS_API_URL||'';
     if(!url) throw new Error('ยังไม่ได้เชื่อม School-OS API');
     var sep=url.indexOf('?')>=0?'&':'?';
-    var ctrl=new AbortController();
-    var timer=setTimeout(function(){ctrl.abort();},timeoutMs||10000);
-    try{
-      var res=await fetch(url+sep+'action='+encodeURIComponent(action),{method:'GET',redirect:'follow',cache:'no-store',signal:ctrl.signal});
-      if(!res.ok) throw new Error('HTTP '+res.status);
-      var payload=await res.json();
-      if(!payload||!payload.ok) throw new Error((payload&&payload.error)||'ข้อมูลไม่ถูกต้อง');
-      return payload;
-    }finally{clearTimeout(timer);}
+    var lastErr=null;
+    for(var attempt=1;attempt<=3;attempt++){
+      var ctrl=new AbortController();
+      var timer=setTimeout(function(){ctrl.abort();},timeoutMs||10000);
+      try{
+        var req=url+sep+'action='+encodeURIComponent(action)+'&_='+Date.now();
+        var res=await fetch(req,{method:'GET',redirect:'follow',cache:'no-store',signal:ctrl.signal});
+        if(!res.ok){
+          var httpErr=new Error('HTTP '+res.status);
+          httpErr.status=res.status;
+          throw httpErr;
+        }
+        var payload=await res.json();
+        if(!payload||!payload.ok) throw new Error((payload&&payload.error)||'ข้อมูลไม่ถูกต้อง');
+        return payload;
+      }catch(err){
+        lastErr=err;
+        var status=err&&err.status;
+        var retryable=(err&&err.name==='AbortError') || status===404 || status===429 || (status>=500&&status<600) || !status;
+        if(!retryable || attempt===3) throw err;
+        await new Promise(function(resolve){setTimeout(resolve,attempt*900);});
+      }finally{
+        clearTimeout(timer);
+      }
+    }
+    throw lastErr||new Error('โหลดข้อมูลไม่สำเร็จ');
   }
   function applyHome(data){
     data=data||{};
