@@ -28771,31 +28771,15 @@ async function _buildRoomExportPng(roomId,type){
   var room=DB.rooms.find(function(r){return r.id===roomId;});
   if(!room) throw new Error('ไม่พบห้องเรียน');
 
-  var exportLogo=await getRequiredExportLogo();
+  await getRequiredExportLogo();
   var wrap=document.createElement('div');
   wrap.className='room-png-export';
   wrap.style.cssText='position:fixed;left:-20000px;top:0;background:#fff;padding:26px 28px;width:1500px;box-sizing:border-box;font-family:Sarabun,sans-serif;color:#1a2a44;z-index:-1;';
 
-  var title = type==='teacher' ? 'ตารางสอน' : 'ตารางเรียน';
-  var school=(DB.school&&DB.school.name)||'โรงเรียน';
-  var term=(DB.school&&DB.school.term)||'';
-  var year=(DB.school&&DB.school.year)||'';
-
-  wrap.innerHTML =
-    '<div style="text-align:center;margin-bottom:14px">'+
-      '<img id="_roomPngLogo" src="'+exportLogo+'" alt="โลโก้โรงเรียน" style="width:78px;height:78px;object-fit:contain;display:block;margin:0 auto 7px">'+
-      '<div style="font-size:25px;font-weight:800;color:#173b70">'+title+'</div>'+
-      '<div style="font-size:17px;font-weight:700;margin-top:4px">'+school+' ชั้น '+room.label+'</div>'+
-      ((term||year)?'<div style="font-size:14px;color:#72809a;margin-top:2px">'+(term?'ภาคเรียนที่ '+term:'')+(term&&year?' ':'')+(year?'ปีการศึกษา '+year:'')+'</div>':'')+
-    '</div>'+
-    '<div id="_roomPngTable"></div>';
+  // Use only the current preview header/table. Do not create a second PNG header.
+  wrap.innerHTML = '<div id="_roomPngTable"></div>';
 
   document.body.appendChild(wrap);
-  var img=wrap.querySelector('#_roomPngLogo');
-  await new Promise(function(resolve,reject){
-    if(img.complete&&img.naturalWidth) resolve();
-    else {img.onload=resolve;img.onerror=function(){reject(new Error('Logo สำหรับ PNG โหลดไม่สำเร็จ'));};}
-  });
 
   // Reuse the current export preview renderer so PNG always matches the on-screen preview.
   var host=wrap.querySelector('#_roomPngTable');
