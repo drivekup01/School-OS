@@ -1748,9 +1748,9 @@ body.support-mode .logout-top-btn{
 <!-- TOPBAR -->
 <div class="topbar school-topbar">
   <div class="school-brand">
-    <div class="school-logo-shell" id="tbBrandLogo"><span class="school-logo-fallback">🏫</span></div>
+    <div class="school-logo-shell" id="tbBrandLogo"><img src="assets/school-logo.svg" alt="โลโก้โรงเรียนค่ายบางระจันวิทยาคม"></div>
     <div class="school-brand-text">
-      <div class="school-name" id="tbBrandName">ยังไม่ตั้งค่าโรงเรียน</div>
+      <div class="school-name" id="tbBrandName">โรงเรียนค่ายบางระจันวิทยาคม</div>
       <div class="school-system-name">ระบบจัดตารางเรียน - ตารางสอน</div>
     </div>
   </div>
@@ -26329,19 +26329,12 @@ function updateInlineBackButton(p){
 // ════════════════════════════════════════════
 function updateTopbar(){
   const el=document.getElementById('tbSchool');
-  const brandName=document.getElementById('tbBrandName');
-  const brandLogo=document.getElementById('tbBrandLogo');
   const yr=document.getElementById('tbYear');
-  const schoolName=DB.school.name||'ยังไม่ตั้งค่าโรงเรียน';
-  if(el) el.textContent=schoolName;
-  if(brandName) brandName.textContent=schoolName;
-  if(brandLogo){
-    brandLogo.innerHTML=DB.school.logoDataUrl
-      ?`<img src="${DB.school.logoDataUrl}" alt="โลโก้โรงเรียน">`
-      :'<span class="school-logo-fallback">🏫</span>';
-  }
+  const STATIC_SCHOOL_NAME='โรงเรียนค่ายบางระจันวิทยาคม';
+  if(el) el.textContent=STATIC_SCHOOL_NAME;
+  // Header school identity is static so it is visible immediately and never waits for DB.
   if(yr) yr.textContent='ปีการศึกษา '+(DB.school.year||'–');
-  document.title=(DB.school.name?DB.school.name+' | ':'')+'ระบบจัดตารางเรียน - ตารางสอน';
+  document.title=STATIC_SCHOOL_NAME+' | ระบบจัดตารางเรียน - ตารางสอน';
 }
 function updateSidebarCounts(){
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
