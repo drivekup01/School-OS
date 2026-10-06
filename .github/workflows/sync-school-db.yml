@@ -78,7 +78,7 @@ jobs:
       - name: Commit JSON changes
         shell: bash
         run: |
-          if git diff --quiet -- database/; then
+          if [ -z "$(git status --porcelain -- database/)" ]; then
             echo "No database changes"
             exit 0
           fi
