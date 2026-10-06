@@ -31242,35 +31242,21 @@ if(_subV2OldSetSubTeacher){
     if(fullReady && !force) return true;
     if(fullLoadPromise) return fullLoadPromise;
 
-    badge(force?'กำลังรีเฟรชฐานข้อมูล...':'กำลังโหลดฐานข้อมูลหลัก...','');
+    badge(force?'กำลังรีเฟรชฐานข้อมูล...':'กำลังโหลดฐานข้อมูลครั้งเดียว...','');
     fullLoadPromise=(async function(){
       try{
-        // ข้อมูลที่จำเป็นต่อเว็บหลัก: โหลดพร้อมกันและต้องเสร็จก่อนเข้าใช้งาน
-        var mainParts=await Promise.all([
-          getApi('core',15000),
-          getApi('schedule',15000)
-        ]);
-        mergeData(mainParts[0].data);
-        mergeData(mainParts[1].data);
+        // ใช้เส้นทางเดียวหลัง Login: โหลดฐานข้อมูลเต็มเพียงครั้งเดียว
+        var payload=await getApi('bootstrap',15000);
+        DB=payload.data||emptyDB();
 
         fullReady=true;
         finalizeLoadedDatabase();
         if(typeof rememberCurrentSaveState==='function') rememberCurrentSaveState();
         badge('● ฐานข้อมูลพร้อมใช้งาน','ok');
-
-        // ตารางสอนแทนเป็นข้อมูลรอง: โหลดต่อโดยไม่ขวาง Login/เว็บหลัก
-        getApi('substitute',8000).then(function(payload){
-          mergeData(payload.data);
-          if(currentPage==='substitute'&&typeof renderSubContent==='function') renderSubContent();
-          if(currentPage==='sub-history'&&typeof renderSubHistoryPage==='function') renderSubHistoryPage();
-        }).catch(function(err){
-          console.warn('School-OS substitute data skipped:',err);
-        });
-
         return true;
       }catch(err){
         fullReady=false;
-        badge('โหลดฐานข้อมูลหลักไม่สำเร็จ','err');
+        badge('โหลดฐานข้อมูลไม่สำเร็จ','err');
         console.error('School-OS DB:',err);
         throw err;
       }finally{
