@@ -28600,7 +28600,7 @@ function buildTeacherViewTable(teacherName){
     const cells=DB.slots.map(sl=>{
       if(sl.isBreak){
         if(dayIndex>0) return '';
-        return `<td rowspan="${DB.days.length}" style="background:#FFF8E1;border:1px solid #FFD05A;text-align:center;vertical-align:middle;font-weight:800;color:#E65100;min-width:66px;width:66px"><div style="writing-mode:vertical-rl;transform:rotate(180deg);margin:auto">พักเที่ยง</div></td>`;
+        return `<td rowspan="${DB.days.length}" style="background:#FFF8E1;border:1px solid #FFD05A;text-align:center;vertical-align:middle;font-weight:800;color:#E65100;min-width:66px;width:66px"><div style="writing-mode:vertical-lr;transform:none;text-orientation:mixed;margin:auto">พักเที่ยง</div></td>`;
       }
       const matches=[];
       DB.rooms.forEach(r=>{
@@ -28699,7 +28699,7 @@ function renderPreview(){
     const cells=DB.slots.map(sl=>{
       if(sl.isBreak){
         if(dayIndex>0) return '';
-        return `<td rowspan="${DB.days.length}" style="background:#FFF8E1;border:1px solid #FFC107;padding:4px;text-align:center;font-weight:800;color:#E65100;min-width:66px;width:66px;vertical-align:middle"><div style="writing-mode:vertical-rl;transform:rotate(180deg);margin:auto">พักเที่ยง</div></td>`;
+        return `<td rowspan="${DB.days.length}" style="background:#FFF8E1;border:1px solid #FFC107;padding:4px;text-align:center;font-weight:800;color:#E65100;min-width:66px;width:66px;vertical-align:middle"><div style="writing-mode:vertical-lr;transform:none;text-orientation:mixed;margin:auto">พักเที่ยง</div></td>`;
       }
       const cv=DB.sched[r.id+'_'+sl.id+'_'+d]||{};
       const subj=findSubjectForRoom(cv.subject,r.id);
