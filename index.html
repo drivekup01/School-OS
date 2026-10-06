@@ -26116,15 +26116,35 @@ let saveTimer = null;
 let onlineSaveInFlight = false;
 let onlineSavePending = false;
 let onlineSaveGeneration = 0;
+let lastSavedSnapshotKey = '';
+
+function onlineSaveSnapshot(){
+  if(window.SCHOOL_AUTH && SCHOOL_AUTH.role==='support'){
+    return JSON.stringify(DB.substitute||{});
+  }
+  return JSON.stringify(DB);
+}
+function snapshotKey(text){
+  var h=2166136261;
+  for(var i=0;i<text.length;i++){
+    h^=text.charCodeAt(i);
+    h=Math.imul(h,16777619);
+  }
+  return text.length+':'+(h>>>0).toString(16);
+}
+function rememberCurrentSaveState(){
+  try{ lastSavedSnapshotKey=snapshotKey(onlineSaveSnapshot()); }catch(e){}
+}
 
 function markDirty(){
-  setSaveInd('saving','กำลังบันทึก...');
+  setSaveInd('saving','รอบันทึกการเปลี่ยนแปลง...');
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(persistNow, 900);
+  saveTimer = setTimeout(persistNow, 1500);
 }
 function persistNow(){
+  clearTimeout(saveTimer);
+  saveTimer=null;
   if(window.SCHOOL_AUTH && SCHOOL_AUTH.loggedIn){
-    setSaveInd('saving','กำลังบันทึกออนไลน์...');
     persistOnlineNow();
   }else{
     setSaveInd('saved','พร้อมใช้งาน');
@@ -26135,6 +26155,22 @@ async function persistOnlineNow(){
   if(!window.SCHOOL_AUTH || !SCHOOL_AUTH.loggedIn) return;
   if(typeof postSchoolApi!=='function') return;
 
+  var snapshot;
+  var key;
+  try{
+    snapshot=onlineSaveSnapshot();
+    key=snapshotKey(snapshot);
+  }catch(e){
+    console.error('School-OS prepare save:',e);
+    return;
+  }
+
+  if(key===lastSavedSnapshotKey){
+    onlineSavePending=false;
+    setSaveInd('saved','ข้อมูลล่าสุดบันทึกแล้ว');
+    return;
+  }
+
   if(onlineSaveInFlight){
     onlineSavePending=true;
     return;
@@ -26142,22 +26178,25 @@ async function persistOnlineNow(){
 
   const saveGeneration=onlineSaveGeneration;
   const saveToken=SCHOOL_AUTH.token;
+  const saveRole=SCHOOL_AUTH.role;
   onlineSaveInFlight=true;
+  setSaveInd('saving','กำลังบันทึกออนไลน์...');
   try{
-    if(SCHOOL_AUTH.role==='support'){
+    if(saveRole==='support'){
       await postSchoolApi({
         action:'saveSubstitute',
         token:saveToken,
-        substitute:JSON.stringify(DB.substitute||{})
+        substitute:snapshot
       });
     }else{
       await postSchoolApi({
         action:'saveDatabase',
         token:saveToken,
-        data:JSON.stringify(DB)
+        data:snapshot
       });
     }
     if(saveGeneration!==onlineSaveGeneration || !SCHOOL_AUTH.loggedIn || SCHOOL_AUTH.token!==saveToken) return;
+    lastSavedSnapshotKey=key;
     setSaveInd('saved','บันทึกออนไลน์แล้ว · '+fmtTime(Date.now()));
   }catch(e){
     if(saveGeneration!==onlineSaveGeneration || !SCHOOL_AUTH.loggedIn || SCHOOL_AUTH.token!==saveToken) return;
@@ -26169,7 +26208,7 @@ async function persistOnlineNow(){
     onlineSaveInFlight=false;
     if(saveGeneration===onlineSaveGeneration && SCHOOL_AUTH.loggedIn && onlineSavePending){
       onlineSavePending=false;
-      setTimeout(persistOnlineNow,0);
+      setTimeout(persistOnlineNow,250);
     }
   }
 }
@@ -31228,6 +31267,7 @@ if(_subV2OldSetSubTeacher){
 
         fullReady=true;
         finalizeLoadedDatabase();
+        if(typeof rememberCurrentSaveState==='function') rememberCurrentSaveState();
         badge('● ฐานข้อมูลพร้อมใช้งาน','ok');
         return true;
       }catch(err){
@@ -31389,6 +31429,7 @@ async function academicLogout(){
   var oldToken=SCHOOL_AUTH.token||'';
   onlineSaveGeneration++;
   onlineSavePending=false;
+  lastSavedSnapshotKey='';
   clearTimeout(saveTimer);
   saveTimer=null;
   SCHOOL_AUTH={loggedIn:false,token:'',role:'guest',mode:'DAILY'};
