@@ -26254,6 +26254,12 @@ function goBackPage(){
 }
 
 function nav(p){
+  if(window.SCHOOL_ONLINE && SCHOOL_ONLINE.needsFull(p) && !SCHOOL_ONLINE.isFullReady()){
+    SCHOOL_ONLINE.loadFull().then(function(){ nav(p); }).catch(function(e){
+      if(typeof toast==='function') toast('โหลดข้อมูลหน้านี้ไม่สำเร็จ: '+(e.message||e),'warn');
+    });
+    return;
+  }
   if(p!==currentPage) previousPage=currentPage||'dashboard';
   if(typeof refreshAllDeptDropdowns==='function') refreshAllDeptDropdowns();
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
@@ -31309,59 +31315,105 @@ if(_subV2OldSetSubTeacher){
 <script id="school-os-online-adapter">
 (function(){
   var SAFE_LOGO_URL='https://drivekup01.github.io/School-OS/assets/school-logo.svg';
+  var fullReady=false;
+  var fullPromise=null;
+
   function badge(text,cls){
     var el=document.getElementById('onlineDbBadge');
     if(!el){el=document.createElement('div');el.id='onlineDbBadge';var host=document.querySelector('.public-topbar-tools');(host||document.body).appendChild(el);}
     el.className=cls||''; el.textContent=text;
   }
-  async function loadOnlineDatabase(){
+  async function getApi(action,timeoutMs){
     var url=window.SCHOOL_OS_API_URL||'';
-    if(!url){badge('ฐานข้อมูลออนไลน์: รอเชื่อม Apps Script','');return;}
-    var localSub={};
-    try{localSub=(DB&&DB.substitute)?JSON.parse(JSON.stringify(DB.substitute)):{};}catch(_){}
-    badge('กำลังอัปเดตฐานข้อมูลโรงเรียน...','');
+    if(!url) throw new Error('ยังไม่ได้เชื่อม School-OS API');
+    var sep=url.indexOf('?')>=0?'&':'?';
+    var ctrl=new AbortController();
+    var timer=setTimeout(function(){ctrl.abort();},timeoutMs||10000);
     try{
-      var sep=url.indexOf('?')>=0?'&':'?';
-      var ctrl=new AbortController();
-      var timer=setTimeout(function(){ctrl.abort();},30000);
-      var res;
-      try{
-        res=await fetch(url+sep+'action=bootstrap',{method:'GET',redirect:'follow',cache:'no-store',signal:ctrl.signal});
-      }finally{
-        clearTimeout(timer);
-      }
+      var res=await fetch(url+sep+'action='+encodeURIComponent(action),{method:'GET',redirect:'follow',cache:'no-store',signal:ctrl.signal});
       if(!res.ok) throw new Error('HTTP '+res.status);
       var payload=await res.json();
-      if(!payload||!payload.ok||!payload.data) throw new Error((payload&&payload.error)||'ข้อมูลไม่ถูกต้อง');
-      DB=payload.data;
-      DB.school=DB.school||{};
-      if(!DB.school.logoDataUrl) DB.school.logoDataUrl=DB.school.logoUrl||SAFE_LOGO_URL;
-      if(!DB.school.logoUrl) DB.school.logoUrl=DB.school.logoDataUrl||SAFE_LOGO_URL;
-      var remoteSub=DB.substitute||{};
-      DB.substitute=Object.keys(remoteSub).length?remoteSub:localSub;
-      DB.customDepts=DB.customDepts||[];
-      var profiles=getProfiles();
-      if(!activeProfileId) activeProfileId='online-school-os';
-      profiles[activeProfileId]={
-        id:activeProfileId,name:DB.school.name||'School-OS Online',year:DB.school.year||'',
-        data:JSON.parse(JSON.stringify(DB)),savedAt:Date.now(),onlineSource:true
-      };
-      saveProfiles(profiles);
-      localStorage.setItem(LS_ACTIVE,activeProfileId);
-      var wiz=document.getElementById('setupWizard'); if(wiz) wiz.style.display='none';
-      if(typeof applySubjectColorScheme==='function') applySubjectColorScheme(false);
-      if(typeof refreshAllDeptDropdowns==='function') refreshAllDeptDropdowns();
-      if(typeof renderCustomDeptList==='function') renderCustomDeptList();
-      if(typeof renderAllUI==='function') renderAllUI();
-      else {updateTopbar();updateSidebarCounts();renderDashboard();renderProfileSidebar();}
+      if(!payload||!payload.ok) throw new Error((payload&&payload.error)||'ข้อมูลไม่ถูกต้อง');
+      return payload;
+    }finally{clearTimeout(timer);}
+  }
+  function applyHome(data){
+    data=data||{};
+    DB.school=DB.school||{};
+    if(data.year) DB.school.year=data.year;
+    DB.announcements=Array.isArray(data.announcements)?data.announcements:[];
+    if(data.systemMode) DB.systemMode=data.systemMode;
+    if(typeof updateTopbar==='function') updateTopbar();
+    if(typeof renderDashboardAnnouncements==='function') renderDashboardAnnouncements();
+    if(currentPage==='announcements'&&typeof renderAnnouncements==='function') renderAnnouncements();
+  }
+  async function loadHome(){
+    badge('กำลังโหลดข้อมูลหน้าแรก...','');
+    try{
+      var payload=await getApi('home',10000);
+      applyHome(payload.data);
       badge('● ฐานข้อมูลโรงเรียนออนไลน์','ok');
     }catch(err){
-      badge('ฐานข้อมูลออนไลน์เชื่อมต่อไม่ได้','err');
-      console.error('School-OS Online DB:',err);
+      console.warn('School-OS Home API:',err);
+      // Compatibility fallback until the new Apps Script deployment is active.
+      try{
+        var legacy=await getApi('bootstrap',30000);
+        applyFull(legacy.data);
+        badge('● ฐานข้อมูลโรงเรียนออนไลน์','ok');
+      }catch(fallbackErr){
+        badge('ฐานข้อมูลออนไลน์เชื่อมต่อไม่ได้','err');
+        console.error('School-OS Online DB:',fallbackErr);
+      }
     }
   }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',loadOnlineDatabase);
-  else setTimeout(loadOnlineDatabase,0);
+  function applyFull(data){
+    if(!data) throw new Error('ไม่พบฐานข้อมูล');
+    var localSub={};
+    try{localSub=(DB&&DB.substitute)?JSON.parse(JSON.stringify(DB.substitute)):{};}catch(_){}
+    DB=data;
+    DB.school=DB.school||{};
+    if(!DB.school.logoDataUrl) DB.school.logoDataUrl=DB.school.logoUrl||SAFE_LOGO_URL;
+    if(!DB.school.logoUrl) DB.school.logoUrl=DB.school.logoDataUrl||SAFE_LOGO_URL;
+    var remoteSub=DB.substitute||{};
+    DB.substitute=Object.keys(remoteSub).length?remoteSub:localSub;
+    DB.customDepts=DB.customDepts||[];
+    fullReady=true;
+    var profiles=getProfiles();
+    if(!activeProfileId) activeProfileId='online-school-os';
+    profiles[activeProfileId]={id:activeProfileId,name:DB.school.name||'School-OS Online',year:DB.school.year||'',data:JSON.parse(JSON.stringify(DB)),savedAt:Date.now(),onlineSource:true};
+    saveProfiles(profiles);
+    localStorage.setItem(LS_ACTIVE,activeProfileId);
+    var wiz=document.getElementById('setupWizard'); if(wiz) wiz.style.display='none';
+    if(typeof applySubjectColorScheme==='function') applySubjectColorScheme(false);
+    if(typeof refreshAllDeptDropdowns==='function') refreshAllDeptDropdowns();
+    if(typeof renderCustomDeptList==='function') renderCustomDeptList();
+    if(typeof renderAllUI==='function') renderAllUI();
+    else {updateTopbar();updateSidebarCounts();renderDashboard();renderProfileSidebar();}
+  }
+  async function loadFull(){
+    if(fullReady) return true;
+    if(fullPromise) return fullPromise;
+    badge('กำลังโหลดข้อมูลตาราง...','');
+    fullPromise=(async function(){
+      try{
+        var payload=await getApi('bootstrap',30000);
+        applyFull(payload.data);
+        badge('● ฐานข้อมูลโรงเรียนออนไลน์','ok');
+        return true;
+      }catch(err){
+        badge('โหลดข้อมูลตารางไม่สำเร็จ','err');
+        console.error('School-OS Full DB:',err);
+        throw err;
+      }finally{fullPromise=null;}
+    })();
+    return fullPromise;
+  }
+  function needsFull(page){
+    return ['teacher-view','teacher-all','substitute','sub-history','leave-test','school','teachers','import-teachers','subjects','rooms','timeslots','builder','auto-schedule','workload','export','storage','conflict'].indexOf(page)>=0;
+  }
+  window.SCHOOL_ONLINE={loadHome:loadHome,loadFull:loadFull,needsFull:needsFull,isFullReady:function(){return fullReady;}};
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',loadHome);
+  else setTimeout(loadHome,0);
 })();
 </script>
 <script id="public-auth-mode-script">
