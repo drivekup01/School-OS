@@ -10,6 +10,15 @@ function doGet(e) {
       const data = loadHomeDataCached_();
       return json_({ ok: true, data: data, readOnly: true, systemMode: data.systemMode || 'DAILY', version: '1.3' });
     }
+    if (action === 'core') {
+      return json_({ ok:true, data:loadCoreDataCached_(), readOnly:true, version:'1.4' });
+    }
+    if (action === 'schedule') {
+      return json_({ ok:true, data:loadScheduleDataCached_(), readOnly:true, version:'1.4' });
+    }
+    if (action === 'substitute') {
+      return json_({ ok:true, data:loadSubstituteDataCached_(), readOnly:true, version:'1.4' });
+    }
     if (action === 'bootstrap') {
       const data = loadDatabaseCached_();
       return json_({ ok: true, data: data, readOnly: true, systemMode: data.systemMode || 'DAILY', version: '1.3' });
@@ -105,6 +114,92 @@ function loadHomeDataCached_() {
 
 function clearHomeCache_() {
   try { CacheService.getScriptCache().remove('school_os_home_v1'); } catch (_) {}
+}
+
+function cacheJson_(key, loader, ttl) {
+  const cache=CacheService.getScriptCache();
+  try { const raw=cache.get(key); if(raw) return JSON.parse(raw); } catch (_) {}
+  const data=loader();
+  try {
+    const raw=JSON.stringify(data);
+    if(raw.length<95000) cache.put(key,raw,ttl||1800);
+  } catch (_) {}
+  return data;
+}
+
+function loadCoreDataCached_() {
+  return cacheJson_('school_os_core_v1', function(){
+    const ss=SpreadsheetApp.openById(SCHOOL_OS_SPREADSHEET_ID);
+    const schoolMap=keyValueSheet_(ss,'School');
+    const configMap=keyValueSheet_(ss,'Config');
+    const teachers=tableObjects_(ss,'Teachers').map(r=>({
+      id:s_(r.id),prefix:s_(r.prefix),first:s_(r.first),last:s_(r.last),
+      edu:s_(r.edu),rank:s_(r.rank),dept:s_(r.dept),
+      subjects:parseList_(r.subjects||r.subjectsJson),phone:s_(r.phone),
+      email:s_(r.email),note:s_(r.note),createdAt:n_(r.createdAt)
+    }));
+    const subjects=tableObjects_(ss,'Subjects').map(r=>({
+      id:s_(r.id),code:s_(r.code),name:s_(r.name),grade:s_(r.grade),
+      dept:s_(r.dept),hours:n_(r.hours),color:s_(r.color)
+    }));
+    const rooms=tableObjects_(ss,'Rooms').map(r=>({
+      id:s_(r.id),level:s_(r.level),grade:s_(r.grade),room:s_(r.room),
+      label:s_(r.label),homeroom:s_(r.homeroomTeacherId),
+      homeroom2:s_(r.homeroomTeacherId2||r.homeroom2),
+      homeroom3:s_(r.homeroomTeacherId3||r.homeroom3),planName:s_(r.planName)
+    }));
+    const slots=tableObjects_(ss,'Slots').map(r=>({
+      id:n_(r.id),label:s_(r.label),start:s_(r.start),end:s_(r.end),isBreak:b_(r.isBreak)
+    }));
+    const days=tableObjects_(ss,'Days').sort((a,b)=>n_(a.order)-n_(b.order)).map(r=>s_(r.day)).filter(Boolean);
+    let customDepts=[]; try{customDepts=JSON.parse(configMap.customDepts||'[]');}catch(_){}
+    return {
+      school:{name:s_(schoolMap.name),address:s_(schoolMap.address),year:s_(schoolMap.year),
+        semester:s_(schoolMap.semester),acadName:s_(schoolMap.acadName),acadPos:s_(schoolMap.acadPos),
+        principalName:s_(schoolMap.principalName),principalPos:s_(schoolMap.principalPos),
+        logoDataUrl:s_(schoolMap.logoUrl),logoUrl:s_(schoolMap.logoUrl),logoSize:s_(schoolMap.logoSize)||'small'},
+      teachers:teachers,subjects:subjects,rooms:rooms,slots:slots,
+      days:days.length?days:['จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์'],
+      customDepts:customDepts,subjectColorSchemeVersion:n_(configMap.subjectColorSchemeVersion)||2,
+      systemMode:(s_(configMap.systemMode)||'DAILY').toUpperCase()
+    };
+  },1800);
+}
+
+function loadScheduleDataCached_() {
+  return cacheJson_('school_os_schedule_v1', function(){
+    const ss=SpreadsheetApp.openById(SCHOOL_OS_SPREADSHEET_ID);
+    const sched={};
+    tableObjects_(ss,'Schedule').forEach(r=>{
+      const key=s_(r.key); if(!key) return;
+      sched[key]={subject:s_(r.subject),teacher:s_(r.teacher),teacher2:s_(r.teacher2),
+        teacher3:s_(r.teacher3),learnRoom:s_(r.learnRoom),locked:b_(r.locked)};
+    });
+    return {sched:sched};
+  },1800);
+}
+
+function loadSubstituteDataCached_() {
+  return cacheJson_('school_os_substitute_v1', function(){
+    const ss=SpreadsheetApp.openById(SCHOOL_OS_SPREADSHEET_ID);
+    const substitute={};
+    tableObjects_(ss,'Substitute').forEach(r=>{
+      const date=s_(r.date),teacherId=s_(r.teacherId);
+      if(!date||!teacherId) return;
+      if(!substitute[date]) substitute[date]={absentList:[]};
+      let item=substitute[date].absentList.find(x=>x.teacherId===teacherId&&x.type===s_(r.leaveType)&&x.note===s_(r.leaveNote));
+      if(!item){item={teacherId:teacherId,type:s_(r.leaveType),note:s_(r.leaveNote),periods:[]};substitute[date].absentList.push(item);}
+      if(s_(r.slotId)!=='') item.periods.push({slotId:n_(r.slotId),day:s_(r.day),roomId:s_(r.roomId),
+        subject:s_(r.subject),subTeacher:s_(r.subTeacher),subNote:s_(r.subNote),
+        workType:s_(r.workType),messageStatus:s_(r.messageStatus)});
+    });
+    return {substitute:substitute};
+  },600);
+}
+
+function clearDataCaches_(names) {
+  const keys=(names||[]).map(n=>'school_os_'+n+'_v1');
+  if(keys.length) try{CacheService.getScriptCache().removeAll(keys);}catch(_){}
 }
 
 function loadDatabase_() {
@@ -300,6 +395,8 @@ function saveDatabase_(p) {
 
     SpreadsheetApp.flush();
     clearBootstrapCache_();
+    clearHomeCache_();
+    clearDataCaches_(['core','schedule']);
 
     return json_({
       ok:true,
@@ -586,6 +683,7 @@ function saveSubstituteApi_(p) {
     writeSubstitute_(ss,substitute);
     SpreadsheetApp.flush();
     clearBootstrapCache_();
+    clearDataCaches_(['substitute']);
     return json_({ok:true,saved:['Substitute'],savedAt:new Date().toISOString()});
   }finally{lock.releaseLock();}
 }
@@ -602,6 +700,7 @@ function setMode_(p) {
   props.setProperty('school_os_auth_config_v1', JSON.stringify(auth));
   clearBootstrapCache_();
   clearHomeCache_();
+  clearDataCaches_(['core']);
   return json_({ok:true,systemMode:mode});
 }
 
