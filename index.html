@@ -31252,14 +31252,14 @@ if(_subV2OldSetSubTeacher){
     if(!url){badge('ฐานข้อมูลออนไลน์: รอเชื่อม Apps Script','');return;}
     var localSub={};
     try{localSub=(DB&&DB.substitute)?JSON.parse(JSON.stringify(DB.substitute)):{};}catch(_){}
-    badge('กำลังอัปเดตฐานข้อมูลโรงเรียน...','');
+    badge((DB&&DB.teachers&&DB.teachers.length)?'● ฐานข้อมูลในเครื่องพร้อมใช้งาน · กำลังตรวจข้อมูลล่าสุด...':'กำลังเชื่อมฐานข้อมูลโรงเรียน...',(DB&&DB.teachers&&DB.teachers.length)?'ok':'');
     try{
       var sep=url.indexOf('?')>=0?'&':'?';
       var ctrl=new AbortController();
-      var timer=setTimeout(function(){ctrl.abort();},30000);
+      var timer=setTimeout(function(){ctrl.abort();},10000);
       var res;
       try{
-        res=await fetch(url+sep+'action=bootstrap',{method:'GET',redirect:'follow',cache:'no-store',signal:ctrl.signal});
+        res=await fetch(url+sep+'action=bootstrap',{method:'GET',redirect:'follow',cache:'default',signal:ctrl.signal});
       }finally{
         clearTimeout(timer);
       }
@@ -31289,7 +31289,8 @@ if(_subV2OldSetSubTeacher){
       else {updateTopbar();updateSidebarCounts();renderDashboard();renderProfileSidebar();}
       badge('● ฐานข้อมูลโรงเรียนออนไลน์','ok');
     }catch(err){
-      badge('ฐานข้อมูลออนไลน์เชื่อมต่อไม่ได้ · ใช้ข้อมูลในเครื่อง','err');
+      if(DB&&DB.teachers&&DB.teachers.length) badge('● ใช้ฐานข้อมูลล่าสุดในเครื่อง · จะอัปเดตใหม่เมื่อเชื่อมต่อได้','ok');
+      else badge('ฐานข้อมูลออนไลน์เชื่อมต่อไม่ได้','err');
       console.error('School-OS Online DB:',err);
     }
   }
