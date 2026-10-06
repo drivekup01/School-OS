@@ -31270,12 +31270,22 @@ if(_subV2OldSetSubTeacher){
   }
 
   async function loadMainFromApi(){
-    var parts=await Promise.all([
-      getApi('core',20000),
-      getApi('schedule',20000)
-    ]);
-    mergeData(parts[0].data);
-    mergeData(parts[1].data);
+    // Emergency/manual fallback only. Normal page load uses static JSON.
+    var payload=await getApi('bootstrap',300000);
+    var data=payload.data||{};
+    mergeData({
+      school:data.school||{},
+      teachers:data.teachers||[],
+      subjects:data.subjects||[],
+      rooms:data.rooms||[],
+      slots:data.slots||[],
+      days:data.days||[],
+      customDepts:data.customDepts||[],
+      subjectColorSchemeVersion:data.subjectColorSchemeVersion||2,
+      systemMode:data.systemMode||'DAILY',
+      sched:data.sched||{}
+    });
+    if(Array.isArray(data.announcements)) DB.announcements=data.announcements;
     ready.core=true;
     ready.schedule=true;
     return true;
