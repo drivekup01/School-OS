@@ -47,6 +47,7 @@
 
       var rows=Array.isArray(out.rows)?out.rows:[];
       count.textContent=rows.length+' คน';
+      if(typeof window.renderLeaveAffectedSchedule==='function') window.renderLeaveAffectedSchedule(rows,iso);
 
       if(!rows.length){
         box.innerHTML='<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-text">ไม่พบครูลาในวันที่เลือก</div></div>';
