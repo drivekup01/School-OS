@@ -1,0 +1,89 @@
+name: Sync School DB JSON
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/5 * * * *"
+  push:
+    branches: [main]
+    paths:
+      - "config.js"
+      - "apps-script/Code.gs"
+      - ".github/workflows/sync-school-db.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-school-db
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch School-OS JSON
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+
+          const config = fs.readFileSync('config.js','utf8');
+          const match = config.match(/SCHOOL_OS_API_URL\s*=\s*['"]([^'"]+)['"]/);
+          if (!match) throw new Error('SCHOOL_OS_API_URL not found in config.js');
+          const api = match[1];
+
+          async function get(action) {
+            const url = api + (api.includes('?') ? '&' : '?') + 'action=' + encodeURIComponent(action) + '&_=' + Date.now();
+            const ctrl = new AbortController();
+            const timer = setTimeout(() => ctrl.abort(), 180000);
+            try {
+              const res = await fetch(url, { redirect: 'follow', signal: ctrl.signal });
+              if (!res.ok) throw new Error(action + ' HTTP ' + res.status);
+              const body = await res.json();
+              if (!body || !body.ok) throw new Error(action + ': ' + ((body && body.error) || 'invalid response'));
+              return body.data || {};
+            } finally {
+              clearTimeout(timer);
+            }
+          }
+
+          (async () => {
+            fs.mkdirSync('database', { recursive: true });
+
+            const [core, schedule, home] = await Promise.all([
+              get('core'),
+              get('schedule'),
+              get('home')
+            ]);
+
+            fs.writeFileSync('database/core.json', JSON.stringify(core));
+            fs.writeFileSync('database/schedule.json', JSON.stringify(schedule));
+            fs.writeFileSync('database/home.json', JSON.stringify(home));
+            fs.writeFileSync('database/meta.json', JSON.stringify({
+              syncedAt: new Date().toISOString(),
+              source: 'School-OS Apps Script split endpoints',
+              files: ['core.json','schedule.json','home.json']
+            }, null, 2));
+          })().catch(err => {
+            console.error(err);
+            process.exit(1);
+          });
+          NODE
+
+      - name: Commit JSON changes
+        shell: bash
+        run: |
+          if git diff --quiet -- database/; then
+            echo "No database changes"
+            exit 0
+          fi
+          git config user.name "school-os-sync"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add database/
+          git commit -m "Sync School-OS database JSON"
+          git push
