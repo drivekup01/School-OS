@@ -2383,7 +2383,7 @@ body.support-mode .logout-top-btn{
     <p style="font-size:13px;color:var(--muted);margin-bottom:14px">ข้อมูลจะถูกบันทึกอัตโนมัติทุกครั้งที่มีการเปลี่ยนแปลง แต่สามารถกด "บันทึกทันที" เพื่อยืนยันได้</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <button class="btn btn-succ" style="font-size:15px;padding:12px 24px" onclick="saveNow()">💾 บันทึกทันที</button>
-      <button class="btn btn-out" onclick="reloadFromStorage()">🔄 โหลดข้อมูลจากเครื่อง</button>
+      <button class="btn btn-out" onclick="reloadFromStorage()">🔄 รีเฟรชฐานข้อมูล</button>
     </div>
     <div id="saveNowMsg" style="margin-top:10px"></div>
   </div>
@@ -26267,12 +26267,6 @@ function goBackPage(){
 }
 
 function nav(p){
-  if(window.SCHOOL_ONLINE && SCHOOL_ONLINE.needsData(p) && !SCHOOL_ONLINE.pageReady(p)){
-    SCHOOL_ONLINE.loadForPage(p).then(function(){ nav(p); }).catch(function(e){
-      if(typeof toast==='function') toast('โหลดข้อมูลหน้านี้ไม่สำเร็จ: '+(e.message||e),'warn');
-    });
-    return;
-  }
   if(p!==currentPage) previousPage=currentPage||'dashboard';
   if(typeof refreshAllDeptDropdowns==='function') refreshAllDeptDropdowns();
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
@@ -28946,7 +28940,17 @@ function duplicateProfile(id){
   toast('📋 คัดลอกโปรไฟล์แล้ว','succ'); renderStoragePage();
 }
 function saveNow(){ persistNow(); showMsg('saveNowMsg','✅ บันทึกข้อมูลสำเร็จ','succ'); renderStoragePage(); }
-function reloadFromStorage(){
+async function reloadFromStorage(){
+  if(window.SCHOOL_AUTH&&SCHOOL_AUTH.loggedIn&&window.SCHOOL_ONLINE&&typeof SCHOOL_ONLINE.refreshDatabase==='function'){
+    if(!confirm('รีเฟรชข้อมูลล่าสุดจากฐานข้อมูลออนไลน์?')) return;
+    try{
+      await SCHOOL_ONLINE.refreshDatabase();
+      toast('🔄 รีเฟรชฐานข้อมูลล่าสุดแล้ว','succ');
+    }catch(e){
+      toast('รีเฟรชฐานข้อมูลไม่สำเร็จ: '+(e.message||e),'warn');
+    }
+    return;
+  }
   if(!confirm('โหลดข้อมูลจากเครื่องใหม่? (ข้อมูลที่ยังไม่บันทึกจะหาย)')) return;
   if(loadProfile(activeProfileId)){ toast('🔄 โหลดข้อมูลแล้ว','info'); renderAllUI(); }
 }
@@ -31377,53 +31381,46 @@ if(_subV2OldSetSubTeacher){
       console.warn('School-OS Home API:',err);
     }
   }
-  function applyFull(data){
-    if(!data) throw new Error('ไม่พบฐานข้อมูล');
-    var localSub={};
-    try{localSub=(DB&&DB.substitute)?JSON.parse(JSON.stringify(DB.substitute)):{};}catch(_){}
-    DB=data;
-    DB.school=DB.school||{};
-    if(!DB.school.logoDataUrl) DB.school.logoDataUrl=DB.school.logoUrl||SAFE_LOGO_URL;
-    if(!DB.school.logoUrl) DB.school.logoUrl=DB.school.logoDataUrl||SAFE_LOGO_URL;
-    var remoteSub=DB.substitute||{};
-    DB.substitute=Object.keys(remoteSub).length?remoteSub:localSub;
-    DB.customDepts=DB.customDepts||[];
-    fullReady=true;
-    var profiles=getProfiles();
-    if(!activeProfileId) activeProfileId='online-school-os';
-    profiles[activeProfileId]={id:activeProfileId,name:DB.school.name||'School-OS Online',year:DB.school.year||'',data:JSON.parse(JSON.stringify(DB)),savedAt:Date.now(),onlineSource:true};
-    saveProfiles(profiles);
-    localStorage.setItem(LS_ACTIVE,activeProfileId);
-    var wiz=document.getElementById('setupWizard'); if(wiz) wiz.style.display='none';
-    if(typeof applySubjectColorScheme==='function') applySubjectColorScheme(false);
-    if(typeof refreshAllDeptDropdowns==='function') refreshAllDeptDropdowns();
-    if(typeof renderCustomDeptList==='function') renderCustomDeptList();
-    if(typeof renderAllUI==='function') renderAllUI();
-    else {updateTopbar();updateSidebarCounts();renderDashboard();renderProfileSidebar();}
-  }
   function mergeData(part){
     part=part||{};
     ['school','teachers','subjects','rooms','slots','days','customDepts','subjectColorSchemeVersion','systemMode','sched','substitute'].forEach(function(k){
       if(part[k]!==undefined) DB[k]=part[k];
     });
   }
-  async function loadPart(name){
-    if(ready[name]) return true;
-    if(pending[name]) return pending[name];
-    pending[name]=(async function(){
-      try{
-        var payload=await getApi(name,name==='substitute'?15000:30000);
-        mergeData(payload.data);
-        ready[name]=true;
-        return true;
-      }finally{delete pending[name];}
-    })();
-    return pending[name];
+
+  function finalizeLoadedDatabase(){
+    DB.school=DB.school||{};
+    if(!DB.school.logoDataUrl) DB.school.logoDataUrl=DB.school.logoUrl||SAFE_LOGO_URL;
+    if(!DB.school.logoUrl) DB.school.logoUrl=DB.school.logoDataUrl||SAFE_LOGO_URL;
+    DB.customDepts=DB.customDepts||[];
+
+    var profiles=getProfiles();
+    if(!activeProfileId) activeProfileId='online-school-os';
+    profiles[activeProfileId]={
+      id:activeProfileId,
+      name:DB.school.name||'School-OS Online',
+      year:DB.school.year||'',
+      data:JSON.parse(JSON.stringify(DB)),
+      savedAt:Date.now(),
+      onlineSource:true
+    };
+    saveProfiles(profiles);
+    localStorage.setItem(LS_ACTIVE,activeProfileId);
+
+    var wiz=document.getElementById('setupWizard');
+    if(wiz) wiz.style.display='none';
+    if(typeof applySubjectColorScheme==='function') applySubjectColorScheme(false);
+    if(typeof refreshAllDeptDropdowns==='function') refreshAllDeptDropdowns();
+    if(typeof renderCustomDeptList==='function') renderCustomDeptList();
+    if(typeof renderAllUI==='function') renderAllUI();
+    else {updateTopbar();updateSidebarCounts();renderDashboard();}
   }
-  async function loadDatabaseOnce(){
-    if(fullReady) return true;
+
+  async function loadDatabaseOnce(force){
+    if(fullReady && !force) return true;
     if(fullLoadPromise) return fullLoadPromise;
-    badge('กำลังโหลดฐานข้อมูลครั้งเดียว...','');
+
+    badge(force?'กำลังรีเฟรชฐานข้อมูล...':'กำลังโหลดฐานข้อมูลครั้งเดียว...','');
     fullLoadPromise=(async function(){
       try{
         var parts=await Promise.all([
@@ -31435,68 +31432,32 @@ if(_subV2OldSetSubTeacher){
         mergeData(parts[1].data);
         mergeData(parts[2].data);
 
-        DB.school=DB.school||{};
-        if(!DB.school.logoDataUrl) DB.school.logoDataUrl=DB.school.logoUrl||SAFE_LOGO_URL;
-        if(!DB.school.logoUrl) DB.school.logoUrl=DB.school.logoDataUrl||SAFE_LOGO_URL;
-        DB.customDepts=DB.customDepts||[];
-
-        ready.core=ready.schedule=ready.substitute=true;
         fullReady=true;
-
-        var profiles=getProfiles();
-        if(!activeProfileId) activeProfileId='online-school-os';
-        profiles[activeProfileId]={
-          id:activeProfileId,
-          name:DB.school.name||'School-OS Online',
-          year:DB.school.year||'',
-          data:JSON.parse(JSON.stringify(DB)),
-          savedAt:Date.now(),
-          onlineSource:true
-        };
-        saveProfiles(profiles);
-        localStorage.setItem(LS_ACTIVE,activeProfileId);
-
-        var wiz=document.getElementById('setupWizard');
-        if(wiz) wiz.style.display='none';
-        if(typeof applySubjectColorScheme==='function') applySubjectColorScheme(false);
-        if(typeof refreshAllDeptDropdowns==='function') refreshAllDeptDropdowns();
-        if(typeof renderCustomDeptList==='function') renderCustomDeptList();
-        if(typeof renderAllUI==='function') renderAllUI();
-        else {updateTopbar();updateSidebarCounts();renderDashboard();}
-
+        finalizeLoadedDatabase();
         badge('● ฐานข้อมูลพร้อมใช้งาน','ok');
         return true;
       }catch(err){
-        console.warn('School-OS split load failed, trying bootstrap fallback:',err);
-        try{
-          var fallback=await getApi('bootstrap',30000);
-          applyFull(fallback.data);
-          ready.core=ready.schedule=ready.substitute=true;
-          fullReady=true;
-          badge('● ฐานข้อมูลพร้อมใช้งาน','ok');
-          return true;
-        }catch(fallbackErr){
-          badge('โหลดฐานข้อมูลไม่สำเร็จ','err');
-          console.error('School-OS full DB:',fallbackErr);
-          throw fallbackErr;
-        }
+        fullReady=false;
+        badge('โหลดฐานข้อมูลไม่สำเร็จ','err');
+        console.error('School-OS DB:',err);
+        throw err;
       }finally{
         fullLoadPromise=null;
       }
     })();
     return fullLoadPromise;
   }
-  async function loadForPage(page){
-    return loadDatabaseOnce();
+
+  async function refreshDatabase(){
+    return loadDatabaseOnce(true);
   }
-  function needsData(page){
-    return ['teacher-view','teacher-all','substitute','sub-history','leave-test','school','teachers','import-teachers','subjects','rooms','timeslots','builder','auto-schedule','workload','export','storage','conflict'].indexOf(page)>=0;
-  }
-  function pageReady(page){
-    if(!needsData(page)) return true;
-    return fullReady;
-  }
-  window.SCHOOL_ONLINE={loadHome:loadHome,loadDatabaseOnce:loadDatabaseOnce,loadForPage:loadForPage,needsData:needsData,pageReady:pageReady};
+
+  window.SCHOOL_ONLINE={
+    loadHome:loadHome,
+    loadDatabaseOnce:loadDatabaseOnce,
+    refreshDatabase:refreshDatabase,
+    isReady:function(){return fullReady;}
+  };
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',loadHome);
   else setTimeout(loadHome,0);
 })();
