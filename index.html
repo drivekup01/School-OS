@@ -1180,6 +1180,17 @@ body{background:var(--bg);color:#20324B}
   .sub-v2-date,.sub-v2-toolbar-actions{width:100%}
 }
 </style>
+<style id="support-role-style">
+body.support-mode .academic-login-box{display:none!important}
+body.support-mode .admin-only-top{display:none!important}
+body.support-mode .sidebar .nav-item{display:none!important}
+body.support-mode .sidebar .nav-item[data-page="dashboard"],
+body.support-mode .sidebar .nav-item[data-page="teacher-view"],
+body.support-mode .sidebar .nav-item[data-page="teacher-all"],
+body.support-mode .sidebar .nav-item[data-page="substitute"],
+body.support-mode .sidebar .nav-item[data-page="sub-history"],
+body.support-mode .sidebar .nav-item[data-page="leave-test"]{display:flex!important}
+</style>
 <style id="public-home-auth-style">
 body.guest-mode .sidebar{display:none!important}
 body.guest-mode .main{width:100%;max-width:none}
@@ -26087,11 +26098,19 @@ async function persistOnlineNow(){
   const saveToken=SCHOOL_AUTH.token;
   onlineSaveInFlight=true;
   try{
-    await postSchoolApi({
-      action:'saveDatabase',
-      token:saveToken,
-      data:JSON.stringify(DB)
-    });
+    if(SCHOOL_AUTH.role==='support'){
+      await postSchoolApi({
+        action:'saveSubstitute',
+        token:saveToken,
+        substitute:JSON.stringify(DB.substitute||{})
+      });
+    }else{
+      await postSchoolApi({
+        action:'saveDatabase',
+        token:saveToken,
+        data:JSON.stringify(DB)
+      });
+    }
     if(saveGeneration!==onlineSaveGeneration || !SCHOOL_AUTH.loggedIn || SCHOOL_AUTH.token!==saveToken) return;
     setSaveInd('saved','บันทึกออนไลน์แล้ว · '+fmtTime(Date.now()));
   }catch(e){
@@ -31315,20 +31334,23 @@ function setModeButtons(){
 }
 function canAccessPage(p){
   var guestAllowed=['dashboard','teacher-view','teacher-all','substitute','export','announcements'];
+  var supportAllowed=['dashboard','teacher-view','teacher-all','substitute','sub-history','leave-test'];
   var dailyAllowed=['dashboard','teacher-view','teacher-all','substitute','sub-history','announcements','leave-test'];
   if(!SCHOOL_AUTH.loggedIn) return guestAllowed.indexOf(p)>=0;
+  if(SCHOOL_AUTH.role==='support') return supportAllowed.indexOf(p)>=0;
   if(SCHOOL_AUTH.mode==='DAILY') return dailyAllowed.indexOf(p)>=0;
   return true;
 }
 function applyAccessUI(){
   var b=document.body;
   b.classList.toggle('guest-mode',!SCHOOL_AUTH.loggedIn);
-  b.classList.toggle('admin-mode',!!SCHOOL_AUTH.loggedIn);
-  b.classList.toggle('setup-mode',SCHOOL_AUTH.loggedIn&&SCHOOL_AUTH.mode==='SETUP');
+  b.classList.toggle('admin-mode',SCHOOL_AUTH.loggedIn&&SCHOOL_AUTH.role==='admin');
+  b.classList.toggle('support-mode',SCHOOL_AUTH.loggedIn&&SCHOOL_AUTH.role==='support');
+  b.classList.toggle('setup-mode',SCHOOL_AUTH.loggedIn&&SCHOOL_AUTH.role==='admin'&&SCHOOL_AUTH.mode==='SETUP');
   b.classList.toggle('daily-mode',SCHOOL_AUTH.loggedIn&&SCHOOL_AUTH.mode==='DAILY');
   var g=document.getElementById('guestLoginBox'),a=document.getElementById('adminTopBox');
   if(g) g.style.display=SCHOOL_AUTH.loggedIn?'none':'flex';
-  if(a) a.style.display=SCHOOL_AUTH.loggedIn?'flex':'none';
+  if(a) a.style.display=(SCHOOL_AUTH.loggedIn&&SCHOOL_AUTH.role==='admin')?'flex':'none';
 
   document.querySelectorAll('.dashboard-shortcut[data-page]').forEach(function(btn){
     btn.style.display=canAccessPage(btn.getAttribute('data-page'))?'flex':'none';
@@ -31349,6 +31371,7 @@ async function academicLogin(){
     SCHOOL_AUTH.loggedIn=true;SCHOOL_AUTH.token=out.token;SCHOOL_AUTH.role=out.role||'admin';SCHOOL_AUTH.mode=out.systemMode||'SETUP';
     sessionStorage.setItem('school_os_admin_token',SCHOOL_AUTH.token);
     sessionStorage.setItem('school_os_admin_mode',SCHOOL_AUTH.mode);
+    sessionStorage.setItem('school_os_auth_role',SCHOOL_AUTH.role);
     document.getElementById('academicLoginPass').value='';
     applyAccessUI();
     toast('✅ เข้าสู่ระบบฝ่ายวิชาการแล้ว','succ');
@@ -31362,14 +31385,14 @@ async function academicLogout(){
   saveTimer=null;
   SCHOOL_AUTH={loggedIn:false,token:'',role:'guest',mode:'DAILY'};
   window.SCHOOL_AUTH=SCHOOL_AUTH;
-  sessionStorage.removeItem('school_os_admin_token');sessionStorage.removeItem('school_os_admin_mode');
+  sessionStorage.removeItem('school_os_admin_token');sessionStorage.removeItem('school_os_admin_mode');sessionStorage.removeItem('school_os_auth_role');
   applyAccessUI();nav('dashboard');toast('ออกจากระบบแล้ว','info');
   if(oldToken){
     postSchoolApi({action:'logout',token:oldToken}).catch(function(){});
   }
 }
 async function switchSystemMode(mode){
-  if(!SCHOOL_AUTH.loggedIn) return;
+  if(!SCHOOL_AUTH.loggedIn || SCHOOL_AUTH.role!=='admin') return;
 
   try{
     var out=await postSchoolApi({action:'setMode',token:SCHOOL_AUTH.token,mode:mode});
@@ -31435,7 +31458,7 @@ function renderTeacherAll(query){
   if(token){
     SCHOOL_AUTH.loggedIn=true;
     SCHOOL_AUTH.token=token;
-    SCHOOL_AUTH.role='admin';
+    SCHOOL_AUTH.role=sessionStorage.getItem('school_os_auth_role')||'admin';
     SCHOOL_AUTH.mode=sessionStorage.getItem('school_os_admin_mode')||'SETUP';
   }else{
     SCHOOL_AUTH.loggedIn=false;
