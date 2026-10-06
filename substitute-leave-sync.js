@@ -31,8 +31,14 @@
     var rows=leaveByDate[dateStr];
     if(!Array.isArray(rows)) return [];
     return rows.map(function(r){
-      var target=norm(r.name);
-      var t=(DB.teachers||[]).find(function(x){return teacherName(x)===target;});
+      // teacherId from Leave API is the primary key. Name fallback is kept only
+      // for old API deployments during migration and can be removed later.
+      var t=null;
+      if(r.teacherId) t=(DB.teachers||[]).find(function(x){return String(x.id)===String(r.teacherId);});
+      if(!t){
+        var target=norm(r.name);
+        t=(DB.teachers||[]).find(function(x){return teacherName(x)===target;});
+      }
       if(!t) return null;
       return {teacherId:t.id,type:r.type||'ลา',note:'',periods:periodsFor(t,dateStr),_leaveApi:true};
     }).filter(Boolean);
