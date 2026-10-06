@@ -28797,22 +28797,24 @@ async function _buildRoomExportPng(roomId,type){
     else {img.onload=resolve;img.onerror=function(){reject(new Error('Logo สำหรับ PNG โหลดไม่สำเร็จ'));};}
   });
 
-  // Reuse the same room timetable renderer used by the preview/export page.
+  // Reuse the current export preview renderer so PNG always matches the on-screen preview.
   var host=wrap.querySelector('#_roomPngTable');
-  var oldPreview=document.getElementById('exportPreview');
-  var oldSelect=document.getElementById('exportPreviewRoom');
+  var oldPreview=document.getElementById('previewContent');
+  var oldSelect=document.getElementById('previewRoomSel');
   var restoreValue=oldSelect?oldSelect.value:null;
 
   try{
     if(oldSelect) oldSelect.value=roomId;
-    if(typeof renderExportPreview==='function'){
-      renderExportPreview();
-      await new Promise(function(r){setTimeout(r,60);});
-      if(oldPreview && oldPreview.firstElementChild){
-        var clone=oldPreview.firstElementChild.cloneNode(true);
+    if(typeof renderPreview==='function'){
+      renderPreview();
+      await new Promise(function(r){setTimeout(r,80);});
+      if(oldPreview && oldPreview.children.length){
+        var clone=oldPreview.cloneNode(true);
+        clone.removeAttribute('id');
         clone.querySelectorAll('button,.no-print').forEach(function(x){x.remove();});
         clone.style.maxWidth='none';
         clone.style.width='100%';
+        clone.style.overflow='visible';
         host.appendChild(clone);
       }
     }
@@ -28824,7 +28826,7 @@ async function _buildRoomExportPng(roomId,type){
     return canvas;
   }finally{
     if(oldSelect && restoreValue!==null) oldSelect.value=restoreValue;
-    if(typeof renderExportPreview==='function' && oldSelect) renderExportPreview();
+    if(typeof renderPreview==='function' && oldSelect) renderPreview();
     wrap.remove();
   }
 }
