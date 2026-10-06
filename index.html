@@ -1256,6 +1256,18 @@ body.guest-mode #page-teacher-view .no-print{display:none!important}
 .dashboard-shortcut small{display:block;font-size:10px;color:var(--muted);margin-top:3px;line-height:1.4}
 
 .dashboard-login-card{background:linear-gradient(180deg,#fff 0%,#fbfcff 100%)}
+.dashboard-login-head{display:flex;flex-direction:column;align-items:center;text-align:center}
+.dashboard-login-logo{width:66px;height:66px;object-fit:contain;margin:0 auto 8px;filter:drop-shadow(0 3px 5px rgba(20,50,90,.12))}
+.dashboard-login-head .card-title{font-size:17px}
+.dashboard-login-head .dashboard-card-sub{margin-top:3px}
+body.admin-mode .dashboard-login-card,body.support-mode .dashboard-login-card{min-height:0}
+body.admin-mode .dashboard-login-head,body.support-mode .dashboard-login-head{padding-bottom:10px;margin-bottom:10px}
+body.admin-mode .dashboard-login-logo,body.support-mode .dashboard-login-logo{width:48px;height:48px;margin-bottom:5px}
+body.admin-mode .dashboard-admin-box,body.support-mode .dashboard-admin-box{padding:14px 16px;gap:4px;min-height:0}
+body.admin-mode .dashboard-admin-icon,body.support-mode .dashboard-admin-icon{display:none}
+body.admin-mode .dashboard-admin-title,body.support-mode .dashboard-admin-title{font-size:15px}
+body.admin-mode .dashboard-admin-sub,body.support-mode .dashboard-admin-sub{font-size:10.5px}
+body.admin-mode .logout-top-btn,body.support-mode .logout-top-btn{height:32px;padding:0 14px;font-size:11px;margin-top:5px}
 .academic-login-box{display:flex;flex-direction:column;gap:5px;flex:1}
 .academic-login-box label{font-size:12px;font-weight:800;color:var(--pri);text-transform:none;letter-spacing:0;margin-top:3px}
 .academic-login-box input{width:100%;height:40px;border:1.5px solid #d4deeb;background:#fff;border-radius:9px;padding:0 12px;font-family:inherit;font-size:13px;outline:none;box-shadow:0 2px 7px rgba(28,58,100,.06);transition:.15s}
@@ -1808,11 +1820,10 @@ label,.fg label{font-size:13px!important}
     </section>
 
     <section class="card dashboard-action-card dashboard-login-card">
-      <div class="dashboard-card-head">
-        <div>
-          <div class="card-title">🔐 เข้าสู่ระบบ</div>
-          <div class="dashboard-card-sub" id="loginCardSubtitle">เข้าสู่ระบบเพื่อใช้งานตามสิทธิ์ของผู้ใช้งาน</div>
-        </div>
+      <div class="dashboard-card-head dashboard-login-head">
+        <img id="dashboardLoginLogo" class="dashboard-login-logo" src="" alt="โลโก้โรงเรียน">
+        <div class="card-title">🔐 เข้าสู่ระบบ</div>
+        <div class="dashboard-card-sub" id="loginCardSubtitle">เข้าสู่ระบบเพื่อใช้งานตามสิทธิ์ของผู้ใช้งาน</div>
       </div>
 
       <div id="guestLoginBox" class="academic-login-box">
@@ -31266,6 +31277,8 @@ if(_subV2OldSetSubTeacher){
       if(!payload||!payload.ok||!payload.data) throw new Error((payload&&payload.error)||'ข้อมูลไม่ถูกต้อง');
       DB=payload.data;
       DB.school=DB.school||{};
+      var loginLogo=document.getElementById('dashboardLoginLogo');
+      if(loginLogo) loginLogo.src=DB.school.logoDataUrl||DB.school.logoUrl||SAFE_LOGO_URL;
       if(!DB.school.logoDataUrl) DB.school.logoDataUrl=DB.school.logoUrl||SAFE_LOGO_URL;
       if(!DB.school.logoUrl) DB.school.logoUrl=DB.school.logoDataUrl||SAFE_LOGO_URL;
       DB.substitute=DB.substitute||{};
@@ -31374,6 +31387,10 @@ function applyAccessUI(){
   setModeButtons();
   var title=document.getElementById('publicSchoolTitle');
   if(title&&window.DB&&DB.school&&DB.school.name) title.textContent=DB.school.name;
+  var loginLogo=document.getElementById('dashboardLoginLogo');
+  if(loginLogo&&window.DB&&DB.school){
+    loginLogo.src=DB.school.logoDataUrl||DB.school.logoUrl||'https://drivekup01.github.io/School-OS/assets/school-logo.svg';
+  }
 }
 async function academicLogin(){
   var id=(document.getElementById('academicLoginId')||{}).value||'';
