@@ -696,26 +696,6 @@ textarea{resize:vertical;min-height:64px}
   font-size:13px; padding:10px 0; letter-spacing:.5px;
 }
 
-/* == SHARE: AirDrop + Bluetooth == */
-.capture-overlay{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:4000;display:flex;align-items:center;justify-content:center}
-.capture-box{background:#fff;border-radius:16px;padding:28px 36px;text-align:center;max-width:300px;box-shadow:0 8px 40px rgba(0,0,0,.3)}
-.capture-spin{width:46px;height:46px;border:5px solid #e9ecf5;border-top-color:#4472C4;border-radius:50%;animation:cspin .85s linear infinite;margin:0 auto 12px}
-@keyframes cspin{to{transform:rotate(360deg)}}
-.share-prev-modal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:4000;display:flex;align-items:center;justify-content:center}
-.share-prev-inner{background:#fff;border-radius:16px;padding:18px 20px;max-width:480px;width:94%;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.3)}
-.share-prev-img{max-width:100%;border-radius:8px;border:1px solid #dde;margin:10px 0;display:block}
-.btn-airdrop{display:inline-flex;align-items:center;gap:7px;padding:10px 16px;border-radius:10px;border:none;cursor:pointer;font-size:13px;font-weight:800;background:linear-gradient(135deg,#007AFF,#34AADC);color:#fff;box-shadow:0 2px 8px rgba(0,122,255,.3);transition:all .15s}
-.btn-airdrop:hover{filter:brightness(1.1);transform:translateY(-1px)}
-
-
-.btn-airdrop.sm,
-
-.btn-airdrop-lg{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:10px;
-  border:none;cursor:pointer;font-size:14px;font-weight:800;
-  background:linear-gradient(135deg,#007AFF,#34AADC);color:#fff;
-  box-shadow:0 2px 10px rgba(0,122,255,.35);transition:all .15s;}
-.btn-airdrop-lg:hover{filter:brightness(1.08);transform:translateY(-1px);}
-.btn-airdrop-lg svg{flex-shrink:0;}
 
 /* ══ PROFESSIONAL TEACHER VIEW ══════════════════════════ */
 .tv-page-layout {
@@ -2226,7 +2206,6 @@ label,.fg label{font-size:13px!important}
         <div id="tvStatsChips" class="tv-stats-chips"></div>
         <button class="btn btn-pri btn-sm" onclick="exportTeacherViewDocx()">📄 Word</button>
         <button class="btn btn-ghost btn-sm" onclick="printTeacherView()">🖨️ พิมพ์</button>
-        <button class="btn-airdrop sm" onclick="shareTeacherAirDrop()" title="AirDrop ภาพตารางสอน"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><path d="M4.5 12.5C3 11 2 9.1 2 7a5 5 0 0 1 10 0c0 2.1-1 4-2.5 5.5M8 14v4m-2 2h4M15.5 9C14 7.5 13 5.6 13 4a5 5 0 0 1 10 0c0 2.1-1 4-2.5 5.5M19 11v4m-2 2h4"/></svg> AirDrop</button>
       </div>
       <div id="teacherViewContent" style="overflow-x:auto"></div>
     </div>
@@ -2252,10 +2231,12 @@ label,.fg label{font-size:13px!important}
     <div id="exportRoomList"></div>
     <div class="divider"></div>
     <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:4px">
-      <button class="btn btn-gold" style="font-size:15px;padding:13px 24px" onclick="doExportSelected('student')">🎒 ส่งออก ตารางเรียน</button>
-      <button class="btn btn-pri" style="font-size:15px;padding:13px 24px" onclick="doExportSelected('teacher')">📖 ส่งออก ตารางสอน</button>
-      <button class="btn btn-succ" style="font-size:15px;padding:13px 24px" onclick="doExportSelected('both')">📋 ส่งออก ทั้งสองแบบ</button>
-      <button class="btn-airdrop-lg" onclick="shareAirDropFromExport()" title="แชร์ภาพตารางเรียนผ่าน AirDrop"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><path d="M4.5 12.5C3 11 2 9.1 2 7a5 5 0 0 1 10 0c0 2.1-1 4-2.5 5.5M8 14v4m-2 2h4M15.5 9C14 7.5 13 5.6 13 4a5 5 0 0 1 10 0c0 2.1-1 4-2.5 5.5M19 11v4m-2 2h4"/></svg> AirDrop ภาพตาราง</button>
+      <button class="btn btn-gold" style="font-size:15px;padding:13px 24px" onclick="doExportSelected('student')">🎒 Word ตารางเรียน</button>
+      <button class="btn btn-gold" style="font-size:15px;padding:13px 24px" onclick="exportSelectedRoomPng('student')">🖼️ PNG ตารางเรียน</button>
+      <button class="btn btn-pri" style="font-size:15px;padding:13px 24px" onclick="doExportSelected('teacher')">📖 Word ตารางสอน</button>
+      <button class="btn btn-pri" style="font-size:15px;padding:13px 24px" onclick="exportSelectedRoomPng('teacher')">🖼️ PNG ตารางสอน</button>
+      <button class="btn btn-succ" style="font-size:15px;padding:13px 24px" onclick="doExportSelected('both')">📋 Word ทั้งสองแบบ</button>
+      <button class="btn btn-succ" style="font-size:15px;padding:13px 24px" onclick="exportSelectedRoomPng('both')">🖼️ PNG ทั้งสองแบบ</button>
     </div>
     <div id="exportMsg" style="margin-top:12px"></div>
   </div>
@@ -2382,7 +2363,6 @@ label,.fg label{font-size:13px!important}
       <button class="btn btn-out btn-sm" onclick="nav('sub-history')">📂 ประวัติ</button>
       <button class="btn btn-out btn-sm" onclick="copySubstituteSummary()">📋 คัดลอกข้อความ</button>
       <button class="btn btn-out btn-sm" onclick="downloadSubstitutePNG()">⬇️ PNG</button>
-      <button class="btn btn-pri btn-sm" onclick="shareSubstituteOnline()">📤 แชร์ LINE / Telegram</button>
       <button class="btn btn-gold btn-sm" onclick="exportSubstituteDocx()">🖨️ Word</button>
     </div>
   </div>
@@ -27974,207 +27954,6 @@ function autoApplyAllTeachers() {
   if(bar) bar.scrollIntoView({behavior:'smooth', block:'center'});
 }
 
-// == AirDrop + Bluetooth Image Share ==
-function _showCap(m){var d=document.getElementById('_capOv');if(d)d.remove();d=document.createElement('div');d.id='_capOv';d.className='capture-overlay';d.innerHTML='<div class="capture-box"><div class="capture-spin"></div><b style="font-size:14px;color:#1A3A6E">'+m+'</b></div>';document.body.appendChild(d);}
-function _hideCap(){var d=document.getElementById('_capOv');if(d)d.remove();}
-async function _buildTimetableImg(roomId,type){
- var room=DB.rooms.find(r=>r.id===roomId); if(!room) throw new Error('ไม่พบห้อง');
- var s=DB.school,lbl=type==='teacher'?'ตารางสอน':'ตารางเรียน';
- var hr=room.homeroom?DB.teachers.find(t=>t.id===room.homeroom):null;
- var TH='background:#1A3A6E;color:#fff;padding:8px 5px;text-align:center;font-size:12px;font-weight:700;border:1px solid #1a2f5e;';
- var TP='background:#EEF3FF;padding:7px 5px;text-align:center;font-weight:700;font-size:11px;border:1px solid #cdd;min-width:80px;white-space:nowrap;';
- var h='<div style="background:#fff;border-radius:10px;overflow:hidden;font-family:Arial,Sarabun,sans-serif;min-width:560px">';
- h+='<div style="text-align:center;padding:12px 16px;background:linear-gradient(135deg,#1A3A6E,#2A5298);color:#fff">';
- if(s.logoDataUrl) h+='<img src="'+s.logoDataUrl+'" style="height:34px;margin-bottom:4px"><br>';
- h+='<div style="font-size:16px;font-weight:800">'+(s.name||'โรงเรียน')+'</div><div style="font-size:12px;opacity:.9;margin-top:2px">'+lbl+' '+room.label+'</div><div style="font-size:10px;opacity:.7">ปี '+(s.year||'')+' ภาค '+(s.semester||'')+'</div></div>';
- h+='<table style="width:100%;border-collapse:collapse"><tr><th style="'+TH+'min-width:75px">คาบ/เวลา</th>';
- DB.days.forEach(d=>{h+='<th style="'+TH+'">'+d+'</th>';}); h+='</tr>';
- DB.slots.forEach((sl,si)=>{
-  if(sl.isBreak){h+='<tr><td colspan="'+(DB.days.length+1)+'" style="background:#FFF8E1;border:2px solid #FFC107;padding:7px;text-align:center;font-weight:800;font-size:12px;color:#E65100">☀️ '+sl.label+' '+sl.start+'–'+sl.end+'</td></tr>';return;}
-  h+='<tr><td style="'+TP+'">'+sl.label+'<br><span style="font-size:9px;color:#666;font-weight:400">'+sl.start+'–'+sl.end+'</span></td>';
-  DB.days.forEach(d=>{
-   var k=room.id+'_'+sl.id+'_'+d,cv=DB.sched[k]||{};
-   var sj=DB.subjects.find(s2=>s2.name===cv.subject);
-   var bg='#fff';
-   h+='<td style="background:'+bg+';border:1px solid #cdd;padding:5px 3px;text-align:center;vertical-align:middle">';
-   if(cv.subject){h+='<div style="font-weight:700;font-size:11px;color:#1A3A6E">'+cv.subject+'</div>';if(cv.teacher)h+='<div style="font-size:9px;color:#444">'+cv.teacher+'</div>';if(cv.teacher2)h+='<div style="font-size:9px;color:#666">+'+cv.teacher2+'</div>';}
-   h+='</td>';});
-  h+='</tr>';
- });
- h+='</table><div style="display:flex;justify-content:space-between;padding:5px 12px;background:#E8EEF8;font-size:10px;color:#555"><span>'+(hr?'ครูประจำชั้น: '+hr.prefix+hr.first+' '+hr.last:'')+'</span><span style="font-weight:700;color:#1A3A6E">'+lbl+' '+room.label+'</span></div></div>';
- var div=document.createElement('div');div.style.cssText='position:fixed;left:-9999px;top:0;background:#fff;';div.innerHTML=h;document.body.appendChild(div);
- await new Promise(r=>setTimeout(r,280));
- var canvas=await html2canvas(div,{scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false});document.body.removeChild(div);return canvas;
-}
-function _showFallback(canvas,blob,fname,title,method){
- var el=document.getElementById('_imgPrev');if(el)el.remove();
- var m=document.createElement('div');m.id='_imgPrev';m.className='share-prev-modal';
- var du=canvas.toDataURL('image/png'),bu=URL.createObjectURL(blob);
- var isAir=method==='airdrop';
- var btnC=isAir?'linear-gradient(135deg,#007AFF,#34AADC)':'linear-gradient(135deg,#1565C0,#0288D1)';
- var lbl2=isAir?'AirDrop':'Bluetooth';
- var steps=isAir?'<li>บันทึกภาพด้านล่าง</li><li>Mac: Finder &rarr; AirDrop</li><li>iPhone/iPad: Photos &rarr; Share &rarr; AirDrop</li>':'<li>บันทึกภาพด้านล่าง</li><li>เปิด Gallery บนมือถือ</li><li>Share &rarr; Bluetooth/Nearby Share</li>';
- m.innerHTML='<div class="share-prev-inner">'+'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'+'<b style="font-size:15px;color:#1A3A6E">แชร์ผ่าน '+lbl2+' &mdash; '+title+'</b>'+'<span onclick="document.getElementById(\'_imgPrev\').remove()" style="cursor:pointer;font-size:22px;color:#bbb">&times;</span></div>'+'<img src="'+du+'" class="share-prev-img">'+'<div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">'+'<a href="'+bu+'" download="'+fname+'" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:'+btnC+';color:#fff;border-radius:10px;font-size:13px;font-weight:800;text-decoration:none">&#128190; บันทึกภาพ PNG</a>'+'<div style="background:#F5F7FA;border-radius:10px;padding:10px 12px;font-size:12px"><b style="color:#1A3A6E">วิธีส่งด้วย '+lbl2+':</b><ol style="margin:6px 0 0 14px;color:#555;line-height:1.9">'+steps+'</ol></div>'+'</div></div>';
- m.onclick=e=>{if(e.target===m)m.remove();};document.body.appendChild(m);
-}
-async function _shareImage(roomId,type,method){
- if(typeof html2canvas==='undefined'){toast('ไลบรารียังไม่พร้อม','warn');return;}
- var room=DB.rooms.find(r=>r.id===roomId);if(!room){toast('ไม่พบห้อง','warn');return;}
- var lbl=type==='teacher'?'ตารางสอน':'ตารางเรียน';
- _showCap(method==='airdrop'?'เตรียมส่ง AirDrop...':'เตรียมส่ง Bluetooth...');
- try{
-  var canvas=await _buildTimetableImg(roomId,type);_hideCap();
-  var fname=lbl+'_'+room.label.replace(/[^\u0e00-\u0e7fa-zA-Z0-9]/g,'_')+'.png';
-  var blob=await new Promise(res=>canvas.toBlob(res,'image/png'));
-  var file=new File([blob],fname,{type:'image/png'});
-  if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
-   await navigator.share({files:[file],title:lbl+' '+room.label,text:(DB.school.name||'')});
-   toast('ส่งภาพเรียบร้อย','succ');
-  }else{_showFallback(canvas,blob,fname,lbl+' '+room.label,method);}
- }catch(e){_hideCap();if(e.name!=='AbortError')toast('ไม่สามารถ: '+e.message,'warn');}
-}
-function shareViaAirDrop(r,t){_shareImage(r,t||'student','airdrop');}
-
-async function shareTeacherAirDrop(){
-  var id = _tvCurrentTeacherId;
-  if(!id){toast('กรุณาเลือกครูจากรายชื่อด้านซ้ายก่อน','warn');return;}
-  var t=DB.teachers.find(function(x){return x.id===id;});
-  if(!t){toast('\u0e44\u0e21\u0e48\u0e1e\u0e1a\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e04\u0e23\u0e39','warn');return;}
-  if(typeof html2canvas==='undefined'){toast('\u0e44\u0e25\u0e1a\u0e23\u0e32\u0e23\u0e35\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e1e\u0e23\u0e49\u0e2d\u0e21','warn');return;}
-  var name=t.prefix+t.first+' '+t.last;
-  var s=DB.school;
-  _showCap('\u0e2a\u0e23\u0e49\u0e32\u0e07\u0e20\u0e32\u0e1e\u0e15\u0e32\u0e23\u0e32\u0e07\u0e2a\u0e2d\u0e19...');
-  try{
-    // Build teacher schedule image
-    var TH='background:#1A3A6E;color:#fff;padding:7px 5px;text-align:center;font-size:12px;font-weight:700;border:1px solid #1a2f5e;';
-    var TP='background:#EEF3FF;padding:6px 5px;text-align:center;font-weight:700;font-size:11px;border:1px solid #cdd;min-width:80px;';
-    var h='<div style="background:#fff;border-radius:10px;overflow:hidden;font-family:Arial,Sarabun,sans-serif;min-width:560px">';
-    h+='<div style="text-align:center;padding:12px 16px;background:linear-gradient(135deg,#1A3A6E,#2A5298);color:#fff">';
-    h+='<div style="font-size:15px;font-weight:800">'+(s.name||'\u0e42\u0e23\u0e07\u0e40\u0e23\u0e35\u0e22\u0e19')+'</div>';
-    h+='<div style="font-size:13px;opacity:.9;margin-top:2px">\u0e15\u0e32\u0e23\u0e32\u0e07\u0e2a\u0e2d\u0e19: '+name+'</div>';
-    h+='<div style="font-size:11px;opacity:.75">\u0e1b\u0e35 '+(s.year||'')+' \u0e20\u0e32\u0e04 '+(s.semester||'')+'</div></div>';
-    h+='<table style="width:100%;border-collapse:collapse"><tr><th style="'+TH+'min-width:80px">\u0e04\u0e32\u0e1a/\u0e40\u0e27\u0e25\u0e32</th>';
-    DB.days.forEach(function(d){h+='<th style="'+TH+'">'+d+'</th>';});
-    h+='</tr>';
-    DB.slots.forEach(function(sl){
-      if(sl.isBreak){
-        h+='<tr><td colspan="'+(DB.days.length+1)+'" style="background:#FFF8E1;border:2px solid #FFC107;padding:7px;text-align:center;font-weight:800;font-size:12px;color:#E65100">\u2600\ufe0f '+sl.label+' '+sl.start+'\u2013'+sl.end+'</td></tr>';
-        return;
-      }
-      h+='<tr><td style="'+TP+'">'+sl.label+'<br><span style="font-size:9px;color:#666;font-weight:400">'+sl.start+'\u2013'+sl.end+'</span></td>';
-      DB.days.forEach(function(d){
-        var found=[];
-        DB.rooms.forEach(function(r){
-          var k=r.id+'_'+sl.id+'_'+d, cv=DB.sched[k]||{};
-          if(cv.subject&&(cv.teacher===name||cv.teacher2===name||cv.teacher3===name)){
-            var sj=DB.subjects.find(function(x){return x.name===cv.subject;});
-            var bg='#fff';
-            var role=(cv.teacher===name)?'':(cv.teacher2===name?'<span style="font-size:8px;background:#2A5298;color:#fff;border-radius:2px;padding:1px 3px">+2</span>':'<span style="font-size:8px;background:#4472C4;color:#fff;border-radius:2px;padding:1px 3px">+3</span>');
-            var roomTag = cv.learnRoom ? '<span style="font-size:8px;background:#E8EDFF;color:#2A5298;border-radius:3px;padding:1px 4px;margin-left:2px">ห้อง '+cv.learnRoom+'</span>' : '';
-            found.push('<div style="background:'+bg+';border-radius:4px;padding:3px 4px;margin:1px 0">'+role+'<b style="font-size:10px;color:#1A3A6E">'+cv.subject+'</b>'+roomTag+'<br><span style="font-size:9px;color:#555">'+r.label+'</span></div>');
-          }
-        });
-        h+='<td style="border:1px solid #cdd;padding:3px;vertical-align:top">'+(found.join('')||'<div style="color:#ccc;text-align:center;font-size:10px;padding:4px">\u2015</div>')+'</td>';
-      });
-      h+='</tr>';
-    });
-    h+='</table><div style="display:flex;justify-content:space-between;padding:5px 12px;background:#E8EEF8;font-size:10px;color:#555"><span>'+name+'</span><span style="font-weight:700;color:#1A3A6E">\u0e15\u0e32\u0e23\u0e32\u0e07\u0e2a\u0e2d\u0e19</span></div></div>';
-    var div=document.createElement('div');
-    div.style.cssText='position:fixed;left:-9999px;top:0;background:#fff;';
-    div.innerHTML=h;
-    document.body.appendChild(div);
-    await new Promise(function(r){setTimeout(r,280);});
-    var canvas=await html2canvas(div,{scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false});
-    document.body.removeChild(div);
-    _hideCap();
-    var fname='\u0e15\u0e32\u0e23\u0e32\u0e07\u0e2a\u0e2d\u0e19_'+name.replace(/[^\u0e00-\u0e7fa-zA-Z0-9]/g,'_')+'.png';
-    var blob=await new Promise(function(res){canvas.toBlob(res,'image/png');});
-    var file=new File([blob],fname,{type:'image/png'});
-    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
-      await navigator.share({files:[file],title:'\u0e15\u0e32\u0e23\u0e32\u0e07\u0e2a\u0e2d\u0e19: '+name,text:(s.name||'')});
-      toast('\u0e2a\u0e48\u0e07\u0e20\u0e32\u0e1e\u0e40\u0e23\u0e35\u0e22\u0e1a\u0e23\u0e49\u0e2d\u0e22','succ');
-    } else {
-      _showImgPreview(canvas.toDataURL('image/png'),blob,fname,'\u0e15\u0e32\u0e23\u0e32\u0e07\u0e2a\u0e2d\u0e19: '+name);
-    }
-  }catch(e){_hideCap();if(e.name!=='AbortError')toast('\u0e44\u0e21\u0e48\u0e2a\u0e32\u0e21\u0e32\u0e23\u0e16: '+e.message,'warn');}
-}
-async function shareSubstituteAirDrop(){
-  if(!currentSubDate){toast('\u0e01\u0e23\u0e38\u0e13\u0e32\u0e40\u0e25\u0e37\u0e2d\u0e01\u0e27\u0e31\u0e19\u0e17\u0e35\u0e48\u0e01\u0e48\u0e2d\u0e19','warn');return;}
-  if(typeof html2canvas==='undefined'){toast('\u0e44\u0e25\u0e1a\u0e23\u0e32\u0e23\u0e35\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e1e\u0e23\u0e49\u0e2d\u0e21','warn');return;}
-  var subContent = document.getElementById('subContent');
-  var subHeader = document.getElementById('subSummaryBar');
-  if(!subContent){toast('\u0e44\u0e21\u0e48\u0e1e\u0e1a\u0e2b\u0e19\u0e49\u0e32\u0e15\u0e32\u0e23\u0e32\u0e07\u0e2a\u0e2d\u0e19\u0e41\u0e17\u0e19','warn');return;}
-  var s=DB.school;
-  // Build substitute image HTML
-  var day = (typeof getSubDay === 'function') ? getSubDay(currentSubDate) : null;
-  var h='<div style="background:#fff;border-radius:10px;overflow:hidden;font-family:Arial,Sarabun,sans-serif;min-width:500px;padding-bottom:8px">';
-  h+='<div style="text-align:center;padding:12px 16px;background:linear-gradient(135deg,#1A3A6E,#2A5298);color:#fff">';
-  h+='<div style="font-size:15px;font-weight:800">'+(s.name||'\u0e42\u0e23\u0e07\u0e40\u0e23\u0e35\u0e22\u0e19')+'</div>';
-  h+='<div style="font-size:13px;opacity:.9;margin-top:2px">\u0e15\u0e32\u0e23\u0e32\u0e07\u0e2a\u0e2d\u0e19\u0e41\u0e17\u0e19</div>';
-  h+='<div style="font-size:11px;opacity:.75">'+formatDateThai(currentSubDate)+'</div></div>';
-  // Substitute content
-  if(day&&day.absentList&&day.absentList.length){
-    day.absentList.forEach(function(absent){
-      var t=DB.teachers.find(function(x){return x.id===absent.teacherId;})||{prefix:'',first:'\u0e44\u0e21\u0e48\u0e23\u0e30\u0e1a\u0e38',last:'',dept:''};
-      var tName=t.prefix+t.first+' '+t.last;
-      h+='<div style="margin:8px 10px 4px;padding:8px 10px;background:#FFEBEE;border-radius:8px;border-left:4px solid #E53935">';
-      h+='<b style="font-size:13px;color:#B71C1C">\ud83d\udea8 '+tName+'</b>';
-      h+='<span style="font-size:11px;color:#C62828;margin-left:8px">('+absent.type+(absent.note?' — '+absent.note:'')+')</span></div>';
-      if(absent.periods&&absent.periods.length){
-        h+='<table style="width:calc(100% - 20px);margin:0 10px 8px;border-collapse:collapse;font-size:12px">';
-        h+='<tr><th style="background:#1A3A6E;color:#fff;padding:5px 8px;border:1px solid #1a2f5e">\u0e04\u0e32\u0e1a</th>';
-        h+='<th style="background:#1A3A6E;color:#fff;padding:5px 8px;border:1px solid #1a2f5e">\u0e40\u0e27\u0e25\u0e32</th>';
-        h+='<th style="background:#1A3A6E;color:#fff;padding:5px 8px;border:1px solid #1a2f5e">\u0e27\u0e34\u0e0a\u0e32</th>';
-        h+='<th style="background:#1A3A6E;color:#fff;padding:5px 8px;border:1px solid #1a2f5e">\u0e2b\u0e49\u0e2d\u0e07</th>';
-        h+='<th style="background:#1A3A6E;color:#fff;padding:5px 8px;border:1px solid #1a2f5e">\u0e04\u0e23\u0e39\u0e2a\u0e2d\u0e19\u0e41\u0e17\u0e19</th></tr>';
-        absent.periods.forEach(function(p,pi){
-          var slot=DB.slots.find(function(sl){return String(sl.id)===String(p.slotId);});
-          var room=DB.rooms.find(function(r){return r.id===p.roomId;});
-          var bg=pi%2===0?'#F0F3F9':'#fff';
-          var subColor=p.subTeacher?'#1B5E20':'#C62828';
-          h+='<tr>';
-          h+='<td style="padding:5px 8px;border:1px solid #dde;background:'+bg+';font-weight:700;color:#1A3A6E;text-align:center">'+(slot?slot.label:p.slotId)+'</td>';
-          h+='<td style="padding:5px 8px;border:1px solid #dde;background:'+bg+';color:#666;text-align:center">'+(slot?slot.start+'\u2013'+slot.end:'')+'</td>';
-          h+='<td style="padding:5px 8px;border:1px solid #dde;background:'+bg+';font-weight:700">'+(p.subject||'\u2015')+'</td>';
-          h+='<td style="padding:5px 8px;border:1px solid #dde;background:'+bg+'">'+(room?room.label:'\u2015')+'</td>';
-          h+='<td style="padding:5px 8px;border:1px solid #dde;background:'+(p.subTeacher?'#E8F5E9':'#FFF3F3')+';font-weight:700;color:'+subColor+'">'+(p.subTeacher||'\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e21\u0e2d\u0e1a\u0e2b\u0e21\u0e32\u0e22')+'</td>';
-          h+='</tr>';
-        });
-        h+='</table>';
-      }
-    });
-  } else {
-    h+='<div style="padding:20px;text-align:center;color:#2E7D32;font-weight:700">\u2705 \u0e44\u0e21\u0e48\u0e21\u0e35\u0e04\u0e23\u0e39\u0e25\u0e32\u0e27\u0e31\u0e19\u0e19\u0e35\u0e49</div>';
-  }
-  h+='</div>';
-  _showCap('\u0e2a\u0e23\u0e49\u0e32\u0e07\u0e20\u0e32\u0e1e\u0e15\u0e32\u0e23\u0e32\u0e07\u0e2a\u0e2d\u0e19\u0e41\u0e17\u0e19...');
-  try{
-    var div=document.createElement('div');
-    div.style.cssText='position:fixed;left:-9999px;top:0;background:#fff;';
-    div.innerHTML=h;
-    document.body.appendChild(div);
-    await new Promise(function(r){setTimeout(r,250);});
-    var canvas=await html2canvas(div,{scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false});
-    document.body.removeChild(div);
-    _hideCap();
-    var fname='\u0e15\u0e32\u0e23\u0e32\u0e07\u0e2a\u0e2d\u0e19\u0e41\u0e17\u0e19_'+currentSubDate+'.png';
-    var blob=await new Promise(function(res){canvas.toBlob(res,'image/png');});
-    var file=new File([blob],fname,{type:'image/png'});
-    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
-      await navigator.share({files:[file],title:'\u0e15\u0e32\u0e23\u0e32\u0e07\u0e2a\u0e2d\u0e19\u0e41\u0e17\u0e19 '+currentSubDate,text:(s.name||'')});
-      toast('\u0e2a\u0e48\u0e07\u0e20\u0e32\u0e1e\u0e40\u0e23\u0e35\u0e22\u0e1a\u0e23\u0e49\u0e2d\u0e22','succ');
-    } else {
-      _showImgPreview(canvas.toDataURL('image/png'),blob,fname,'\u0e15\u0e32\u0e23\u0e32\u0e07\u0e2a\u0e2d\u0e19\u0e41\u0e17\u0e19 '+currentSubDate);
-    }
-  }catch(e){_hideCap();if(e.name!=='AbortError')toast('\u0e44\u0e21\u0e48\u0e2a\u0e32\u0e21\u0e32\u0e23\u0e16: '+e.message,'warn');}
-}
-function shareAirDropFromExport(){
-  var checked=[];
-  document.querySelectorAll('#exportRoomList input:checked').forEach(function(x){checked.push(x.value);});
-  if(!checked.length&&DB.rooms.length) checked.push(DB.rooms[0].id);
-  if(!checked.length){toast('\u0e01\u0e23\u0e38\u0e13\u0e32\u0e40\u0e25\u0e37\u0e2d\u0e01\u0e2b\u0e49\u0e2d\u0e07','warn');return;}
-  shareViaAirDrop(checked[0],'student');
-}
 
 function refreshAllConflictUI() {
   // 1. Update sidebar badge
@@ -28684,11 +28463,14 @@ async function buildTeacherDocx(teacherName, teacherObj) {
     return new TableRow({children:cells});
   });
 
-  let logoRun=null;
-  if(school.logoDataUrl){try{const logoSize=LOGO_SIZES['medium']||LOGO_SIZES.small;const logoBuf=await logoToArrayBuffer(school.logoDataUrl);const logoType=logoMimeToType(school.logoDataUrl);logoRun=new ImageRun({type:logoType,data:logoBuf,transformation:{width:logoSize.w,height:logoSize.h},altText:{title:'logo',description:'logo',name:'logo'}});}catch(e){}}
+  const exportLogo=await getRequiredExportLogo();
+  const logoSize=LOGO_SIZES['medium']||LOGO_SIZES.small;
+  const logoBuf=await logoToArrayBuffer(exportLogo);
+  const logoType=logoMimeToType(exportLogo);
+  const logoRun=new ImageRun({type:logoType,data:logoBuf,transformation:{width:logoSize.w,height:logoSize.h},altText:{title:'logo',description:'logo',name:'logo'}});
   const rankTxt=teacherObj&&teacherObj.rank?teacherObj.rank+(teacherObj.dept?'  กลุ่มสาระ'+teacherObj.dept:''):'';
   const doc=new Document({sections:[{properties:{page:{size:{width:11906,height:16838,orientation:PageOrientation.LANDSCAPE},margin:{top:margin,right:margin,bottom:margin,left:margin}}},children:[
-    ...(logoRun?[new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:60},children:[logoRun]})]:[]),
+    new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:60},children:[logoRun]}),
     new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:50},children:[t('ตารางสอน',{bold:true,size:46,color:'1A3A6E'})]}),
     new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:35},children:[t(teacherName,{bold:true,size:32,color:'1A3A6E'})]}),
     ...(rankTxt?[new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:30},children:[t(rankTxt,{size:21,color:'4A5568'})]})]:[]),
@@ -28884,6 +28666,111 @@ async function doExportSelected(type){
     if(msgEl) msgEl.innerHTML=`<div class="alert a-err">❌ ${err.message}</div>`;
   }
 }
+
+
+async function _buildRoomExportPng(roomId,type){
+  if(typeof html2canvas==='undefined') throw new Error('ระบบสร้าง PNG ยังไม่พร้อม');
+  var room=DB.rooms.find(function(r){return r.id===roomId;});
+  if(!room) throw new Error('ไม่พบห้องเรียน');
+
+  var exportLogo=await getRequiredExportLogo();
+  var wrap=document.createElement('div');
+  wrap.className='room-png-export';
+  wrap.style.cssText='position:fixed;left:-20000px;top:0;background:#fff;padding:26px 28px;width:1500px;box-sizing:border-box;font-family:Sarabun,sans-serif;color:#1a2a44;z-index:-1;';
+
+  var title = type==='teacher' ? 'ตารางสอน' : 'ตารางเรียน';
+  var school=(DB.school&&DB.school.name)||'โรงเรียน';
+  var term=(DB.school&&DB.school.term)||'';
+  var year=(DB.school&&DB.school.year)||'';
+
+  wrap.innerHTML =
+    '<div style="text-align:center;margin-bottom:14px">'+
+      '<img id="_roomPngLogo" src="'+exportLogo+'" alt="โลโก้โรงเรียน" style="width:78px;height:78px;object-fit:contain;display:block;margin:0 auto 7px">'+
+      '<div style="font-size:25px;font-weight:800;color:#173b70">'+title+'</div>'+
+      '<div style="font-size:17px;font-weight:700;margin-top:4px">'+school+' ชั้น '+room.label+'</div>'+
+      ((term||year)?'<div style="font-size:14px;color:#72809a;margin-top:2px">'+(term?'ภาคเรียนที่ '+term:'')+(term&&year?' ':'')+(year?'ปีการศึกษา '+year:'')+'</div>':'')+
+    '</div>'+
+    '<div id="_roomPngTable"></div>';
+
+  document.body.appendChild(wrap);
+  var img=wrap.querySelector('#_roomPngLogo');
+  await new Promise(function(resolve,reject){
+    if(img.complete&&img.naturalWidth) resolve();
+    else {img.onload=resolve;img.onerror=function(){reject(new Error('Logo สำหรับ PNG โหลดไม่สำเร็จ'));};}
+  });
+
+  // Reuse the same room timetable renderer used by the preview/export page.
+  var host=wrap.querySelector('#_roomPngTable');
+  var oldPreview=document.getElementById('exportPreview');
+  var oldSelect=document.getElementById('exportPreviewRoom');
+  var restoreValue=oldSelect?oldSelect.value:null;
+
+  try{
+    if(oldSelect) oldSelect.value=roomId;
+    if(typeof renderExportPreview==='function'){
+      renderExportPreview();
+      await new Promise(function(r){setTimeout(r,60);});
+      if(oldPreview && oldPreview.firstElementChild){
+        var clone=oldPreview.firstElementChild.cloneNode(true);
+        clone.querySelectorAll('button,.no-print').forEach(function(x){x.remove();});
+        clone.style.maxWidth='none';
+        clone.style.width='100%';
+        host.appendChild(clone);
+      }
+    }
+    if(!host.children.length){
+      throw new Error('ไม่สามารถสร้างตัวอย่างตารางสำหรับ PNG ได้');
+    }
+    await new Promise(function(r){setTimeout(r,80);});
+    var canvas=await html2canvas(wrap,{scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false});
+    return canvas;
+  }finally{
+    if(oldSelect && restoreValue!==null) oldSelect.value=restoreValue;
+    if(typeof renderExportPreview==='function' && oldSelect) renderExportPreview();
+    wrap.remove();
+  }
+}
+
+function _downloadCanvasPng(canvas,filename){
+  var a=document.createElement('a');
+  a.download=filename;
+  a.href=canvas.toDataURL('image/png');
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+async function exportSelectedRoomPng(type){
+  var checked=[];
+  document.querySelectorAll('#exportRoomList input:checked').forEach(function(x){checked.push(x.value);});
+  if(!checked.length){
+    toast('กรุณาเลือกห้องที่ต้องการส่งออก','warn');
+    return;
+  }
+  try{
+    var kinds=type==='both'?['student','teacher']:[type];
+    for(var i=0;i<checked.length;i++){
+      var room=DB.rooms.find(function(r){return r.id===checked[i];});
+      if(!room) continue;
+      for(var k=0;k<kinds.length;k++){
+        var kind=kinds[k];
+        var canvas=await _buildRoomExportPng(room.id,kind);
+        var label=kind==='teacher'?'ตารางสอน':'ตารางเรียน';
+        var safe=(room.label||room.id).replace(/[^\u0e00-\u0e7fa-zA-Z0-9_-]/g,'_');
+        _downloadCanvasPng(canvas,label+'_'+safe+'.png');
+        await new Promise(function(r){setTimeout(r,120);});
+      }
+    }
+    var count=checked.length*(type==='both'?2:1);
+    var msg=document.getElementById('exportMsg');
+    if(msg) msg.innerHTML='<div style="padding:11px 14px;background:#e8f5e9;border-left:4px solid #2e7d32;border-radius:8px;color:#2e7d32;font-weight:700">☑ ส่งออก PNG '+count+' ไฟล์ สำเร็จ!</div>';
+    toast('ส่งออก PNG สำเร็จ '+count+' ไฟล์','succ');
+  }catch(e){
+    console.error(e);
+    toast('ส่งออก PNG ไม่สำเร็จ: '+e.message,'warn');
+  }
+}
+
 async function exportAllDocx(){ nav('export'); }
 
 // ════════════════════════════════════════════
@@ -29109,20 +28996,16 @@ async function buildDocx(docType,room){
   while(sigCells.length<3) sigCells.unshift(new TableCell({borders:noBs,width:{size:sigCW,type:WidthType.DXA},children:[new Paragraph({children:[]})]}));
   const sigTable=new Table({width:{size:contentW,type:WidthType.DXA},columnWidths:[sigCW,sigCW,sigCW],rows:[new TableRow({children:sigCells.slice(-3)})]});
 
-  let logoRun=null;
-  if(school.logoDataUrl){
-    try{
-      const logoSize=LOGO_SIZES['medium']||LOGO_SIZES.small;
-      const logoBuf=await logoToArrayBuffer(school.logoDataUrl);
-      const logoType=logoMimeToType(school.logoDataUrl);
-      logoRun=new ImageRun({type:logoType,data:logoBuf,transformation:{width:logoSize.w,height:logoSize.h},altText:{title:'โลโก้โรงเรียน',description:'โลโก้โรงเรียน',name:'logo'}});
-    }catch(e){logoRun=null;}
-  }
+  const exportLogo=await getRequiredExportLogo();
+  const logoSize=LOGO_SIZES['medium']||LOGO_SIZES.small;
+  const logoBuf=await logoToArrayBuffer(exportLogo);
+  const logoType=logoMimeToType(exportLogo);
+  const logoRun=new ImageRun({type:logoType,data:logoBuf,transformation:{width:logoSize.w,height:logoSize.h},altText:{title:'โลโก้โรงเรียน',description:'โลโก้โรงเรียน',name:'logo'}});
 
   const doc=new Document({sections:[{
     properties:{page:{size:{width:11906,height:16838,orientation:PageOrientation.LANDSCAPE},margin:{top:margin,right:margin,bottom:margin,left:margin}}},
     children:[
-      ...(logoRun?[new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:50},children:[logoRun]})]:[]),
+      new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:50},children:[logoRun]}),
       new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:60},children:[t(docTitle,{bold:true,size:44,color:'1a3a6e'})]}),
       new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:30},children:[t('โรงเรียน'+(school.name||'')+' ชั้น '+room.label,{bold:true,size:26})]}),
       new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:110},children:[t('ภาคเรียนที่ '+school.semester+' ปีการศึกษา '+school.year,{size:22,color:'5a6a80'})]}),
@@ -29358,6 +29241,7 @@ function loadLogoFile(file){
   reader.onload = ev => {
     const dataUrl = ev.target.result;
     DB.school.logoDataUrl = dataUrl;
+    _exportLogoCache = '';
     DB.school.logoSize = 'medium';
     renderLogoPreview(dataUrl, file.name, formatBytes(file.size), 'medium');
     markDirty();
@@ -29406,6 +29290,7 @@ function setLogoSize(size){
 function removeLogo(){
   if(!confirm('ลบโลโก้โรงเรียน?')) return;
   DB.school.logoDataUrl = '';
+  _exportLogoCache = '';
   DB.school.logoSize = 'medium';
   const inp = document.getElementById('logoFileInput');
   if(inp) inp.value = '';
@@ -29422,16 +29307,56 @@ function formatBytes(b){
 // ════════════════════════════════════════════
 //  LOGO → Base64 bytes for docx ImageRun
 // ════════════════════════════════════════════
+const EXPORT_LOGO_FALLBACK = 'assets/school-logo.svg';
+let _exportLogoCache = '';
+
+async function imageSourceToPngDataUrl(src){
+  return await new Promise(function(resolve,reject){
+    const img = new Image();
+    img.onload = function(){
+      try{
+        const max = 512;
+        const scale = Math.min(1, max / Math.max(img.naturalWidth||max, img.naturalHeight||max));
+        const w = Math.max(1, Math.round((img.naturalWidth||max)*scale));
+        const h = Math.max(1, Math.round((img.naturalHeight||max)*scale));
+        const c = document.createElement('canvas');
+        c.width=w; c.height=h;
+        const ctx=c.getContext('2d');
+        ctx.clearRect(0,0,w,h);
+        ctx.drawImage(img,0,0,w,h);
+        resolve(c.toDataURL('image/png'));
+      }catch(e){ reject(e); }
+    };
+    img.onerror = function(){ reject(new Error('โหลด Logo ไม่สำเร็จ')); };
+    img.src = src;
+  });
+}
+
+async function getRequiredExportLogo(){
+  if(_exportLogoCache) return _exportLogoCache;
+  const school = DB.school || {};
+  const source = school.logoDataUrl || school.logoUrl || EXPORT_LOGO_FALLBACK;
+  try{
+    _exportLogoCache = /^data:image\/png/i.test(source) ? source : await imageSourceToPngDataUrl(source);
+    return _exportLogoCache;
+  }catch(e){
+    if(source !== EXPORT_LOGO_FALLBACK){
+      _exportLogoCache = await imageSourceToPngDataUrl(EXPORT_LOGO_FALLBACK);
+      return _exportLogoCache;
+    }
+    throw new Error('ไม่สามารถเตรียม Logo สำหรับไฟล์ Export ได้');
+  }
+}
+
 async function logoToArrayBuffer(dataUrl){
-  // dataUrl = "data:image/png;base64,xxxx"
   const base64 = dataUrl.split(',')[1];
+  if(!base64) throw new Error('ข้อมูล Logo ไม่ถูกต้อง');
   const binary  = atob(base64);
   const buf     = new Uint8Array(binary.length);
   for(let i=0;i<binary.length;i++) buf[i]=binary.charCodeAt(i);
   return buf.buffer;
 }
 function logoMimeToType(dataUrl){
-  // returns 'png','jpg','gif','webp'
   const m = dataUrl.match(/data:image\/([^;]+)/);
   if(!m) return 'png';
   const t = m[1].toLowerCase();
@@ -29931,18 +29856,13 @@ async function buildSubstituteDocx(dateStr, day){
   const ltB={top:bk('c5d3ea',3),bottom:bk('c5d3ea',3),left:bk('c5d3ea',3),right:bk('c5d3ea',3)};
   const mg = {top:80,bottom:80,left:120,right:120};
 
-  // logo
-  let logoRun = null;
-  if(s.logoDataUrl){
-    try{
-      const logoSize = LOGO_SIZES['small'];
-      const logoBuf = await logoToArrayBuffer(s.logoDataUrl);
-      const logoType = logoMimeToType(s.logoDataUrl);
-      logoRun = new ImageRun({type:logoType,data:logoBuf,
-        transformation:{width:60,height:60},
-        altText:{title:'logo',description:'logo',name:'logo'}});
-    }catch(e){}
-  }
+  // logo — required on every exported Word file
+  const exportLogo = await getRequiredExportLogo();
+  const logoBuf = await logoToArrayBuffer(exportLogo);
+  const logoType = logoMimeToType(exportLogo);
+  const logoRun = new ImageRun({type:logoType,data:logoBuf,
+    transformation:{width:60,height:60},
+    altText:{title:'logo',description:'logo',name:'logo'}});
 
   // col widths for main table
   const C1=900, C2=1500, C3=1200, C4=1600, C5=1800, C6=2360;
@@ -29951,7 +29871,7 @@ async function buildSubstituteDocx(dateStr, day){
   const children = [];
 
   // ── Header ──
-  if(logoRun) children.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:60},children:[logoRun]}));
+  children.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:60},children:[logoRun]}));
   children.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:60},
     children:[t('บันทึกการสอนแทน',{bold:true,size:44,color:'1a3a6e'})]}));
   children.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:40},
@@ -31220,7 +31140,7 @@ if(_subV2OldSetSubTeacher){
   window.copySubstituteSummary=async function(){
     if(!currentSubDate){toast('กรุณาเลือกวันที่ก่อน','warn');return;}
     var txt=buildText();
-    try{await navigator.clipboard.writeText(txt);toast('📋 คัดลอกข้อความสำหรับ LINE/Telegram แล้ว','succ');}
+    try{await navigator.clipboard.writeText(txt);toast('📋 คัดลอกข้อความแล้ว','succ');}
     catch(e){
       var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();
       toast('📋 คัดลอกข้อความแล้ว','succ');
@@ -31233,7 +31153,8 @@ if(_subV2OldSetSubTeacher){
     var root=document.createElement('div');
     root.className='sub-export-canvas';
     var school=(DB.school&&DB.school.name)||'โรงเรียน';
-    var h='<div class="sub-export-title">ตารางสอนแทน '+esc(school)+'</div>'+
+    var h='<div id="subExportLogoHost" style="text-align:center;margin:0 0 10px"></div>'+
+      '<div class="sub-export-title">ตารางสอนแทน '+esc(school)+'</div>'+
       '<div class="sub-export-date">'+esc(formatDateThai(currentSubDate))+'</div>';
     if(!day.absentList||!day.absentList.length){
       h+='<div style="padding:30px;text-align:center;font-size:18px;color:#27854c;font-weight:900">✅ ไม่มีครูลาในวันนี้</div>';
@@ -31261,6 +31182,18 @@ if(_subV2OldSetSubTeacher){
   async function renderBlob(){
     if(typeof html2canvas==='undefined') throw new Error('ไลบรารีสร้างภาพยังไม่พร้อม');
     var node=buildExportNode(); if(!node) throw new Error('ยังไม่ได้เลือกวันที่');
+    var exportLogo=await getRequiredExportLogo();
+    var host=node.querySelector('#subExportLogoHost');
+    if(!host){node.remove();throw new Error('ไม่พบพื้นที่ Logo ในไฟล์ PNG');}
+    var logoImg=document.createElement('img');
+    logoImg.src=exportLogo;
+    logoImg.alt='โลโก้โรงเรียน';
+    logoImg.style.cssText='width:72px;height:72px;object-fit:contain;display:block;margin:0 auto;';
+    host.appendChild(logoImg);
+    await new Promise(function(resolve,reject){
+      if(logoImg.complete&&logoImg.naturalWidth){resolve();}
+      else {logoImg.onload=resolve;logoImg.onerror=function(){reject(new Error('Logo สำหรับ PNG โหลดไม่สำเร็จ'));};}
+    });
     await new Promise(function(r){setTimeout(r,120);});
     var canvas=await html2canvas(node,{scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false});
     node.remove();
@@ -31280,74 +31213,7 @@ if(_subV2OldSetSubTeacher){
       toast('⬇️ ดาวน์โหลดภาพ PNG แล้ว','succ');
     }catch(e){toast('สร้างภาพไม่สำเร็จ: '+e.message,'warn');}
   };
-  window.shareSubstituteOnline=async function(){
-    if(!currentSubDate){toast('กรุณาเลือกวันที่ก่อน','warn');return;}
-    try{
-      toast('กำลังเตรียมภาพสำหรับแชร์...','info');
-      var out=await renderBlob();
-      var fname='ตารางสอนแทน_'+currentSubDate+'.png';
-      var file=new File([out.blob],fname,{type:'image/png'});
-      var txt=buildText();
-      var title='ตารางสอนแทน '+formatDateThai(currentSubDate);
 
-      // Best path on mobile and Windows browsers that support Web Share with files.
-      if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
-        await navigator.share({title:title,text:txt,files:[file]});
-        toast('📤 เปิดเมนูแชร์แล้ว เลือก LINE หรือ Telegram ได้เลย','succ');
-        return;
-      }
-
-      // Desktop fallback: keep the real image available locally and copy the summary text.
-      var objectUrl=URL.createObjectURL(out.blob);
-      var a=document.createElement('a');
-      a.href=objectUrl;
-      a.download=fname;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(function(){URL.revokeObjectURL(objectUrl);},3000);
-
-      var copied=false;
-      try{
-        await navigator.clipboard.writeText(txt);
-        copied=true;
-      }catch(_){
-        try{
-          var ta=document.createElement('textarea');
-          ta.value=txt;
-          ta.style.position='fixed';
-          ta.style.left='-9999px';
-          document.body.appendChild(ta);
-          ta.select();
-          copied=document.execCommand('copy');
-          ta.remove();
-        }catch(__){}
-      }
-
-      // Telegram supports desktop/web sharing directly.
-      var tgUrl='https://t.me/share/url?url='+encodeURIComponent(location.href)+'&text='+encodeURIComponent(txt);
-      var isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent||'');
-
-      if(isMobile){
-        // LINE share URL is officially supported on iOS/Android.
-        var lineUrl='https://line.me/R/share?text='+encodeURIComponent(txt);
-        var useLine=window.confirm('เลือกแอปสำหรับแชร์\n\nตกลง = LINE\nยกเลิก = Telegram');
-        window.open(useLine?lineUrl:tgUrl,'_blank','noopener');
-        toast('📤 ดาวน์โหลดภาพแล้ว'+(copied?' และคัดลอกข้อความแล้ว':'')+' — เลือกรูปที่ดาวน์โหลดแนบได้ทันที','succ');
-      }else{
-        // LINE does not officially support its share URL on Windows/macOS.
-        // Telegram can open directly; for LINE the image is downloaded and text is ready to paste.
-        var useTelegram=window.confirm('อุปกรณ์นี้ไม่มีเมนู Share ของระบบ\n\nตกลง = เปิด Telegram เพื่อแชร์ทันที\nยกเลิก = ใช้ LINE (รูปดาวน์โหลดแล้ว และข้อความคัดลอกพร้อมวาง)');
-        if(useTelegram) window.open(tgUrl,'_blank','noopener');
-        toast(useTelegram
-          ? '📤 เปิด Telegram แล้ว และดาวน์โหลดรูปไว้ให้แล้ว'
-          : '📋 สำหรับ LINE: ดาวน์โหลดรูปแล้ว'+(copied?' และคัดลอกข้อความไว้แล้ว — เปิด LINE แล้วกดวางได้เลย':' — เปิด LINE แล้วแนบรูปได้เลย'),
-          'info');
-      }
-    }catch(e){
-      if(e&&e.name!=='AbortError') toast('แชร์ไม่สำเร็จ: '+e.message,'warn');
-    }
-  };
 
   // Refresh grouped summary whenever original render completes.
   var oldRenderSubContent=window.renderSubContent;
