@@ -1746,6 +1746,17 @@ body.support-mode .logout-top-btn{
 </style>
 </head>
 <body class="guest-mode">
+<script>
+(function(){
+  function removeStrayEscapedNewlines(){
+    Array.from(document.body.childNodes).forEach(function(node){
+      if(node.nodeType===3 && /^\\n(?:\\n)+$/.test((node.nodeValue||'').trim())) node.remove();
+    });
+  }
+  removeStrayEscapedNewlines();
+  document.addEventListener('DOMContentLoaded',removeStrayEscapedNewlines,{once:true});
+})();
+</script>
 <!-- TOPBAR -->
 <div class="topbar school-topbar">
   <div class="school-brand">
