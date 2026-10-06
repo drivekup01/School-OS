@@ -40,7 +40,7 @@ jobs:
           async function get(action) {
             const url = api + (api.includes('?') ? '&' : '?') + 'action=' + encodeURIComponent(action) + '&_=' + Date.now();
             const ctrl = new AbortController();
-            const timer = setTimeout(() => ctrl.abort(), 180000);
+            const timer = setTimeout(() => ctrl.abort(), 360000);
             try {
               const res = await fetch(url, { redirect: 'follow', signal: ctrl.signal });
               if (!res.ok) throw new Error(action + ' HTTP ' + res.status);
@@ -55,11 +55,25 @@ jobs:
           (async () => {
             fs.mkdirSync('database', { recursive: true });
 
-            const [core, schedule, home] = await Promise.all([
-              get('core'),
-              get('schedule'),
-              get('home')
-            ]);
+            const db = await get('bootstrap');
+
+            const core = {
+              school: db.school || {},
+              teachers: db.teachers || [],
+              subjects: db.subjects || [],
+              rooms: db.rooms || [],
+              slots: db.slots || [],
+              days: db.days || [],
+              customDepts: db.customDepts || [],
+              subjectColorSchemeVersion: db.subjectColorSchemeVersion || 2,
+              systemMode: db.systemMode || 'DAILY'
+            };
+            const schedule = { sched: db.sched || {} };
+            const home = {
+              year: (db.school && db.school.year) || '',
+              announcements: db.announcements || [],
+              systemMode: db.systemMode || 'DAILY'
+            };
 
             fs.writeFileSync('database/core.json', JSON.stringify(core));
             fs.writeFileSync('database/schedule.json', JSON.stringify(schedule));
