@@ -26254,8 +26254,8 @@ function goBackPage(){
 }
 
 function nav(p){
-  if(window.SCHOOL_ONLINE && SCHOOL_ONLINE.needsFull(p) && !SCHOOL_ONLINE.isFullReady()){
-    SCHOOL_ONLINE.loadFull().then(function(){ nav(p); }).catch(function(e){
+  if(window.SCHOOL_ONLINE && SCHOOL_ONLINE.needsData(p) && !SCHOOL_ONLINE.pageReady(p)){
+    SCHOOL_ONLINE.loadForPage(p).then(function(){ nav(p); }).catch(function(e){
       if(typeof toast==='function') toast('โหลดข้อมูลหน้านี้ไม่สำเร็จ: '+(e.message||e),'warn');
     });
     return;
@@ -31315,8 +31315,8 @@ if(_subV2OldSetSubTeacher){
 <script id="school-os-online-adapter">
 (function(){
   var SAFE_LOGO_URL='https://drivekup01.github.io/School-OS/assets/school-logo.svg';
-  var fullReady=false;
-  var fullPromise=null;
+  var ready={core:false,schedule:false,substitute:false};
+  var pending={};
 
   function badge(text,cls){
     var el=document.getElementById('onlineDbBadge');
@@ -31390,28 +31390,55 @@ if(_subV2OldSetSubTeacher){
     if(typeof renderAllUI==='function') renderAllUI();
     else {updateTopbar();updateSidebarCounts();renderDashboard();renderProfileSidebar();}
   }
-  async function loadFull(){
-    if(fullReady) return true;
-    if(fullPromise) return fullPromise;
-    badge('กำลังโหลดข้อมูลตาราง...','');
-    fullPromise=(async function(){
-      try{
-        var payload=await getApi('bootstrap',30000);
-        applyFull(payload.data);
-        badge('● ฐานข้อมูลโรงเรียนออนไลน์','ok');
-        return true;
-      }catch(err){
-        badge('โหลดข้อมูลตารางไม่สำเร็จ','err');
-        console.error('School-OS Full DB:',err);
-        throw err;
-      }finally{fullPromise=null;}
-    })();
-    return fullPromise;
+  function mergeData(part){
+    part=part||{};
+    ['school','teachers','subjects','rooms','slots','days','customDepts','subjectColorSchemeVersion','systemMode','sched','substitute'].forEach(function(k){
+      if(part[k]!==undefined) DB[k]=part[k];
+    });
   }
-  function needsFull(page){
+  async function loadPart(name){
+    if(ready[name]) return true;
+    if(pending[name]) return pending[name];
+    pending[name]=(async function(){
+      try{
+        var payload=await getApi(name,name==='substitute'?15000:30000);
+        mergeData(payload.data);
+        ready[name]=true;
+        return true;
+      }finally{delete pending[name];}
+    })();
+    return pending[name];
+  }
+  async function loadForPage(page){
+    var parts=(page==='substitute'||page==='sub-history'||page==='leave-test')
+      ?['core','schedule','substitute']:['core','schedule'];
+    badge('กำลังโหลดข้อมูลที่จำเป็น...','');
+    try{
+      await Promise.all(parts.map(loadPart));
+      if(typeof applySubjectColorScheme==='function') applySubjectColorScheme(false);
+      if(typeof refreshAllDeptDropdowns==='function') refreshAllDeptDropdowns();
+      if(typeof renderCustomDeptList==='function') renderCustomDeptList();
+      updateTopbar();updateSidebarCounts();
+      badge('● ฐานข้อมูลโรงเรียนออนไลน์','ok');
+      return true;
+    }catch(err){
+      console.warn('School-OS split API:',err);
+      var legacy=await getApi('bootstrap',30000);
+      applyFull(legacy.data);
+      ready.core=ready.schedule=ready.substitute=true;
+      badge('● ฐานข้อมูลโรงเรียนออนไลน์','ok');
+      return true;
+    }
+  }
+  function needsData(page){
     return ['teacher-view','teacher-all','substitute','sub-history','leave-test','school','teachers','import-teachers','subjects','rooms','timeslots','builder','auto-schedule','workload','export','storage','conflict'].indexOf(page)>=0;
   }
-  window.SCHOOL_ONLINE={loadHome:loadHome,loadFull:loadFull,needsFull:needsFull,isFullReady:function(){return fullReady;}};
+  function pageReady(page){
+    if(!needsData(page)) return true;
+    if(page==='substitute'||page==='sub-history'||page==='leave-test') return ready.core&&ready.schedule&&ready.substitute;
+    return ready.core&&ready.schedule;
+  }
+  window.SCHOOL_ONLINE={loadHome:loadHome,loadForPage:loadForPage,needsData:needsData,pageReady:pageReady};
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',loadHome);
   else setTimeout(loadHome,0);
 })();
