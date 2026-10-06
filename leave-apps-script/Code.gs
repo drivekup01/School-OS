@@ -2,6 +2,12 @@
 // Data source: ระบบใบลาออนไลน์
 const LEAVE_SPREADSHEET_ID = '1KA8ch40D0iFHN1nYNcgadWTQbxehEiyKtOdcivRupW0';
 
+// Read-only bridge from the external leave sheet name to School-OS permanent teacher ID.
+// The external sheet is never modified. Add mappings only after verifying the teacher.
+const LEAVE_TEACHER_ID_MAP = {
+  'นางสาวเฑียรภักดิ์ สุทธิยะรักษ์': 'muqeww60nr4w8'
+};
+
 function doGet(e) {
   try {
     const p=(e&&e.parameter)||{};
@@ -48,7 +54,7 @@ function teacherLeave_(p) {
     const from=parseThaiDateKey_(fromText),to=parseThaiDateKey_(toText);
     if(!from||!to||selected<from||selected>to) return;
     rows.push({
-      row:String(i+2),name:name,type:type,
+      row:String(i+2),teacherId:LEAVE_TEACHER_ID_MAP[name]||'',name:name,type:type,
       from:fromText,to:toText,duration:duration
     });
   });
