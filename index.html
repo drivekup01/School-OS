@@ -1182,7 +1182,6 @@ body{background:var(--bg);color:#20324B}
 </style>
 <style id="support-role-style">
 body.support-mode .academic-login-box{display:none!important}
-body.support-mode .admin-only-top{display:none!important}
 body.support-mode .sidebar .sb-item{display:none!important}
 body.support-mode #nav-dashboard,
 body.support-mode #nav-teacher-view,
@@ -1814,8 +1813,8 @@ label,.fg label{font-size:13px!important}
     <section class="card dashboard-action-card dashboard-login-card">
       <div class="dashboard-card-head">
         <div>
-          <div class="card-title">🔐 เข้าสู่ระบบฝ่ายวิชาการ</div>
-          <div class="dashboard-card-sub">เข้าสู่ระบบเพื่อจัดการข้อมูลและตารางเรียนของโรงเรียน</div>
+          <div class="card-title">🔐 เข้าสู่ระบบ</div>
+          <div class="dashboard-card-sub" id="loginCardSubtitle">เข้าสู่ระบบเพื่อใช้งานตามสิทธิ์ของผู้ใช้งาน</div>
         </div>
       </div>
 
@@ -1830,8 +1829,8 @@ label,.fg label{font-size:13px!important}
 
       <div id="adminTopBox" class="admin-top-box dashboard-admin-box" style="display:none">
         <div class="dashboard-admin-icon">✓</div>
-        <div class="dashboard-admin-title">เข้าสู่ระบบแล้ว</div>
-        <div class="dashboard-admin-sub">คุณกำลังใช้งานในสิทธิ์ฝ่ายวิชาการ</div>
+        <div class="dashboard-admin-title" id="loginRoleTitle">เข้าสู่ระบบแล้ว</div>
+        <div class="dashboard-admin-sub" id="loginRoleDescription"></div>
         <button class="logout-top-btn" onclick="academicLogout()">ออกจากระบบ</button>
       </div>
     </section>
@@ -31352,7 +31351,13 @@ function applyAccessUI(){
   b.classList.toggle('daily-mode',SCHOOL_AUTH.loggedIn&&SCHOOL_AUTH.mode==='DAILY');
   var g=document.getElementById('guestLoginBox'),a=document.getElementById('adminTopBox');
   if(g) g.style.display=SCHOOL_AUTH.loggedIn?'none':'flex';
-  if(a) a.style.display=(SCHOOL_AUTH.loggedIn&&SCHOOL_AUTH.role==='admin')?'flex':'none';
+  if(a) a.style.display=SCHOOL_AUTH.loggedIn?'flex':'none';
+  var roleTitle=document.getElementById('loginRoleTitle');
+  var roleDesc=document.getElementById('loginRoleDescription');
+  if(SCHOOL_AUTH.loggedIn){
+    if(roleTitle) roleTitle.textContent=SCHOOL_AUTH.role==='support'?'Support':'Admin';
+    if(roleDesc) roleDesc.textContent=SCHOOL_AUTH.role==='support'?'ผู้ดูแลระบบจัดสอนแทน':'ผู้ดูแลระบบ';
+  }
 
   document.querySelectorAll('.dashboard-shortcut[data-page]').forEach(function(btn){
     btn.style.display=canAccessPage(btn.getAttribute('data-page'))?'flex':'none';
