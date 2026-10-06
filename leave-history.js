@@ -1,5 +1,5 @@
 // School-OS Leave History module.
-// Intentionally isolated from login, bootstrap, main DB and timetable save flows.
+// Isolated from login, bootstrap, main DB and the daily substitute flow.
 (function(){
   'use strict';
 
@@ -9,47 +9,33 @@
     });
   }
 
-  function getIso(){
-    var input=document.getElementById('leaveTestDate');
-    if(!input) return '';
-    var iso=String(input.value||'').trim();
-    return /^\d{4}-\d{2}-\d{2}$/.test(iso)?iso:'';
-  }
-
   window.renderLeaveTest=async function(){
     var box=document.getElementById('leaveTestResult');
     var count=document.getElementById('leaveTestCount');
     if(!box||!count) return;
 
-    var iso=getIso();
-    if(!iso){
-      box.innerHTML='<div class="alert a-warn">กรุณาเลือกวันที่ก่อนตรวจสอบครูลา</div>';
-      count.textContent='0 คน';
-      return;
-    }
-
     var base=String(window.SCHOOL_OS_LEAVE_API_URL||'').replace(/\/+$/,'');
     if(!base){
       box.innerHTML='<div class="alert a-warn">ยังไม่ได้เชื่อม Leave API</div>';
-      count.textContent='0 คน';
+      count.textContent='0 รายการ';
       return;
     }
 
-    box.innerHTML='<div style="padding:24px;text-align:center;color:#7787A2">กำลังอ่านฐานข้อมูลใบลา...</div>';
+    box.innerHTML='<div style="padding:24px;text-align:center;color:#7787A2">กำลังโหลดประวัติการลา...</div>';
     count.textContent='...';
 
     try{
-      var url=base+'?action=teacherLeave&date='+encodeURIComponent(iso)+'&_='+Date.now();
+      var url=base+'?action=leaveHistory&_='+Date.now();
       var res=await fetch(url,{method:'GET',cache:'no-store'});
       if(!res.ok) throw new Error('HTTP '+res.status);
       var out=await res.json();
       if(!out||out.ok===false) throw new Error((out&&out.error)||'Leave API ตอบกลับไม่สำเร็จ');
 
       var rows=Array.isArray(out.rows)?out.rows:[];
-      count.textContent=rows.length+' คน';
+      count.textContent=rows.length+' รายการ';
 
       if(!rows.length){
-        box.innerHTML='<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-text">ไม่พบครูลาในวันที่เลือก</div></div>';
+        box.innerHTML='<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">ยังไม่มีข้อมูลการลา</div></div>';
         return;
       }
 
@@ -58,7 +44,7 @@
           return '<tr><td>'+(i+1)+'</td><td><b>'+esc(r.name)+'</b></td><td>'+esc(r.type)+'</td><td>'+esc(r.from)+'</td><td>'+esc(r.to)+'</td><td>'+esc(r.duration)+'</td></tr>';
         }).join('')+'</tbody></table></div>';
     }catch(err){
-      count.textContent='0 คน';
+      count.textContent='0 รายการ';
       box.innerHTML='<div class="alert a-warn">เชื่อมฐานข้อมูลใบลาไม่สำเร็จ: '+esc(err&&err.message?err.message:err)+'</div>';
     }
   };
