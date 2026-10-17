@@ -1,0 +1,74 @@
+/* Preview only. Scheduling cells retain their subject colors and interaction hooks. */
+@media screen{
+:root{--pri:#70439e;--pri2:#8555b2;--pri3:#a780ce;--gold:#9a6ec4;--gold2:#ede0fa;--gold-soft:#f5edfc;--bg:#f8f5fc;--text:#30213f;--muted:#917da5;--border:#e9dff3;--sidebar:252px;--sh:0 12px 32px #623e8810}
+html{background:#f8f5fc}body{background:radial-gradient(ellipse at 60% 0,#eee2fa,transparent 65%),#faf8fd!important;color:#352640!important;font-family:Sarabun,Tahoma,sans-serif}
+body .preview-banner{margin-left:252px;padding:7px 22px;gap:6px 14px;background:#eee4f7;border-color:#e3d3ef;font-size:12px;justify-content:flex-start;z-index:50}
+body .preview-banner button,body .preview-banner a{font-size:11px!important;padding:3px 9px;background:#ffffffb3}
+body .school-topbar{margin-left:252px;width:calc(100% - 252px);height:72px!important;min-height:72px!important;padding:14px 32px!important;background:transparent!important;overflow:visible!important;position:relative!important;top:auto!important;gap:14px!important;flex-shrink:0}
+body .school-topbar:before,body .school-topbar:after{display:none!important}
+.preview-top-label{font-size:13px;color:#957ca9;letter-spacing:.1px}
+body .topbar-tools{position:static!important;display:flex!important;flex-direction:row!important;align-items:center!important;gap:10px!important;flex-wrap:wrap;margin-left:auto}
+body .school-year,body .school-save,body #onlineDbBadge{background:#ffffffb8!important;border:1px solid #e4d5f0!important;color:#79519b!important;box-shadow:none!important;font-size:11px!important;padding:7px 12px!important;height:auto;white-space:normal}
+body #onlineDbBadge.err{color:#a33b55!important;background:#fff0f2!important}
+body .app-shell{display:block!important;width:100%;flex:1;min-height:0!important}
+body .sidebar{transition:none!important;position:fixed!important;inset:0 auto 0 0!important;width:252px!important;height:100dvh!important;max-height:100dvh!important;overflow:auto!important;display:flex!important;padding:26px 16px 20px!important;background:linear-gradient(160deg,#291743,#472468)!important;box-shadow:8px 0 30px #3b20500a!important;z-index:100}
+body .sidebar.sidebar-collapsed{width:252px!important}
+body .sidebar .school-brand{display:flex!important;flex-direction:column!important;align-items:center!important;gap:16px!important;padding:0!important;min-width:0!important;min-height:0!important;max-width:none!important;width:100%!important;margin:0!important;flex-shrink:0;text-align:center}
+body .sidebar .school-logo-shell{height:98px!important;width:98px!important;flex:0 0 98px!important}
+body .sidebar .school-brand-text{padding:0!important;min-width:0!important;max-width:100%!important;width:100%}
+body .sidebar .school-name{font-size:16px!important;min-width:0!important;max-width:100%!important;line-height:1.7!important;color:white!important;text-align:center;font-weight:700}
+body .sidebar .school-system-name{font-size:11px!important;min-width:0!important;max-width:100%!important;color:#c9b6dc!important;line-height:1.7!important;margin-top:8px;text-align:center}
+.preview-sidebar-clock{margin:18px 0 22px;padding:11px 7px;border:1px solid #ffffff22;border-radius:14px;background:#ffffff08;color:#f0e5f9;font-size:11px;text-align:center;line-height:1.9;flex-shrink:0}
+.preview-sidebar-clock time{display:block;color:#cdb7df;font-variant-numeric:tabular-nums}
+body .sb-collapse-wrap{display:none!important}body .sb-section{padding:10px 0 4px!important;flex-shrink:0}
+body .sb-label{font-size:10px!important;letter-spacing:.5px!important;color:#ac8fc4!important;padding:0 12px 9px!important}
+body .sb-item{display:flex!important;align-items:center!important;min-height:45px;margin:3px 0!important;padding:11px 12px!important;border:0!important;border-radius:12px!important;font-size:13px!important;color:#ddcfea!important;gap:11px!important;transition:background .18s,color .18s}
+body .sb-item:hover{background:#ffffff0d!important;color:#fff!important}body .sb-item.active{background:#ffffff1b!important;color:#fff!important;box-shadow:none!important;font-weight:700}
+body .sb-item .icon{display:inline-flex;align-items:center;justify-content:center;width:19px!important;flex-shrink:0;color:#cdb4e2}
+.sb-item .icon svg{width:19px;height:19px}.sidebar .sb-divider{border-top-color:#ffffff13!important;margin:12px 6px!important;flex-shrink:0}
+body .sb-badge{background:#ffffff12!important;font-size:10px!important;padding:1px 7px!important}
+.preview-sidebar-account{margin-top:24px;border-top:1px solid #ffffff1e;padding:18px 10px 0;color:#e5d7ef;font-size:13px;line-height:1.9;flex-shrink:0}.preview-sidebar-account small{display:block;color:#b99bce;font-size:11px}
+.preview-mobile-toggle{display:none}
+body .main{margin-left:252px!important;width:calc(100% - 252px)!important;min-width:0!important;background:transparent!important;overflow:visible!important}
+body .page{padding:20px 32px 42px!important}body .ph{gap:18px;align-items:center;margin-bottom:24px!important;flex-wrap:wrap}
+body .ph-left h1{font-family:Sarabun,Tahoma,sans-serif!important;color:#30213f!important;font-size:28px!important;font-weight:800;line-height:1.45!important}
+body .ph-left p{color:#9986a9!important;font-size:13px!important;line-height:1.7}
+body .page-title-icon{background:#eee1f9!important;border:0!important;color:#8353aa!important;border-radius:12px!important}
+body .card{border:1px solid #e9dff3!important;border-radius:22px!important;box-shadow:0 12px 32px #623e8809!important;background:white!important}
+body .card-hd,body .dashboard-card-head{border-color:#f0e8f7!important;background:transparent!important;padding:20px 22px!important}
+body .card-title{color:#513369!important;font-size:16px!important;font-weight:700}
+body .card-body{padding:20px 22px!important}
+body .btn,body .ph-actions .btn{border-radius:10px!important;min-height:38px;transition:transform .15s,box-shadow .15s,background .15s;font-size:13px!important;box-shadow:none!important}
+body .btn-pri,body .ph-actions .btn-pri,body .dashboard-login-btn{background:linear-gradient(120deg,#70439e,#8b5db7)!important;color:white!important;border:1px solid transparent!important}
+body .btn-out{border:1px solid #dfcceb!important;color:#775096!important;background:#faf7fd!important}body .btn:hover{transform:translateY(-1px);box-shadow:0 5px 13px #75469c13!important}body .btn:active{transform:translateY(0)}
+body input:not([type=checkbox]):not([type=radio]):not([type=color]),body select,body textarea{border-color:#e3d7ed!important;border-radius:10px!important;background:#fff!important;color:#443151!important;min-height:40px;font-family:inherit}
+body input:focus,body select:focus,body textarea:focus{outline:3px solid #e9d9f7!important;outline-offset:1px;border-color:#b68bce!important}
+body .tbl thead th{background:#f7f2fb!important;color:#8b6ba1!important;border-color:#eee5f5!important;font-weight:600!important;padding:14px!important}
+body .tbl tbody td{border-color:#f0eaf6!important;padding:13px 14px!important;color:#4f3b5c}body .tbl tbody tr:hover{background:#fcf9ff!important}
+body .room-tab,body .dept-tab,body .filter-pill{border-color:#e6d7f1!important;color:#88649d!important;background:white!important;border-radius:10px!important}
+body .room-tab.active,body .dept-tab.active,body .filter-pill.active{background:#78509f!important;color:white!important;border-color:#78509f!important}
+body .builder-room-panel,body .tv-sidebar,body .sub-v2-side-card{border-color:#e6d9ef!important;border-radius:18px!important;box-shadow:none!important}
+body #page-builder .sched-tbl th,body .sched-tbl th,body .tv-tbl thead th,body .sub-v2-grid th{background:#75509b!important;border-color:#8867aa!important;color:#fff!important}
+body #page-builder .sched-tbl th[style*="E65100"]{background:#d39a37!important;color:#fff!important}
+body .sched-tbl select,body .sched-tbl input{min-height:30px!important;height:30px!important;font-size:11px!important;border-radius:6px!important;padding:3px 5px!important}
+body .rtab{border-color:#e6d7f1!important;color:#88649d!important;background:white!important;border-radius:9px!important}body .rtab.active{background:#78509f!important;color:white!important;border-color:#78509f!important}
+body .sched-tbl td.td-period,body .tv-tbl td.tc-row{background:#f5effb!important;color:#785990!important}
+body .modal{border-radius:22px!important;border:1px solid #e4d6ef;box-shadow:0 24px 80px #39204733}.modal-bg{backdrop-filter:blur(5px)}
+body .dashboard-action-grid{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)!important;gap:22px!important;align-items:start}
+body.admin-mode .dashboard-login-card{display:none!important}body .dashboard-action-card{min-height:0!important;height:auto!important}
+body .dashboard-shortcuts{padding:0 22px 22px!important;gap:12px!important}
+body .dashboard-shortcut,body .guest-shortcut-card{border:1px solid #eee3f6!important;border-radius:15px!important;background:#fbf8fe!important;box-shadow:none!important;min-height:102px!important;padding:16px!important;transition:transform .18s,border-color .18s}
+body .dashboard-shortcut:hover,body .guest-shortcut-card:hover{transform:translateY(-3px)!important;border-color:#cfb5e4!important;background:#f6effc!important}
+body .dashboard-shortcut strong,body .guest-shortcut-card strong{color:#674185!important;font-size:14px!important;line-height:1.5!important}body .dashboard-shortcut small,body .guest-shortcut-card small{color:#9a84ab!important;font-size:12px!important;line-height:1.6!important}
+body .dashboard-shortcut-icon,body .guest-shortcut-icon{background:#eee1f9!important;color:#8a5caf!important;border-radius:12px!important;width:42px!important;height:42px!important;flex:0 0 42px!important}
+body .dashboard-announcement-list{padding:0 22px 22px!important}body .dashboard-announcement-item,body .announcement-item{border-color:#eee4f6!important;background:#fdfbff!important;border-radius:14px!important}
+.preview-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin:0 0 26px}.preview-summary-card{font:inherit;border:0;border-radius:20px;text-align:left;padding:22px;color:white;background:linear-gradient(125deg,#71409d,#9769c0);box-shadow:0 10px 24px #78499d13;cursor:pointer;transition:transform .18s}.preview-summary-card:nth-child(2){background:linear-gradient(125deg,#29887f,#40a39a)}.preview-summary-card:nth-child(3){background:linear-gradient(125deg,#ca8d30,#dfa74b)}.preview-summary-card:nth-child(4){background:linear-gradient(125deg,#447bb9,#6493cc)}.preview-summary-card:hover{transform:translateY(-3px)}.preview-summary-card span{display:block;font-size:13px;opacity:.95}.preview-summary-card strong{display:block;font-size:32px;line-height:1.4;margin:8px 0 4px;font-weight:800}.preview-summary-card small{font-size:11px;opacity:.8}
+@keyframes preview-coin{0%{transform:perspective(650px) rotateY(0);animation-timing-function:cubic-bezier(.15,.65,.2,1)}57.142857%,100%{transform:perspective(650px) rotateY(1080deg)}}
+.sidebar .school-logo-shell img{animation:preview-coin 7s infinite}
+@media(min-width:1600px){body .page{padding-left:48px!important;padding-right:48px!important}}
+@media(max-width:1100px){body .dashboard-action-grid{grid-template-columns:1fr!important}.preview-summary{grid-template-columns:repeat(2,minmax(0,1fr))}body .ph-actions{flex-wrap:wrap}body .page{padding:18px 22px 32px!important}body .topbar-tools{max-width:100%}}
+@media(max-width:760px){body .sidebar{position:relative!important;inset:auto!important;width:100%!important;height:auto!important;max-height:none!important;padding:20px 18px!important;overflow:visible!important}body .sidebar .school-brand{gap:10px!important}body .sidebar .school-logo-shell{width:76px!important;height:76px!important;flex-basis:76px!important}body .sidebar .school-name{font-size:15px!important}body .sidebar .school-system-name{margin-top:3px}.preview-sidebar-clock{margin:14px auto;max-width:300px;width:100%;padding:8px}.preview-mobile-toggle{display:block;flex-shrink:0;border:1px solid #ffffff35;background:#ffffff12;color:white;border-radius:10px;padding:10px;font:inherit;cursor:pointer}.sidebar:not(.preview-menu-open) .sb-section,.sidebar:not(.preview-menu-open) .sb-divider,.sidebar:not(.preview-menu-open) .preview-sidebar-account{display:none!important}body .sidebar .sb-section{padding:12px 0 4px!important}body .preview-banner{margin-left:0;padding:8px 14px;justify-content:center;order:0}body .school-topbar{margin-left:0;width:100%;height:auto!important;min-height:58px!important;padding:12px 18px!important;flex-wrap:wrap;order:2}body .app-shell{display:flex!important;flex-direction:column!important;order:1}body .main{margin-left:0!important;width:100%!important;order:2}body .page{padding:24px 16px 32px!important}.preview-top-label{display:none}.preview-summary{gap:10px;margin-bottom:20px}.preview-summary-card{padding:16px;border-radius:16px}.preview-summary-card strong{font-size:27px}body .ph-left h1{font-size:24px!important}.ph-actions{width:100%}body .dashboard-shortcuts{padding:0 16px 16px!important;grid-template-columns:1fr!important}body .dashboard-card-head{padding:18px 16px!important}body .school-topbar{display:none!important}body .tbl{min-width:600px}.preview-sidebar-account{margin-top:15px}}
+@media(prefers-reduced-motion:reduce){.sidebar .school-logo-shell img{animation:none}body .btn,body .dashboard-shortcut,.preview-summary-card{transition:none!important}}
+}
+
+@media print{.preview-summary,.preview-sidebar-clock,.preview-sidebar-account,.preview-mobile-toggle,.preview-top-label{display:none!important}}
