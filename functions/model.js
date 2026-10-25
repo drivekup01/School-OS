@@ -1,6 +1,6 @@
 'use strict';
 const crypto=require('node:crypto');
-const ROOT=['school','teachers','subjects','rooms','slots','days','sched','substitute','announcements','customDepts','subjectColorSchemeVersion','systemMode'];
+const ROOT=['school','teachers','subjects','rooms','slots','days','sched','teacherSched','substitute','announcements','customDepts','subjectColorSchemeVersion','systemMode'];
 const clone=v=>JSON.parse(JSON.stringify(v));
 function error(message,code='invalid-argument'){const e=new Error(message);e.code=code;throw e;}
 function object(v){return v&&typeof v==='object'&&!Array.isArray(v);}
@@ -11,6 +11,13 @@ function normalize(input){
  const d=clone(input);for(const k of ['teachers','subjects','rooms','slots','days','announcements','customDepts']){if(!Array.isArray(d[k]))error('ข้อมูล '+k+' ต้องเป็นรายการ');}
  if(!object(d.school)||!object(d.sched)||!object(d.substitute))error('โครงสร้างข้อมูลไม่ถูกต้อง');
  for(const k of ['teachers','subjects','rooms']){const seen=new Set();for(const row of d[k]){if(!object(row)||typeof row.id!=='string'||!row.id||row.id.length>100||seen.has(row.id))error('รหัสซ้ำหรือไม่ถูกต้องใน '+k);seen.add(row.id);}}
+ if(d.teacherSched!==undefined){
+  if(!object(d.teacherSched)||Object.keys(d.teacherSched).length>20000)error('ตารางรายครูไม่ถูกต้อง');
+  for(const [key,v]of Object.entries(d.teacherSched)){
+   if(!object(v)||Object.keys(v).some(k=>!['teacherId','slotId','day','subjectId','subject'].includes(k))||typeof v.teacherId!=='string'||typeof v.slotId!=='string'||typeof v.day!=='string'||typeof v.subjectId!=='string'||!v.subjectId||typeof v.subject!=='string'||!v.subject.trim()||v.subject.length>200)error('ข้อมูลคาบรายครูไม่ถูกต้อง');
+   if(key!==JSON.stringify([v.teacherId,v.slotId,v.day])||!d.teachers.some(t=>t.id===v.teacherId)||!d.slots.some(s=>String(s.id)===v.slotId&&!s.isBreak)||!d.days.includes(v.day))error('ครู วัน หรือคาบรายครูไม่ถูกต้อง');
+  }
+ }
  if(d.teachers.length>1000||d.rooms.length>500||d.subjects.length>5000||Object.keys(d.sched).length>20000)error('ฐานข้อมูลใหญ่เกินขอบเขตที่รองรับ');
  if(!['DAILY','SETUP'].includes(d.systemMode||'DAILY'))error('โหมดระบบไม่ถูกต้อง');d.systemMode=d.systemMode||'DAILY';
  if(Buffer.byteLength(JSON.stringify(d))>6*1024*1024)error('ฐานข้อมูลเกิน 6 MB');return d;
@@ -20,7 +27,8 @@ function publicView(data){
  // Only teacher names/IDs used by public timetable are published. Never copy
  // contacts, private notes, leave records or auth settings into public documents.
  const fields=(v,keys)=>Object.fromEntries(keys.filter(k=>v[k]!==undefined).map(k=>[k,clone(v[k])]));
- return {school,teachers:d.teachers.map(t=>fields(t,['id','prefix','first','last','dept','subjects'])),subjects:d.subjects.map(t=>fields(t,['id','code','name','grade','dept','hours','color'])),rooms:d.rooms.map(t=>fields(t,['id','level','grade','room','label','homeroom','homeroom2','homeroom3','planName'])),slots:d.slots.map(t=>fields(t,['id','label','start','end','isBreak'])),days:clone(d.days),sched:Object.fromEntries(Object.entries(d.sched).map(([k,v])=>[k,fields(v,['subject','teacher','teacher2','teacher3','learnRoom','locked'])])),substitute:{},announcements:[],customDepts:clone(d.customDepts),subjectColorSchemeVersion:d.subjectColorSchemeVersion||2,systemMode:'DAILY'};
+ const out={school,teachers:d.teachers.map(t=>fields(t,['id','prefix','first','last','dept','subjects'])),subjects:d.subjects.map(t=>fields(t,['id','code','name','grade','dept','hours','color'])),rooms:d.rooms.map(t=>fields(t,['id','level','grade','room','label','homeroom','homeroom2','homeroom3','planName'])),slots:d.slots.map(t=>fields(t,['id','label','start','end','isBreak'])),days:clone(d.days),sched:Object.fromEntries(Object.entries(d.sched).map(([k,v])=>[k,fields(v,['subject','teacher','teacher2','teacher3','learnRoom','locked'])])),substitute:{},announcements:[],customDepts:clone(d.customDepts),subjectColorSchemeVersion:d.subjectColorSchemeVersion||2,systemMode:'DAILY'};
+ if(d.teacherSched)out.teacherSched=clone(d.teacherSched);return out;
 }
 const hash=v=>crypto.createHash('sha256').update(typeof v==='string'?v:JSON.stringify(v)).digest('hex');
 function parts(data){const text=JSON.stringify(data),chars=Array.from(text),out=[];let current='',bytes=0;for(const char of chars){const n=Buffer.byteLength(char);if(bytes+n>150000){out.push(current);current='';bytes=0;}current+=char;bytes+=n;}if(current||!out.length)out.push(current);return {parts:out,hash:hash(text),bytes:Buffer.byteLength(text)};}
