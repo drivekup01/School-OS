@@ -6,7 +6,9 @@ const {defineString}=require('firebase-functions/params');
 const M=require('./model'),I=require('./identity'),{repository}=require('./storage');
 if(!getApps().length)initializeApp();const db=getFirestore(),stamp=()=>FieldValue.serverTimestamp(),identity=I.service(db,stamp),repo=repository(db,stamp),importSource=require('./migration').migration(db,repo,stamp);
 const LEGACY_API=defineString('SCHOOL_TIMETABLE_LEGACY_API',{default:''}),LEAVE_API=defineString('SCHOOL_TIMETABLE_LEGACY_LEAVE_API',{default:''});
-const options={region:'asia-southeast1',memory:'256MiB',maxInstances:3,timeoutSeconds:120,cors:['https://drivekup01.github.io','http://127.0.0.1:4173','http://localhost:4173']};
+// Callable requests authenticate inside the Firebase handler. Cloud Run must
+// accept the browser's CORS preflight before Firebase verifies its ID token.
+const options={region:'asia-southeast1',invoker:'public',memory:'256MiB',maxInstances:3,timeoutSeconds:120,cors:['https://drivekup01.github.io','http://127.0.0.1:4173','http://localhost:4173']};
 async function handle(work){try{return await work();}catch(e){if(e instanceof HttpsError)throw e;const valid=['invalid-argument','permission-denied','unauthenticated','not-found','failed-precondition','already-exists','aborted','data-loss','resource-exhausted'];throw new HttpsError(valid.includes(e.code)?e.code:'internal',e.message||'ดำเนินการไม่สำเร็จ');}}
 async function academic(request){const p=await identity.resolve(request);M.assertAcademic(p);return p;}
 async function legacy(url,action){if(!url||!/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(url))M.error('ยังไม่ได้ตั้ง URL แหล่งข้อมูลเดิม','failed-precondition');const res=await fetch(url+'?action='+encodeURIComponent(action)+'&_='+Date.now(),{signal:AbortSignal.timeout(90000)});if(!res.ok)M.error('แหล่งข้อมูลเดิมตอบ HTTP '+res.status,'failed-precondition');const body=await res.json();if(!body.ok)M.error('แหล่งข้อมูลเดิมตอบไม่สำเร็จ','failed-precondition');return body;}

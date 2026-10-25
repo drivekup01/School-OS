@@ -1,0 +1,11 @@
+import {read} from './firebase-timetable.js?v=20261025-firebase2';
+const escape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+export async function render(){
+ const target=document.getElementById('teacherAllContent'),select=document.getElementById('dailyTeacherDay');if(!target||!select)return;
+ target.textContent='กำลังโหลดตารางสอน…';
+ try{const {data:d}=await read('core');if(!select.options.length){select.innerHTML=d.days.map(day=>`<option value="${escape(day)}">${escape(day)}</option>`).join('');const today=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'][new Date().getDay()];const match=d.days.find(day=>String(day).includes(today));if(match)select.value=match;select.onchange=render;}
+  const day=select.value,slots=d.slots.filter(s=>!s.isBreak),search=(document.getElementById('dailyTeacherSearch')?.value||'').trim().toLowerCase(),teachers=d.teachers.filter(t=>`${t.prefix||''}${t.first||''} ${t.last||''}`.toLowerCase().includes(search));
+  document.getElementById('dailyTeacherCount').textContent=`${teachers.length} / ${d.teachers.length} คน · ${day}`;
+  target.innerHTML=`<table style="width:100%;border-collapse:collapse;min-width:900px"><thead><tr><th style="padding:12px;text-align:left">ครู</th>${slots.map(s=>`<th style="padding:12px;background:#f4ecfa">${escape(s.label)}<small style="display:block;font-weight:normal">${escape(s.start)}–${escape(s.end)}</small></th>`).join('')}</tr></thead><tbody>${teachers.map(t=>{const name=`${t.prefix||''}${t.first||''} ${t.last||''}`;return `<tr><th style="padding:12px;text-align:left;border-bottom:1px solid #e9e0f0">${escape(name)}</th>${slots.map(slot=>{const cells=d.rooms.flatMap(room=>{const c=d.sched[`${room.id}_${slot.id}_${day}`];if(!c||!c.subject||![c.teacher,c.teacher2,c.teacher3].includes(name))return [];const subject=d.subjects.find(s=>[s.id,s.code,s.name].includes(c.subject));return [`<div>${escape(subject?.code||c.subject)}<small style="display:block;color:#795c8d">${escape(room.label)}</small></div>`];});return `<td style="padding:10px;text-align:center;border:1px solid #eee4f4">${cells.join('<hr>')||'—'}</td>`;}).join('')}</tr>`;}).join('')}</tbody></table>`;
+ }catch(e){target.textContent=e.message;}
+}

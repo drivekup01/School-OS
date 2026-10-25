@@ -1,4 +1,4 @@
-import * as identity from './school-auth.js';
+import * as identity from './school-auth.js?v=20261025-firebase2';
 let publicCache=null,privateCache=null,pendingPublic=null,pendingPrivate=null,revision=0,leaveCache=null,loading=false,scope=0;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const academic=p=>p?.active&&(p.identityAdmin||p.timetableRole==='academic');
@@ -12,6 +12,7 @@ function mapDay(text){const match=String(text||'').match(/^(\d{1,2})[\/\-](\d{1,
 export async function leave(action,date){if(!academic(currentProfile))throw Error('ประวัติลาเปิดเฉพาะฝ่ายวิชาการ');if(!leaveCache)leaveCache=await identity.call('timetableApi',{method:'leaveHistory'});const rows=action==='teacherLeave'?leaveCache.rows.filter(r=>{const from=mapDay(r.from),to=mapDay(r.to);return from&&to&&date>=from&&date<=to;}):leaveCache.rows;return {...leaveCache,rows};}
 export async function refreshLeave(){const out=await identity.call('timetableApi',{method:'refreshLeave'});leaveCache=out;return out;}
 export async function login(){await identity.login();scope++;profileTask=identity.profile();currentProfile=await profileTask;privateCache=null;publicCache=null;applyProfile();await window.SCHOOL_ONLINE.loadDatabaseOnce(true);return {ok:true};}
+export const loginRedirect=()=>identity.loginRedirect();
 export async function logout(){scope++;await identity.logout();currentProfile=null;profileTask=Promise.resolve(null);privateCache=null;publicCache=null;leaveCache=null;revision=0;window.schoolFirebaseResetView?.();window.SCHOOL_AUTH={loggedIn:false,token:'',role:'guest',mode:'DAILY'};applyProfile();await window.SCHOOL_ONLINE.loadDatabaseOnce(true);}
 function canAccess(page){if(academic(currentProfile))return true;return ['dashboard','teacher-view','teacher-all','export'].includes(page);}
 function paint(){const user=!!currentProfile,guest=document.getElementById('guestLoginBox'),box=document.getElementById('adminTopBox');document.body.classList.toggle('firebase-authenticated',user);if(guest)guest.style.display=user?'none':'flex';if(box)box.style.display=user?'flex':'none';const title=document.getElementById('loginRoleTitle'),desc=document.getElementById('loginRoleDescription');if(title)title.textContent=academic(currentProfile)?'ฝ่ายวิชาการ':'ผู้เข้าใช้ทั่วไป';if(desc)desc.textContent=currentProfile?currentProfile.name+' • '+currentProfile.email:'';const subtitle=document.getElementById('loginCardSubtitle');if(subtitle)subtitle.textContent='บัญชี Google กลางของโรงเรียน';}

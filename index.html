@@ -1848,14 +1848,15 @@ body.support-mode .logout-top-btn{
           <span><strong>ตารางสอนรายครู</strong><small>ค้นหาครูและดูตารางสอนรายบุคคล</small></span>
           <span class="guest-shortcut-arrow">→</span>
         </button>
-        <button class="guest-shortcut-card green" onclick="nav('substitute')">
+        <button class="guest-shortcut-card green" onclick="nav('teacher-all')">
           <span class="guest-shortcut-icon">🔄</span>
-          <span><strong>ตารางสอนแทน</strong><small>ดูครูลาและผู้สอนแทนประจำวัน</small></span>
+          <span><strong>ตารางครูรวมรายวัน</strong><small>ดูคาบสอนของครูทุกคนในแต่ละวัน</small></span>
           <span class="guest-shortcut-arrow">→</span>
         </button>
       </div>
 
-      <div class="dashboard-shortcuts admin-shortcut-grid">
+      <div class="guest-shortcut-grid"><button class="guest-shortcut-card purple" onclick="nav('export')"><span class="guest-shortcut-icon">🏫</span><span><strong>ตารางแต่ละชั้นเรียน</strong><small>เลือกห้องเพื่อดูตารางประจำสัปดาห์</small></span><span class="guest-shortcut-arrow">→</span></button></div>
+<div class="dashboard-shortcuts admin-shortcut-grid">
         <button class="dashboard-shortcut primary" data-page="builder" onclick="nav('builder')">
           <span class="dashboard-shortcut-icon">🗓️</span>
           <span><strong>สร้าง / แก้ไขตาราง</strong><small>จัดการตารางเรียนของแต่ละห้อง</small></span>
@@ -1900,7 +1901,7 @@ body.support-mode .logout-top-btn{
         <div class="dashboard-card-sub" id="loginCardSubtitle">เข้าสู่ระบบเพื่อใช้งานตามสิทธิ์ของผู้ใช้งาน</div>
       </div>
 
-      <div id="guestLoginBox" class="academic-login-box"><button type="button" id="academicLoginBtn" class="dashboard-login-btn" onclick="academicLogin()">เข้าสู่ระบบด้วย Google</button><div class="dashboard-login-note" id="academicLoginStatus">ฝ่ายวิชาการใช้บัญชีที่ได้รับอนุมัติ ผู้เข้าใช้ทั่วไปดูตารางสอนได้</div></div>
+      <div id="guestLoginBox" class="academic-login-box"><button type="button" id="academicLoginBtn" class="dashboard-login-btn" onclick="academicLogin()">เข้าสู่ระบบด้วย Google</button><button type="button" class="btn btn-out" onclick="window.schoolFirebaseReady.then(function(m){return m.loginRedirect()}).catch(function(e){toast(e.message,'err')})">ล็อกอินแบบหน้าเต็ม</button><div class="dashboard-login-note" id="academicLoginStatus">ฝ่ายวิชาการใช้บัญชีที่ได้รับอนุมัติ ผู้เข้าใช้ทั่วไปดูตารางสอนได้</div></div>
 
       <div id="adminTopBox" class="admin-top-box dashboard-admin-box" style="display:none">
         <div class="dashboard-admin-icon">✓</div>
@@ -2310,6 +2311,7 @@ body.support-mode .logout-top-btn{
   </div>
 </div>
 
+<div class="page" id="page-teacher-all"><div class="ph"><div class="ph-left"><h1>ตารางครูรวมรายวัน</h1><p>ดูคาบสอนของครูทุกคนตามวันเรียน</p></div></div><div class="card"><div style="display:flex;flex-wrap:wrap;gap:12px;padding:18px"><label>วันเรียน <select id="dailyTeacherDay"></select></label><input id="dailyTeacherSearch" placeholder="ค้นหาชื่อครู" oninput="renderTeacherAll()"><span id="dailyTeacherCount"></span><button class="btn btn-out" onclick="nav('dashboard')">กลับหน้าหลัก</button></div><div id="teacherAllContent" style="overflow-x:auto"></div></div></div>
 <!-- ═══════════ PAGE: EXPORT ═══════════ -->
 <div class="page" id="page-export">
   <div class="ph"><div class="ph-left"><h1>🏫 ตารางสอนแต่ละห้องเรียน</h1><p>เลือกห้องเรียนเพื่อดูตารางประจำสัปดาห์ และส่งออกเมื่อมีสิทธิ์ใช้งาน</p></div></div>
@@ -31152,8 +31154,8 @@ if(_subV2OldSetSubTeacher){
   }
 })();
 </script>
-<script src="config.js?v=52aada5"></script>
-<script>window.schoolFirebaseReady=window.SCHOOL_OS_STORAGE==='firebase'?import('./js/firebase-timetable.js'):null;</script>
+<script src="config.js?v=20261025-firebase2"></script>
+<script>window.schoolFirebaseReady=window.SCHOOL_OS_STORAGE==='firebase'?import('./js/firebase-timetable.js?v=20261025-firebase2'):null;</script>
 <script id="school-os-online-adapter">
 (function(){
   var SAFE_LOGO_URL='https://drivekup01.github.io/School-OS/assets/school-logo.svg';
@@ -31499,6 +31501,7 @@ async function switchSystemMode(mode){
   }
 }
 function renderTeacherAll(query){
+  if(window.SCHOOL_OS_STORAGE==='firebase'){import('./js/daily-timetable.js?v=20261025-firebase2').then(function(m){m.render();}).catch(function(e){toast(e.message,'warn')});return;}
   var el=document.getElementById('teacherAllContent');if(!el||!window.DB)return;
   var q=String(query==null?((document.getElementById('teacherAllSearch')||{}).value||''):query).trim().toLowerCase();
   var list=(DB.teachers||[]).filter(function(t){
@@ -31620,8 +31623,8 @@ async function renderLeaveTest(){
 }
 </script>
 <script src="leave-timetable-bridge.js?v=20261006-1"></script>
-<script src="substitute-leave-sync.js?v=20261006-1"></script>
-<script src="leave-history.js?v=20261006-2"></script>
+<script src="substitute-leave-sync.js?v=20261025-firebase2"></script>
+<script src="leave-history.js?v=20261025-firebase2"></script>
 </body>
 </html>
 <style id="builder-full-height-fix">
