@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+<script src="js/ui-state.js?v=20261025-state1"></script>
 <script src="js/teacher-schedule-core.js?v=20261025-subject2"></script>
-<link rel="stylesheet" href="css/teacher-builder.css?v=20261025-teacher1">
-<script src="js/teacher-builder.js?v=20261025-teacher1"></script>
+<link rel="stylesheet" href="css/teacher-builder.css?v=20261025-state1">
+<script src="js/teacher-builder.js?v=20261025-state1"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ระบบจัดตารางเรียน - ตารางสอน</title>
@@ -26247,6 +26248,7 @@ function nav(p){
   if(pg) pg.classList.add('active');
   if(nb) nb.classList.add('active');
   currentPage=p;
+  if(p==='builder'&&currentBuilderRoom)schoolRememberBuilderRoom(currentBuilderRoom);
   try{ sessionStorage.setItem('school_os_current_page',p); }catch(e){}
   // render the page
   if(p==='dashboard')   renderDashboard();
@@ -27038,6 +27040,7 @@ function renderBuilder(){
     return;
   }
   if(!currentBuilderRoom||!DB.rooms.find(r=>r.id===currentBuilderRoom)) currentBuilderRoom=DB.rooms[0].id;
+  schoolRememberBuilderRoom(currentBuilderRoom);
   tabs.innerHTML=DB.rooms.map(r=>`
     <div class="rtab${r.id===currentBuilderRoom?' active':''}" onclick="switchBuilderRoom('${r.id}')">🚪 ${r.label}</div>`).join('')+
     `<button class="btn btn-out btn-sm" onclick="nav('rooms')" style="margin-left:4px">+ ห้องใหม่</button>`;
@@ -27224,7 +27227,7 @@ function getQuotaStatus(roomId) {
 }
 
 // Render the quota panel in builder
-var _quotaPanelOpen = true;
+var _quotaPanelOpen = false;
 function renderQuotaPanel(roomId) {
   var el = document.getElementById('quotaPanel');
   if(!el || !roomId) return;
@@ -28168,7 +28171,7 @@ function buildTeacherOpts(subjName,selected){
     opts+=`<option value="${selected}" selected>${selected}</option>`;
   return opts;
 }
-function switchBuilderRoom(id){ currentBuilderRoom=id; renderBuilder(); }
+function switchBuilderRoom(id){ currentBuilderRoom=id; schoolRememberBuilderRoom(id); renderBuilder(); }
 function clearCurrentRoom(){
   if(!currentBuilderRoom||!confirm('ล้างตารางห้องนี้ทั้งหมด?')) return;
   Object.keys(DB.sched).filter(k=>k.startsWith(currentBuilderRoom+'_')).forEach(k=>delete DB.sched[k]);
@@ -31188,7 +31191,7 @@ if(_subV2OldSetSubTeacher){
 })();
 </script>
 <script src="config.js?v=20261025-firebase2"></script>
-<script>window.schoolFirebaseReady=window.SCHOOL_OS_STORAGE==='firebase'?import('./js/firebase-timetable.js?v=20261025-teacher1'):null;</script>
+<script>window.schoolFirebaseReady=window.SCHOOL_OS_STORAGE==='firebase'?import('./js/firebase-timetable.js?v=20261025-state1'):null;</script>
 <script id="school-os-online-adapter">
 (function(){
   var SAFE_LOGO_URL='https://drivekup01.github.io/School-OS/assets/school-logo.svg';
