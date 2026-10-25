@@ -2342,15 +2342,15 @@ body.support-mode .logout-top-btn{
 
 <!-- ═══════════ PAGE: STORAGE ═══════════ -->
 <div class="page" id="page-storage">
-  <div class="ph"><div class="ph-left"><h1>💾 บันทึก & สำรองข้อมูล</h1><p>ระบบบันทึกข้อมูลลงเครื่องผู้ใช้แบบ Offline โดยอัตโนมัติ</p></div></div>
+  <div class="ph"><div class="ph-left"><h1>💾 บันทึก & สำรองข้อมูล</h1><p>บันทึกข้อมูลบนระบบกลาง พร้อมประวัติการเปลี่ยนแปลง</p></div></div>
 
   <!-- STORAGE STATUS -->
   <div class="storage-card">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
       <div>
-        <div style="font-size:13px;opacity:.7;margin-bottom:4px">พื้นที่ใช้งาน (localStorage)</div>
+        <div style="font-size:13px;opacity:.7;margin-bottom:4px">ขนาดข้อมูลตารางสอน</div>
         <div class="storage-num" id="storageUsed">0 KB</div>
-        <div style="font-size:12px;opacity:.65;margin-top:4px">จาก 5 MB ที่รองรับ</div>
+        <div style="font-size:12px;opacity:.65;margin-top:4px">ข้อมูลเก็บบนระบบกลางของโรงเรียน</div>
         <div class="storage-bar-bg" style="width:280px"><div class="storage-bar-fill" id="storageBar" style="width:0%"></div></div>
       </div>
       <div style="text-align:right">
@@ -28795,12 +28795,14 @@ function renderStoragePage(){
   updateStorageUI();
 }
 function updateStorageUI(){
+  if(window.SCHOOL_OS_STORAGE==='firebase'){var size=document.getElementById('storageUsed');if(size)size.textContent=(new TextEncoder().encode(JSON.stringify(DB)).length/1024).toFixed(1)+' KB';}
+
   const lst=document.getElementById('lastSavedTime');
   const apn=document.getElementById('activeProfileName');
   if(lst) lst.textContent='ออนไลน์';
   if(apn) apn.textContent=(DB.school&&DB.school.name)||'School-OS';
 }
-function saveNow(){ persistNow(); showMsg('saveNowMsg','✅ ส่งคำสั่งบันทึกข้อมูลแล้ว','succ'); renderStoragePage(); }
+function saveNow(){ if(window.SCHOOL_OS_STORAGE==='firebase')lastSavedSnapshotKey=''; persistNow(); showMsg('saveNowMsg','✅ ส่งคำสั่งบันทึกข้อมูลแล้ว','succ'); renderStoragePage(); }
 async function reloadFromStorage(){
   if(!window.SCHOOL_AUTH||!SCHOOL_AUTH.loggedIn){
     toast('กรุณาเข้าสู่ระบบก่อนรีเฟรชฐานข้อมูล','warn');
