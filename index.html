@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+<script src="js/teacher-export.js?v=20261025-export1"></script>
 <script src="js/ui-state.js?v=20261025-navigation1"></script>
 <script src="js/teacher-schedule-core.js?v=20261025-teacherperiod1"></script>
 <link rel="stylesheet" href="css/teacher-builder.css?v=20261025-state1">
@@ -2293,7 +2294,7 @@ body.support-mode .logout-top-btn{
         <div style="flex:1"></div>
         <div id="tvStatsChips" class="tv-stats-chips"></div>
         <button class="btn btn-pri btn-sm" onclick="exportTeacherViewDocx()">📄 Word</button>
-        <button class="btn btn-ghost btn-sm" onclick="printTeacherView()">🖨️ พิมพ์</button>
+        <button class="btn btn-ghost btn-sm" onclick="exportTeacherViewPng()">🖼️ PNG</button>
       </div>
       <div id="teacherViewContent" style="overflow-x:auto"></div>
     </div>
@@ -28284,6 +28285,7 @@ function selectTeacherView(teacherId) {
 }
 
 function renderTeacherViewById(teacherId) {
+  _tvCurrentTeacherId=teacherId;
   var t = DB.teachers.find(function(x){return x.id===teacherId;});
   var el = document.getElementById('teacherViewContent');
   var exportBar = document.getElementById('tvExportBar');
@@ -28475,29 +28477,30 @@ async function buildTeacherDocx(teacherName, teacherObj) {
     AlignmentType,PageOrientation,WidthType,ShadingType,BorderStyle,VerticalAlign}=window.docx;
 
   const school=DB.school, font='TH SarabunPSK', margin=540, contentW=15750;
-  const dayW=1250, remaining=contentW-dayW;
-  const baseW=Math.floor(remaining/DB.slots.length);
-  const colWidths=[dayW,...DB.slots.map((_,i)=>i===DB.slots.length-1?remaining-baseW*(DB.slots.length-1):baseW)];
+  const dayW=1250, breakW=900, remaining=contentW-dayW;
+  const baseW=Math.floor((remaining-DB.slots.filter(s=>s.isBreak).length*breakW)/Math.max(1,DB.slots.filter(s=>!s.isBreak).length));
+  const colWidths=[dayW,...DB.slots.map(s=>s.isBreak?breakW:baseW)];
+  colWidths[colWidths.length-1]+=contentW-colWidths.reduce((a,b)=>a+b,0);
   const bdr=(c,sz)=>({style:BorderStyle.SINGLE,size:sz,color:c});
   const dkB={top:bdr('1A3A6E',6),bottom:bdr('1A3A6E',6),left:bdr('1A3A6E',4),right:bdr('1A3A6E',4)};
   const ltB={top:bdr('C5D3EA',3),bottom:bdr('C5D3EA',3),left:bdr('C5D3EA',3),right:bdr('C5D3EA',3)};
   const mg={top:55,bottom:55,left:75,right:75};
-  const t=(text,opts={})=>new TextRun({text:String(text||''),font,...opts});
+  const t=(text,opts={})=>new TextRun({text:String(text||''),font,...opts,...(opts.size?{size:Math.round(opts.size*1.5),sizeComplexScript:Math.round(opts.size*1.5)}:{})});
 
-  const hdrChildren=[new TableCell({borders:dkB,width:{size:dayW,type:WidthType.DXA},margins:mg,shading:{fill:'1A3A6E',type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,children:[new Paragraph({alignment:AlignmentType.CENTER,children:[t('วัน / คาบ',{bold:true,color:'FFFFFF',size:21})]})]})];
+  const hdrChildren=[new TableCell({borders:dkB,width:{size:dayW,type:WidthType.DXA},margins:mg,shading:{fill:'1A3A6E',type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,children:[new Paragraph({alignment:AlignmentType.CENTER,children:[t('วัน / คาบ',{bold:true,color:'FFFFFF',size:12})]})]})];
   DB.slots.forEach((sl,i)=>{
     hdrChildren.push(new TableCell({borders:dkB,width:{size:colWidths[i+1],type:WidthType.DXA},margins:mg,shading:{fill:sl.isBreak?'E65100':'1A3A6E',type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,children:[
-      new Paragraph({alignment:AlignmentType.CENTER,children:[t(sl.label,{bold:true,color:'FFFFFF',size:20})]}),
-      new Paragraph({alignment:AlignmentType.CENTER,children:[t(sl.start+'–'+sl.end,{color:'FFFFFF',size:15})]})
+      new Paragraph({alignment:AlignmentType.CENTER,children:[t(sl.label,{bold:true,color:'FFFFFF',size:12})]}),
+      new Paragraph({alignment:AlignmentType.CENTER,children:[t(sl.start+'–'+sl.end,{color:'FFFFFF',size:10})]})
     ]}));
   });
   const hdrRow=new TableRow({tableHeader:true,children:hdrChildren});
 
   const rows=DB.days.map(day=>{
-    const cells=[new TableCell({borders:ltB,width:{size:dayW,type:WidthType.DXA},margins:mg,shading:{fill:'EEF3FF',type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,children:[new Paragraph({alignment:AlignmentType.CENTER,children:[t(day,{bold:true,color:'1A3A6E',size:21})]})]})];
+    const cells=[new TableCell({borders:ltB,width:{size:dayW,type:WidthType.DXA},margins:mg,shading:{fill:'EEF3FF',type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,children:[new Paragraph({alignment:AlignmentType.CENTER,children:[t(day,{bold:true,color:'1A3A6E',size:12})]})]})];
     DB.slots.forEach((sl,i)=>{
       if(sl.isBreak){
-        cells.push(new TableCell({borders:ltB,width:{size:colWidths[i+1],type:WidthType.DXA},margins:mg,shading:{fill:'FFF8E1',type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,children:[new Paragraph({alignment:AlignmentType.CENTER,children:[t('พัก',{bold:true,color:'E65100',size:19})]})]}));
+        cells.push(new TableCell({borders:ltB,width:{size:colWidths[i+1],type:WidthType.DXA},margins:mg,shading:{fill:'FFF8E1',type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,children:[new Paragraph({alignment:AlignmentType.CENTER,children:[t('พักเที่ยง',{bold:true,color:'E65100',size:12})]})]}));
         return;
       }
       const matches=[];
@@ -28506,11 +28509,11 @@ async function buildTeacherDocx(teacherName, teacherObj) {
       let fill='FFFFFF'; const paras=[];
       if(matches.length){
         matches.forEach(m=>{
-          paras.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:8},children:[t(m.cv.subject,{bold:true,size:18,color:'1A3A6E'})]}));
-          paras.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:4},children:[t(m.room,{size:15,color:'666666'})]}));
-          if(TeacherSchedule.learnRoom(DB,m.cv)) paras.push(new Paragraph({alignment:AlignmentType.CENTER,children:[t('ห้อง '+TeacherSchedule.learnRoom(DB,m.cv),{size:14,color:'555555'})]}));
+          paras.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:8},children:[t(m.cv.subject,{bold:true,size:11,color:'1A3A6E'})]}));
+          paras.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:4},children:[t(m.room,{size:10,color:'666666'})]}));
+          if(TeacherSchedule.learnRoom(DB,m.cv)) paras.push(new Paragraph({alignment:AlignmentType.CENTER,children:[t('ห้อง '+TeacherSchedule.learnRoom(DB,m.cv),{size:9,color:'555555'})]}));
         });
-      } else paras.push(new Paragraph({alignment:AlignmentType.CENTER,children:[t('',{size:16})]}));
+      } else paras.push(new Paragraph({alignment:AlignmentType.CENTER,children:[t('',{size:12})]}));
       cells.push(new TableCell({borders:ltB,width:{size:colWidths[i+1],type:WidthType.DXA},margins:mg,shading:{fill:fill,type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,children:paras}));
     });
     return new TableRow({children:cells});
@@ -28522,13 +28525,13 @@ async function buildTeacherDocx(teacherName, teacherObj) {
   const logoType=logoMimeToType(exportLogo);
   const logoRun=new ImageRun({type:logoType,data:logoBuf,transformation:{width:logoSize.w,height:logoSize.h},altText:{title:'logo',description:'logo',name:'logo'}});
   const rankTxt=teacherObj&&teacherObj.rank?teacherObj.rank+(teacherObj.dept?'  กลุ่มสาระ'+teacherObj.dept:''):'';
-  const doc=new Document({sections:[{properties:{page:{size:{width:11906,height:16838,orientation:PageOrientation.LANDSCAPE},margin:{top:margin,right:margin,bottom:margin,left:margin}}},children:[
+  const doc=new Document({styles:{default:{document:{run:{font:'TH SarabunPSK',size:18,sizeComplexScript:18}}}},sections:[{properties:{page:{size:{width:11906,height:16838,orientation:PageOrientation.LANDSCAPE},margin:{top:margin,right:margin,bottom:margin,left:margin}}},children:[
     new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:60},children:[logoRun]}),
-    new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:50},children:[t('ตารางสอน',{bold:true,size:46,color:'1A3A6E'})]}),
-    new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:35},children:[t(teacherName,{bold:true,size:32,color:'1A3A6E'})]}),
-    ...(rankTxt?[new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:30},children:[t(rankTxt,{size:21,color:'4A5568'})]})]:[]),
-    new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:30},children:[t('โรงเรียน'+(school.name||''),{bold:true,size:24})]}),
-    new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:120},children:[t('ภาคเรียนที่ '+(school.semester||'')+'   ปีการศึกษา '+(school.year||''),{size:22})]}),
+    new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:50},children:[t('ตารางสอน',{bold:true,size:20,color:'1A3A6E'})]}),
+    new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:35},children:[t(teacherName,{bold:true,size:16,color:'1A3A6E'})]}),
+    ...(rankTxt?[new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:30},children:[t(rankTxt,{size:12,color:'4A5568'})]})]:[]),
+    new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:30},children:[t('โรงเรียน'+(school.name||''),{bold:true,size:15})]}),
+    new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:120},children:[t('ภาคเรียนที่ '+(school.semester||'')+'   ปีการศึกษา '+(school.year||''),{size:13})]}),
     new Table({width:{size:contentW,type:WidthType.DXA},columnWidths:colWidths,rows:[hdrRow,...rows]})
   ]}]});
   const blob=await Packer.toBlob(doc);
@@ -28542,7 +28545,7 @@ function buildTeacherViewTable(teacherName){
 
   const slotHds=DB.slots.map(sl=>{
     if(sl.isBreak){
-      return `<th style="min-width:92px;background:#E65100;color:#fff;padding:8px 5px;text-align:center;border:1px solid #D95A00">
+      return `<th style="width:66px;max-width:66px;min-width:66px;background:#E65100;color:#fff;padding:8px 5px;text-align:center;border:1px solid #D95A00">
         <div>${sl.label}</div><div style="font-size:10px;font-weight:600">${sl.start}–${sl.end}</div>
       </th>`;
     }
