@@ -55,6 +55,7 @@
   };
 
   async function fetchLeave(dateStr){
+    if(window.SCHOOL_OS_STORAGE==='firebase'&&!window.SCHOOL_AUTH?.loggedIn)return;
     var base=String(window.SCHOOL_OS_LEAVE_API_URL||'').replace(/\/+$/,'');
     if(!base) return;
     try{
@@ -107,8 +108,8 @@
   document.head.appendChild(style);
 
   var originalRenderSubContent=window.renderSubContent || renderSubContent;
-  window.renderSubContent=renderSubContent=function(){
-    originalRenderSubContent();
+  window.renderSubContent=renderSubContent=async function(){
+    await originalRenderSubContent();
     var rows=document.querySelectorAll('#subContent tr.teacher-absent');
     rows.forEach(function(row){
       row.querySelectorAll('.sub-v2-action').forEach(function(el){

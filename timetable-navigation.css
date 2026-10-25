@@ -1,0 +1,7 @@
+.school-portal-link{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 14px;border:1px solid #d8e2ef;border-radius:11px;background:#fff;color:#173f73;font:700 13px Tahoma,sans-serif;text-decoration:none;white-space:nowrap;box-shadow:0 3px 10px #102d4f0a}
+.school-portal-link:hover{background:#edf4fc;border-color:#8ba9d0}
+.school-portal-link:focus-visible{outline:3px solid #bf9ddd;outline-offset:3px}
+body.guest-mode #page-substitute .sub-v2-stats,body.guest-mode #page-substitute .sub-share-actions,body.guest-mode #page-substitute .sub-v2-assigned-card{display:none!important}
+body.guest-mode #page-substitute .sub-v2-cell{cursor:default;pointer-events:none}
+#page-teacher-view #tvTeacherList[aria-busy="true"]{min-height:110px}
+@media(max-width:600px){.school-topbar{flex-wrap:wrap}.school-topbar .school-brand{flex:1 1 100%;min-width:0}.school-topbar .public-topbar-tools{margin-left:auto}.school-portal-link{font-size:12px;min-height:36px}}

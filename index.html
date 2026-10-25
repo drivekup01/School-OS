@@ -1747,6 +1747,7 @@ body.support-mode .logout-top-btn{
 }
 </style>
 <link rel="stylesheet" href="dashboard-shortcuts.css?v=20261025-layout1">
+<link rel="stylesheet" href="timetable-navigation.css?v=20261025-views1">
 </head>
 <body class="guest-mode">
 <script>
@@ -1771,6 +1772,7 @@ body.support-mode .logout-top-btn{
   </div>
   <div class="tb-spacer"></div>
   <div class="topbar-tools public-topbar-tools">
+    <a class="school-portal-link" href="https://drivekup01.github.io/School-Portal/">← หน้าหลักโรงเรียน</a>
     <div class="tb-tag school-year" id="tbYear">ปีการศึกษา –</div>
     <div class="save-ind school-save admin-only-top" id="saveIndicator" title="สถานะการบันทึก"><div class="save-dot" id="saveDot"></div><span id="saveLabel">–</span></div>
   </div>
@@ -2303,7 +2305,6 @@ body.support-mode .logout-top-btn{
   </div>
 </div>
 
-<div class="page" id="page-teacher-all"><div class="ph"><div class="ph-left"><h1>ตารางครูรวมรายวัน</h1><p>ดูคาบสอนของครูทุกคนตามวันเรียน</p></div></div><div class="card"><div style="display:flex;flex-wrap:wrap;gap:12px;padding:18px"><label>วันเรียน <select id="dailyTeacherDay"></select></label><input id="dailyTeacherSearch" placeholder="ค้นหาชื่อครู" oninput="renderTeacherAll()"><span id="dailyTeacherCount"></span><button class="btn btn-out" onclick="nav('dashboard')">กลับหน้าหลัก</button></div><div id="teacherAllContent" style="overflow-x:auto"></div></div></div>
 <!-- ═══════════ PAGE: EXPORT ═══════════ -->
 <div class="page" id="page-export">
   <div class="ph"><div class="ph-left"><h1>🏫 ตารางสอนแต่ละห้องเรียน</h1><p>เลือกห้องเรียนเพื่อดูตารางประจำสัปดาห์ และส่งออกเมื่อมีสิทธิ์ใช้งาน</p></div></div>
@@ -28181,7 +28182,15 @@ function doCopyRoom(){
 // ── Current selected teacher ID for TV ──
 var _tvCurrentTeacherId = '';
 
-function renderTeacherViewPage() {
+async function renderTeacherViewPage() {
+  if(window.SCHOOL_OS_STORAGE==='firebase' && window.SCHOOL_ONLINE && (!SCHOOL_ONLINE.isReady() || SCHOOL_ONLINE.isLoading())) {
+    var list=document.getElementById('tvTeacherList'),count=document.getElementById('tvTeacherCount');
+    if(count)count.textContent='กำลังโหลด…';
+    if(list){list.setAttribute('aria-busy','true');list.innerHTML='<div class="sub-v2-empty" role="status">กำลังโหลดรายชื่อครู…</div>';}
+    try{await SCHOOL_ONLINE.loadDatabaseOnce();}
+    catch(e){if(count)count.textContent='โหลดไม่สำเร็จ';if(list)list.innerHTML='<div class="sub-v2-empty">โหลดรายชื่อครูไม่สำเร็จ <button class="btn btn-out btn-sm" onclick="renderTeacherViewPage()">ลองใหม่</button></div>';return;}
+    finally{if(list)list.removeAttribute('aria-busy');}
+  }
   renderTeacherList();
   // If a teacher was previously selected, re-render their timetable (live update)
   if(_tvCurrentTeacherId) {
@@ -28243,7 +28252,7 @@ function renderTeacherList() {
 }
 
 function filterTeacherList(val) {
-  renderTeacherList();
+  renderTeacherViewPage();
 }
 
 function selectTeacherView(teacherId) {
@@ -30726,7 +30735,13 @@ function subV2Escape(s){
   });
 }
 
-function renderSubContent(){
+async function renderSubContent(){
+  if(window.SCHOOL_OS_STORAGE==='firebase'&&window.SCHOOL_ONLINE&&(!SCHOOL_ONLINE.isReady()||SCHOOL_ONLINE.isLoading())){
+    var target=document.getElementById('subContent');
+    if(target)target.innerHTML='<div class="sub-v2-empty" role="status">กำลังโหลดตารางสอน…</div>';
+    try{await SCHOOL_ONLINE.loadDatabaseOnce();}
+    catch(e){if(target)target.innerHTML='<div class="sub-v2-empty">โหลดตารางสอนไม่สำเร็จ <button class="btn btn-out btn-sm" onclick="renderSubContent()">ลองใหม่</button></div>';return;}
+  }
   var dateStr=currentSubDate;
   if(!dateStr) return;
   var content=document.getElementById('subContent');
@@ -31149,7 +31164,7 @@ if(_subV2OldSetSubTeacher){
 })();
 </script>
 <script src="config.js?v=20261025-firebase2"></script>
-<script>window.schoolFirebaseReady=window.SCHOOL_OS_STORAGE==='firebase'?import('./js/firebase-timetable.js?v=20261025-firebase2'):null;</script>
+<script>window.schoolFirebaseReady=window.SCHOOL_OS_STORAGE==='firebase'?import('./js/firebase-timetable.js?v=20261025-views1'):null;</script>
 <script id="school-os-online-adapter">
 (function(){
   var SAFE_LOGO_URL='https://drivekup01.github.io/School-OS/assets/school-logo.svg';
@@ -31274,7 +31289,8 @@ if(_subV2OldSetSubTeacher){
       customDepts:data.customDepts||[],
       subjectColorSchemeVersion:data.subjectColorSchemeVersion||2,
       systemMode:data.systemMode||'DAILY',
-      sched:data.sched||{}
+      sched:data.sched||{},
+      substitute:data.substitute||{}
     });
     if(Array.isArray(data.announcements)) DB.announcements=data.announcements;
     ready.core=true;
@@ -31283,8 +31299,8 @@ if(_subV2OldSetSubTeacher){
   }
 
   async function loadDatabaseOnce(force){
-    if(fullReady && !force) return true;
     if(fullLoadPromise) return fullLoadPromise;
+    if(fullReady && !force) return true;
 
     badge(force?'กำลังรีเฟรชฐานข้อมูล...':'กำลังโหลดฐานข้อมูล...','');
     fullLoadPromise=(async function(){
@@ -31326,7 +31342,9 @@ if(_subV2OldSetSubTeacher){
     loadHome:loadHome,
     loadDatabaseOnce:loadDatabaseOnce,
     refreshDatabase:refreshDatabase,
-    isReady:function(){return fullReady;}
+    isReady:function(){return fullReady;},
+    isLoading:function(){return !!fullLoadPromise;},
+    reset:function(){fullReady=false;ready.core=false;ready.schedule=false;}
   };
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',loadHome);
   else setTimeout(loadHome,0);
@@ -31367,7 +31385,7 @@ function setModeButtons(){
   if(d) d.classList.toggle('active',SCHOOL_AUTH.mode==='DAILY');
 }
 function canAccessPage(p){
-  if(window.SCHOOL_OS_STORAGE==='firebase')return window.schoolFirebaseCanAccess?window.schoolFirebaseCanAccess(p):['dashboard','teacher-view','teacher-all','export'].includes(p);
+  if(window.SCHOOL_OS_STORAGE==='firebase')return window.schoolFirebaseCanAccess?window.schoolFirebaseCanAccess(p):['dashboard','teacher-view','teacher-all','substitute','export'].includes(p);
   var guestAllowed=['dashboard','teacher-view','teacher-all','substitute','export','announcements'];
   var supportAllowed=['dashboard','teacher-view','teacher-all','substitute','sub-history','leave-test'];
   var dailyAllowed=['dashboard','teacher-view','teacher-all','substitute','sub-history','announcements','leave-test'];
@@ -31495,7 +31513,7 @@ async function switchSystemMode(mode){
   }
 }
 function renderTeacherAll(query){
-  if(window.SCHOOL_OS_STORAGE==='firebase'){import('./js/daily-timetable.js?v=20261025-firebase2').then(function(m){m.render();}).catch(function(e){toast(e.message,'warn')});return;}
+  if(window.SCHOOL_OS_STORAGE==='firebase'){nav('substitute');return;}
   var el=document.getElementById('teacherAllContent');if(!el||!window.DB)return;
   var q=String(query==null?((document.getElementById('teacherAllSearch')||{}).value||''):query).trim().toLowerCase();
   var list=(DB.teachers||[]).filter(function(t){
@@ -31514,6 +31532,7 @@ function renderTeacherAll(query){
   var oldNav=window.nav;
   if(typeof oldNav==='function'){
     window.nav=function(p){
+      if(p==='teacher-all'&&window.SCHOOL_OS_STORAGE==='firebase')p='substitute';
       if(!canAccessPage(p)){
         if(!SCHOOL_AUTH.loggedIn) toast('เมนูนี้สำหรับฝ่ายวิชาการ กรุณาเข้าสู่ระบบ','warn');
         else toast('ขณะนี้อยู่โหมด DAILY ข้อมูลหลักถูกล็อก','info');
@@ -31617,7 +31636,7 @@ async function renderLeaveTest(){
 }
 </script>
 <script src="leave-timetable-bridge.js?v=20261006-1"></script>
-<script src="substitute-leave-sync.js?v=20261025-firebase2"></script>
+<script src="substitute-leave-sync.js?v=20261025-views1"></script>
 <script src="leave-history.js?v=20261025-firebase2"></script>
 </body>
 </html>
@@ -31684,4 +31703,4 @@ async function renderLeaveTest(){
 
 <style>body.guest-mode.firebase-authenticated #adminTopBox{display:flex!important}body.firebase-authenticated #guestLoginBox{display:none!important}</style>
 
-<script>window.schoolFirebaseResetView=function(){DB=emptyDB();onlineSaveGeneration++;clearTimeout(saveTimer);onlineSavePending=false;if(typeof renderAllUI==='function')renderAllUI();if(typeof nav==='function')nav('dashboard');};</script>
+<script>window.schoolFirebaseResetView=function(){if(window.SCHOOL_ONLINE)SCHOOL_ONLINE.reset();DB=emptyDB();onlineSaveGeneration++;clearTimeout(saveTimer);onlineSavePending=false;if(typeof renderAllUI==='function')renderAllUI();if(typeof nav==='function')nav('dashboard');};</script>
