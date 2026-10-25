@@ -1,9 +1,9 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.TeacherSchedule=api;})(typeof globalThis==='object'?globalThis:this,function(){
  'use strict';
  const name=t=>((t.prefix||'')+(t.first||'')+' '+(t.last||'')).trim();
- const subjectNames=['บูรณาการ','ลดเวลาเรียน','ลูกเสือเนตรนารี','ชุมนุม','ประชุมระดับ','ขนมอบยอดนิยม','กฎหมายธุรกิจ','หลักการตลาด','เทคนิคการนำเสนอ','เทคนิค ม.4-5','ติวonet'];
+ const subjectNames=['บูรณาการ','ลดเวลาเรียน','ลูกเสือเนตรนารี','ชุมนุม','ประชุมระดับ','ขนมอบยอดนิยม','กฎหมายธุรกิจ','หลักการตลาด','เทคนิคการนำเสนอ','เทคนิค ม.4','เทคนิค ม.5','ติวonet'];
  const normalizeSubject=value=>String(value||'').toLowerCase().replace(/[\s/–—-]/g,'');
- function subjects(db){return subjectNames.map((label,i)=>{const existing=db.subjects.find(s=>normalizeSubject(s.name)===normalizeSubject(label));return {...existing,id:existing?.id||'teacher-independent-'+String(i+1).padStart(2,'0'),name:label};});}
+ function subjects(db){return subjectNames.map((label,i)=>{const existing=db.subjects.find(s=>normalizeSubject(s.name)===normalizeSubject(label));return {...existing,id:existing?.id||'teacher-independent-'+String([1,2,3,4,5,6,7,8,9,12,13,11][i]).padStart(2,'0'),name:label};});}
  const key=(teacherId,slotId,day)=>JSON.stringify([teacherId,String(slotId),day]);
  function activities(db,teacherName,slotId,day){return Object.entries(db.teacherSched||{}).flatMap(([id,v])=>{
   const teacher=db.teachers.find(t=>t.id===v.teacherId),slot=db.slots.find(s=>String(s.id)===String(v.slotId));
