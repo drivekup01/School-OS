@@ -1,12 +1,15 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.TeacherSchedule=api;})(typeof globalThis==='object'?globalThis:this,function(){
  'use strict';
  const name=t=>((t.prefix||'')+(t.first||'')+' '+(t.last||'')).trim();
+ const subjectNames=['บูรณาการ','ลดเวลาเรียน','ลูกเสือเนตรนารี','ชุมนุม','ประชุมระดับ','ขนมอบยอดนิยม','กฎหมายธุรกิจ','หลักการตลาด','เทคนิคการนำเสนอ','เทคนิค ม.4-5','ติวonet'];
+ const normalizeSubject=value=>String(value||'').toLowerCase().replace(/[\s/–—-]/g,'');
+ function subjects(db){return subjectNames.map((label,i)=>{const existing=db.subjects.find(s=>normalizeSubject(s.name)===normalizeSubject(label));return {...existing,id:existing?.id||'teacher-independent-'+String(i+1).padStart(2,'0'),name:label};});}
  const key=(teacherId,slotId,day)=>JSON.stringify([teacherId,String(slotId),day]);
  function activities(db,teacherName,slotId,day){return Object.entries(db.teacherSched||{}).flatMap(([id,v])=>{
   const teacher=db.teachers.find(t=>t.id===v.teacherId),slot=db.slots.find(s=>String(s.id)===String(v.slotId));
   if(!teacher||!slot||slot.isBreak||!db.days.includes(v.day)||(teacherName&&name(teacher)!==teacherName)||(slotId!=null&&String(v.slotId)!==String(slotId))||(day&&v.day!==day))return [];
   const subject=db.subjects.find(s=>s.id===v.subjectId);
-  return [{...v,key:id,teacher:name(teacher),subject:subject?.name||v.subject,roomId:null,roomLabel:'วิชาอิสระ'}];
+  return [{...v,key:id,teacher:name(teacher),subject:subject?.name||v.subject,roomId:null,roomLabel:'เลือกวิชา'}];
  });}
  function roomLessons(db,teacherName,slotId,day){return db.rooms.flatMap(room=>{const cellKey=room.id+'_'+slotId+'_'+day,cv=db.sched[cellKey];return cv?.subject&&[cv.teacher,cv.teacher2,cv.teacher3].includes(teacherName)?[{cv,room,cellKey}]:[];});}
  function set(db,{teacherId,slotId,day,subjectId}){
@@ -14,7 +17,7 @@
   if(!teacher||!slot||slot.isBreak||!db.days.includes(day))throw Error('ครู วัน หรือคาบไม่ถูกต้อง');
   const id=key(teacherId,slotId,day);db.teacherSched||={};
   if(!subjectId){delete db.teacherSched[id];return;}
-  const subject=db.subjects.find(s=>s.id===subjectId);if(!subject)throw Error('ไม่พบรายวิชา');
+  const subject=db.subjects.find(s=>s.id===subjectId)||subjects(db).find(s=>s.id===subjectId);if(!subject)throw Error('ไม่พบรายวิชา');
   if(roomLessons(db,name(teacher),slotId,day).length)throw Error('ครูมีคาบสอนของห้องเรียนในช่วงนี้แล้ว กรุณาเลือกคาบอื่น');
   db.teacherSched[id]={teacherId,slotId:String(slotId),day,subjectId,subject:subject.name};
  }
@@ -26,5 +29,5 @@
   return String(room?.baseRoom||'').trim();
  }
  const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- return {name,key,activities,roomLessons,set,prune,learnRoom,escape};
+ return {subjects,name,key,activities,roomLessons,set,prune,learnRoom,escape};
 });

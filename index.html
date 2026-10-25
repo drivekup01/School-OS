@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<script src="js/teacher-schedule-core.js?v=20261025-room1"></script>
+<script src="js/teacher-schedule-core.js?v=20261025-subject2"></script>
 <link rel="stylesheet" href="css/teacher-builder.css?v=20261025-teacher1">
 <script src="js/teacher-builder.js?v=20261025-teacher1"></script>
 <meta charset="UTF-8">
@@ -28045,7 +28045,7 @@ function isTeacherBusy(teacherName, slotId, day, ignoreRoomId) {
       }
     }
   });
-  TeacherSchedule.activities(DB,teacherName,slotId,day).forEach(a=>conflicts.push({roomLabel:'วิชาอิสระ',subject:a.subject}));
+  TeacherSchedule.activities(DB,teacherName,slotId,day).forEach(a=>conflicts.push({roomLabel:'เลือกวิชา',subject:a.subject}));
   return conflicts.length > 0 ? conflicts : null;
 }
 
@@ -28067,7 +28067,7 @@ function getBusyTeachersAt(slotId, day, ignoreRoomId) {
       });
     }
   });
-  TeacherSchedule.activities(DB,null,slotId,day).forEach(a=>{(busy[a.teacher]||=[]).push({roomLabel:'วิชาอิสระ',subject:a.subject});});
+  TeacherSchedule.activities(DB,null,slotId,day).forEach(a=>{(busy[a.teacher]||=[]).push({roomLabel:'เลือกวิชา',subject:a.subject});});
   return busy;
 }
 
@@ -28369,7 +28369,7 @@ function getTeacherScheduleData(teacherName) {
           });
         }
       });
-      TeacherSchedule.activities(DB,teacherName,sl.id,day).forEach(a=>matches.push({subject:a.subject,room:'วิชาอิสระ',learnRoom:'',teacher2:'',teacher3:''}));
+      TeacherSchedule.activities(DB,teacherName,sl.id,day).forEach(a=>matches.push({subject:a.subject,room:'เลือกวิชา',learnRoom:'',teacher2:'',teacher3:''}));
       row.cells[day] = matches;
     });
     data.push(row);
@@ -28411,7 +28411,7 @@ function printTeacherView() {
           matches.push({cv:cv, room:r.label});
         }
       });
-      TeacherSchedule.activities(DB,name,sl.id,day).forEach(a=>matches.push({cv:{subject:a.subject},room:'วิชาอิสระ'}));
+      TeacherSchedule.activities(DB,name,sl.id,day).forEach(a=>matches.push({cv:{subject:a.subject},room:'เลือกวิชา'}));
       if(!matches.length){ tbody += '<td style="'+TD+'">&nbsp;</td>'; return; }
       var html='<td style="'+TD+'background:#FFFFFF">';
       matches.forEach(function(m){
@@ -28498,7 +28498,7 @@ async function buildTeacherDocx(teacherName, teacherObj) {
       }
       const matches=[];
       DB.rooms.forEach(r=>{const cv=DB.sched[r.id+'_'+sl.id+'_'+day];if(cv&&cv.subject&&(cv.teacher===teacherName||cv.teacher2===teacherName||cv.teacher3===teacherName))matches.push({cv,room:r.label});});
-      TeacherSchedule.activities(DB,teacherName,sl.id,day).forEach(a=>matches.push({cv:{subject:a.subject},room:'วิชาอิสระ'}));
+      TeacherSchedule.activities(DB,teacherName,sl.id,day).forEach(a=>matches.push({cv:{subject:a.subject},room:'เลือกวิชา'}));
       let fill='FFFFFF'; const paras=[];
       if(matches.length){
         matches.forEach(m=>{
@@ -28571,7 +28571,7 @@ function buildTeacherViewTable(teacherName){
           }
         }
       });
-      TeacherSchedule.activities(DB,teacherName,sl.id,day).forEach(a=>matches.push('<div class="tv-cell"><div class="tv-subj">'+teacherBuilderEscape(a.subject)+'</div><div class="tv-room">วิชาอิสระ</div></div>'));
+      TeacherSchedule.activities(DB,teacherName,sl.id,day).forEach(a=>matches.push('<div class="tv-cell"><div class="tv-subj">'+teacherBuilderEscape(a.subject)+'</div><div class="tv-room">เลือกวิชา</div></div>'));
       return `<td style="border:1px solid #dde;padding:4px;vertical-align:top;min-width:118px;background:#FFFFFF">${matches.join('')||'<div style="color:#ccc;text-align:center;padding:8px">—</div>'}</td>`;
     }).join('');
     return `<tr>
@@ -29033,7 +29033,7 @@ function detectConflicts(){
     addToMap(teacher2);
     addToMap(teacher3);
   });
-  TeacherSchedule.activities(DB).forEach(a=>{map[a.teacher]||={};map[a.teacher][a.day]||={};(map[a.teacher][a.day][a.slotId]||=[]).push({roomId:'',roomLabel:'วิชาอิสระ',subject:a.subject});});
+  TeacherSchedule.activities(DB).forEach(a=>{map[a.teacher]||={};map[a.teacher][a.day]||={};(map[a.teacher][a.day][a.slotId]||=[]).push({roomId:'',roomLabel:'เลือกวิชา',subject:a.subject});});
   Object.keys(map).forEach(function(teacher){
     Object.keys(map[teacher]).forEach(function(day){
       Object.keys(map[teacher][day]).forEach(function(slotId){
@@ -29531,7 +29531,7 @@ function analyzeSubTeacher(teacherObj, slotId, schedDay, subjectName, currentAbs
     ? (teacherObj.subjects || []).includes(subjectName)
     : true;
 
-  var freeActivity=TeacherSchedule.activities(DB,tName,slotId,schedDay)[0];if(freeActivity){busyRoom='วิชาอิสระ';busySubj=freeActivity.subject;}
+  var freeActivity=TeacherSchedule.activities(DB,tName,slotId,schedDay)[0];if(freeActivity){busyRoom='เลือกวิชา';busySubj=freeActivity.subject;}
   if(busyRoom) {
     return { status:'busy', busyIn:busyRoom, busySubject:busySubj, canTeach:canTeach, score:0 };
   }
@@ -30737,7 +30737,7 @@ function subV2FindTeachingCell(teacher, slot, schedDay){
     }
   }
   var a=TeacherSchedule.activities(DB,tName,slot.id,schedDay)[0];
-  return a?{room:{id:'',label:'วิชาอิสระ'},cv:{subject:a.subject,teacher:tName},teacherOnly:true}:null;
+  return a?{room:{id:'',label:'เลือกวิชา'},cv:{subject:a.subject,teacher:tName},teacherOnly:true}:null;
 }
 function subV2AbsentForTeacher(day, teacherId){
   return (day.absentList||[]).find(function(a){return a.teacherId===teacherId;}) || null;
