@@ -11,6 +11,7 @@ function normalize(input){
  const d=clone(input);for(const k of ['teachers','subjects','rooms','slots','days','announcements','customDepts']){if(!Array.isArray(d[k]))error('ข้อมูล '+k+' ต้องเป็นรายการ');}
  if(!object(d.school)||!object(d.sched)||!object(d.substitute))error('โครงสร้างข้อมูลไม่ถูกต้อง');
  for(const k of ['teachers','subjects','rooms']){const seen=new Set();for(const row of d[k]){if(!object(row)||typeof row.id!=='string'||!row.id||row.id.length>100||seen.has(row.id))error('รหัสซ้ำหรือไม่ถูกต้องใน '+k);seen.add(row.id);}}
+ for(const room of d.rooms)if(room.baseRoom!==undefined&&(typeof room.baseRoom!=='string'||room.baseRoom.length>100))error('ห้องเรียนหลักไม่ถูกต้อง');
  if(d.teacherSched!==undefined){
   if(!object(d.teacherSched)||Object.keys(d.teacherSched).length>20000)error('ตารางรายครูไม่ถูกต้อง');
   for(const [key,v]of Object.entries(d.teacherSched)){
@@ -27,7 +28,7 @@ function publicView(data){
  // Only teacher names/IDs used by public timetable are published. Never copy
  // contacts, private notes, leave records or auth settings into public documents.
  const fields=(v,keys)=>Object.fromEntries(keys.filter(k=>v[k]!==undefined).map(k=>[k,clone(v[k])]));
- const out={school,teachers:d.teachers.map(t=>fields(t,['id','prefix','first','last','dept','subjects'])),subjects:d.subjects.map(t=>fields(t,['id','code','name','grade','dept','hours','color'])),rooms:d.rooms.map(t=>fields(t,['id','level','grade','room','label','homeroom','homeroom2','homeroom3','planName'])),slots:d.slots.map(t=>fields(t,['id','label','start','end','isBreak'])),days:clone(d.days),sched:Object.fromEntries(Object.entries(d.sched).map(([k,v])=>[k,fields(v,['subject','teacher','teacher2','teacher3','learnRoom','locked'])])),substitute:{},announcements:[],customDepts:clone(d.customDepts),subjectColorSchemeVersion:d.subjectColorSchemeVersion||2,systemMode:'DAILY'};
+ const out={school,teachers:d.teachers.map(t=>fields(t,['id','prefix','first','last','dept','subjects'])),subjects:d.subjects.map(t=>fields(t,['id','code','name','grade','dept','hours','color'])),rooms:d.rooms.map(t=>fields(t,['id','level','grade','room','label','homeroom','homeroom2','homeroom3','planName','baseRoom'])),slots:d.slots.map(t=>fields(t,['id','label','start','end','isBreak'])),days:clone(d.days),sched:Object.fromEntries(Object.entries(d.sched).map(([k,v])=>[k,fields(v,['subject','teacher','teacher2','teacher3','learnRoom','locked'])])),substitute:{},announcements:[],customDepts:clone(d.customDepts),subjectColorSchemeVersion:d.subjectColorSchemeVersion||2,systemMode:'DAILY'};
  if(d.teacherSched)out.teacherSched=clone(d.teacherSched);return out;
 }
 const hash=v=>crypto.createHash('sha256').update(typeof v==='string'?v:JSON.stringify(v)).digest('hex');

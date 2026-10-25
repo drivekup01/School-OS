@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<script src="js/teacher-schedule-core.js?v=20261025-teacher1"></script>
+<script src="js/teacher-schedule-core.js?v=20261025-room1"></script>
 <link rel="stylesheet" href="css/teacher-builder.css?v=20261025-teacher1">
+<script src="js/teacher-builder.js?v=20261025-teacher1"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ระบบจัดตารางเรียน - ตารางสอน</title>
@@ -2678,6 +2679,7 @@ body.support-mode .logout-top-btn{
       </div>
       <div class="fg"><label>ห้อง / แผนการเรียน</label>
         <input type="text" id="rmRoom" value="1" placeholder="1, ก, วิทย์, ศิลป์-คำนวณ ..."></div>
+      <div class="fg s2"><label for="rmBaseRoom">ห้องเรียนหลัก</label><input type="text" id="rmBaseRoom" maxlength="100" placeholder="เช่น 123 หรือ ห้องวิทยาศาสตร์"><small style="color:var(--muted)">ใช้เป็นห้องเริ่มต้นทุกคาบ แก้ห้องเฉพาะคาบได้ในตารางเรียน</small></div>
       <div class="fg s2"><label>ครูที่ปรึกษา คนที่ 1</label>
         <select id="rmHomeroom"><option value="">-- เลือกครู --</option></select></div>
       <div class="fg s2"><label>ครูที่ปรึกษา คนที่ 2 <span style="color:var(--muted);font-weight:400;font-size:11px">(ถ้ามี)</span></label><select id="rmHomeroom2"><option value="">-- เลือก --</option></select></div>
@@ -26785,7 +26787,7 @@ function renderRoomTable(){
     const hr=DB.teachers.find(t=>t.id===r.homeroom);
     return`<tr>
       <td>${i+1}</td>
-      <td><strong>${r.label}</strong></td>
+      <td><strong>${r.label}</strong><div style="font-size:11px;color:var(--muted)">ห้องเรียนหลัก: ${TeacherSchedule.escape(r.baseRoom||'ยังไม่กำหนด')}</div></td>
       <td><span class="badge b-purple">${r.level}</span></td>
       <td>${hr?`<span class="tchr-chip">${hr.prefix}${hr.first} ${hr.last}</span>`:'<span style="color:var(--muted);font-size:12px">ยังไม่กำหนด</span>'}</td>
       <td><div class="wl-row"><div class="wl-bar-bg"><div class="wl-bar-fill wl-ok" style="width:${pct}%"></div></div><span style="font-size:12px;min-width:35px">${pct}%</span></div></td>
@@ -26839,6 +26841,7 @@ function openAddRoom(){
   document.getElementById('rmLevel').value='มัธยมศึกษาตอนต้น';
   document.getElementById('rmRoom').value='1';
   document.getElementById('rmEditId').value='';
+  document.getElementById('rmBaseRoom').value='';
   const planWrap=document.getElementById('rmSpecialPlanWrap');
   if(planWrap) planWrap.style.display='none';
   const planCustomWrap=document.getElementById('rmPlanCustomWrap');
@@ -26856,6 +26859,7 @@ function openEditRoom(id){
   document.getElementById('rmGrade').value=r.grade;
   document.getElementById('rmRoom').value=r.room;
   document.getElementById('rmEditId').value=id;
+  document.getElementById('rmBaseRoom').value=r.baseRoom||'';
   populateHomeroomSel(r.homeroom||'', r.homeroom2||'', r.homeroom3||'');
   openModal('modalRoom');
 }
@@ -26893,7 +26897,8 @@ function saveRoom(){
     }
   }
   const label=grade+'/'+(planName||room);
-  const data={level,grade,room:planName||room,homeroom,label,planName};
+  const baseRoom=gv('rmBaseRoom').trim();
+  const data={level,grade,room:planName||room,homeroom,label,planName,baseRoom};
   const editId=document.getElementById('rmEditId').value;
   if(editId){
     const i=DB.rooms.findIndex(x=>x.id===editId);
@@ -26983,7 +26988,8 @@ function updateLearnRoom(inp) {
   var room = inp.dataset.room, slot = inp.dataset.slot, day = inp.dataset.day;
   var k = room+'_'+slot+'_'+day;
   if(!DB.sched[k]) DB.sched[k] = {subject:'',teacher:'',teacher2:'',teacher3:'',learnRoom:''};
-  DB.sched[k].learnRoom = inp.value.trim();
+  var baseRoom=(DB.rooms.find(r=>r.id===room)||{}).baseRoom||'';
+  DB.sched[k].learnRoom = inp.value.trim()===baseRoom.trim()?'':inp.value.trim();
   markDirty();
 }
 
@@ -27080,9 +27086,10 @@ function renderBuilder(){
         <input type="text" class="cell-room-inp"
           placeholder="ห้อง เช่น 101, ห้องคอม"
           data-room="${currentBuilderRoom}" data-slot="${sl.id}" data-day="${d}"
-          value="${cv.learnRoom||''}"
-          oninput="updateLearnRoom(this)"
-          title="ระบุห้องเรียนเฉพาะ เช่น ห้องคอมพิวเตอร์ / ห้องวิทยาศาสตร์">
+          value="${TeacherSchedule.escape(TeacherSchedule.learnRoom(DB,cv,currentBuilderRoom))}"
+          aria-label="ห้องเรียน ${TeacherSchedule.escape(d)} ${TeacherSchedule.escape(sl.label)}"
+          oninput="updateLearnRoom(this)" onblur="this.value=TeacherSchedule.learnRoom(DB,DB.sched[this.dataset.room+'_'+this.dataset.slot+'_'+this.dataset.day],this.dataset.room)"
+          title="แก้ห้องเฉพาะคาบนี้ ล้างข้อความเพื่อกลับไปใช้ห้องเรียนหลัก">
         <button class="cell-lock-btn ${cv.locked?'locked':''}" type="button"
           data-room="${currentBuilderRoom}" data-slot="${sl.id}" data-day="${d}"
           onclick="toggleCellLock(this); event.stopPropagation();"
@@ -28356,7 +28363,7 @@ function getTeacherScheduleData(teacherName) {
           matches.push({
             subject:   cv.subject,
             room:      r.label,
-            learnRoom: cv.learnRoom||'',
+            learnRoom: TeacherSchedule.learnRoom(DB,cv,r.id),
             teacher2:  cv.teacher===teacherName?(cv.teacher2||''):'',
             teacher3:  cv.teacher===teacherName?(cv.teacher3||''):'',
           });
@@ -28411,7 +28418,7 @@ function printTeacherView() {
         html += '<div style="background:#FFFFFF;border:1px solid #D9E2F2;border-radius:5px;padding:4px 5px;margin:1px 0">'+
                 '<div style="font-weight:700;font-size:11px;color:#1A3A6E">'+m.cv.subject+'</div>'+
                 '<div style="font-size:9px;color:#666">'+m.room+'</div>'+
-                (m.cv.learnRoom?'<div style="font-size:9px;color:#555">ห้อง '+m.cv.learnRoom+'</div>':'')+
+                (TeacherSchedule.learnRoom(DB,m.cv)?'<div style="font-size:9px;color:#555">ห้อง '+TeacherSchedule.escape(TeacherSchedule.learnRoom(DB,m.cv))+'</div>':'')+
                 '</div>';
       });
       html += '</td>'; tbody += html;
@@ -28497,7 +28504,7 @@ async function buildTeacherDocx(teacherName, teacherObj) {
         matches.forEach(m=>{
           paras.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:8},children:[t(m.cv.subject,{bold:true,size:18,color:'1A3A6E'})]}));
           paras.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:4},children:[t(m.room,{size:15,color:'666666'})]}));
-          if(m.cv.learnRoom) paras.push(new Paragraph({alignment:AlignmentType.CENTER,children:[t('ห้อง '+m.cv.learnRoom,{size:14,color:'555555'})]}));
+          if(TeacherSchedule.learnRoom(DB,m.cv)) paras.push(new Paragraph({alignment:AlignmentType.CENTER,children:[t('ห้อง '+TeacherSchedule.learnRoom(DB,m.cv),{size:14,color:'555555'})]}));
         });
       } else paras.push(new Paragraph({alignment:AlignmentType.CENTER,children:[t('',{size:16})]}));
       cells.push(new TableCell({borders:ltB,width:{size:colWidths[i+1],type:WidthType.DXA},margins:mg,shading:{fill:fill,type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,children:paras}));
@@ -28559,7 +28566,7 @@ function buildTeacherViewTable(teacherName){
             matches.push(`<div class="tv-cell">
               ${role}<div class="tv-subj">${cv.subject}</div>
               <div class="tv-room">${r.label}</div>${coTeacher}
-              ${cv.learnRoom?`<div class="cell-room-tag" style="background:#fff;color:#555;border:1px solid #D9E2F2">ห้อง ${cv.learnRoom}</div>`:''}
+              ${TeacherSchedule.learnRoom(DB,cv)?`<div class="cell-room-tag" style="background:#fff;color:#555;border:1px solid #D9E2F2">ห้อง ${TeacherSchedule.escape(TeacherSchedule.learnRoom(DB,cv))}</div>`:''}
             </div>`);
           }
         }
@@ -28653,7 +28660,7 @@ function renderPreview(){
         ${cv.teacher?`<div style="font-size:11px;color:#1a3a6e;font-weight:600">${cv.teacher}</div>`:''}
         ${cv.teacher2?`<div style="font-size:10px;color:#2a5298">+${cv.teacher2}</div>`:''}
         ${cv.teacher3?`<div style="font-size:10px;color:#4472c4">+${cv.teacher3}</div>`:''}
-        ${cv.learnRoom?`<div class="cell-room-tag">ห้อง ${cv.learnRoom}</div>`:''}
+        ${TeacherSchedule.learnRoom(DB,cv)?`<div class="cell-room-tag">ห้อง ${TeacherSchedule.escape(TeacherSchedule.learnRoom(DB,cv))}</div>`:''}
       </td>`;
     }).join('');
     return`<tr><td style="background:#eef3ff;border:1px solid #cdd;padding:8px 10px;text-align:center;font-weight:800;color:var(--pri);min-width:74px;width:74px">${d}</td>${cells}</tr>`;
@@ -28932,7 +28939,7 @@ async function buildDocx(docType,room){
       if(cv.teacher) paras.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:0},children:[t(cv.teacher,{size:15,color:'1a3a6e',bold:true})]}));
       if(cv.teacher2) paras.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:0},children:[t('+'+cv.teacher2,{size:14,color:'2a5298'})]}));
       if(cv.teacher3) paras.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:0},children:[t('+'+cv.teacher3,{size:14,color:'4472c4'})]}));
-      if(cv.learnRoom) paras.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:0},children:[t('ห้อง '+cv.learnRoom,{size:13,color:'2A5298',italics:true})]}));
+      if(TeacherSchedule.learnRoom(DB,cv)) paras.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:0},children:[t('ห้อง '+TeacherSchedule.learnRoom(DB,cv),{size:13,color:'2A5298',italics:true})]}));
       return new TableCell({borders:ltB,width:{size:slotWidths[i],type:WidthType.DXA},margins:mg,
         shading:{fill,type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,children:paras});
     })
@@ -30818,12 +30825,12 @@ async function renderSubContent(){
       if(teach){
         cls='busy';
         body='<div class="sub-v2-subj">'+subV2Escape(teach.cv.subject||'ไม่ระบุวิชา')+'</div>'+
-          '<div class="sub-v2-room">'+subV2Escape(teach.room.label||'ไม่ระบุห้อง')+'</div>';
+          '<div class="sub-v2-room">'+subV2Escape((teach.room.label||'ไม่ระบุห้อง')+(TeacherSchedule.learnRoom(DB,teach.cv)?' · ห้อง '+TeacherSchedule.learnRoom(DB,teach.cv):''))+'</div>';
       }
       if(absent && teach && !teach.teacherOnly){
         cls=(p&&p.subTeacher)?'assigned':'need';
         body='<div class="sub-v2-subj">'+subV2Escape(teach.cv.subject||'ไม่ระบุวิชา')+'</div>'+
-          '<div class="sub-v2-room">'+subV2Escape(teach.room.label||'ไม่ระบุห้อง')+'</div>'+
+          '<div class="sub-v2-room">'+subV2Escape((teach.room.label||'ไม่ระบุห้อง')+(TeacherSchedule.learnRoom(DB,teach.cv)?' · ห้อง '+TeacherSchedule.learnRoom(DB,teach.cv):''))+'</div>'+
           '<div class="sub-v2-action">'+(p&&p.subTeacher?'✓ '+subV2Escape(p.subTeacher):'เลือกครูแทน')+'</div>';
       }else if(absent && !teach){
         cls='free';
@@ -31723,4 +31730,4 @@ async function renderLeaveTest(){
 
 <script>window.schoolFirebaseResetView=function(){if(window.SCHOOL_ONLINE)SCHOOL_ONLINE.reset();DB=emptyDB();onlineSaveGeneration++;clearTimeout(saveTimer);onlineSavePending=false;if(typeof renderAllUI==='function')renderAllUI();if(typeof nav==='function')nav('dashboard');};</script>
 
-<script src="js/teacher-builder.js?v=20261025-teacher1"></script>
+

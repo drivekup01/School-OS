@@ -19,5 +19,12 @@
   db.teacherSched[id]={teacherId,slotId:String(slotId),day,subjectId,subject:subject.name};
  }
  function prune(db){if(!db.teacherSched)return;for(const [id,v]of Object.entries(db.teacherSched)){if(!db.teachers.some(t=>t.id===v.teacherId)||!db.slots.some(s=>String(s.id)===String(v.slotId)&&!s.isBreak)||!db.days.includes(v.day))delete db.teacherSched[id];}}
- return {name,key,activities,roomLessons,set,prune};
+ function learnRoom(db,cell,roomId){
+  const override=String(cell?.learnRoom||'').trim();if(override)return override;
+  let room=roomId?db.rooms.find(r=>r.id===roomId):null;
+  if(!room&&cell){const entry=Object.entries(db.sched).find(([,v])=>v===cell);if(entry)room=db.rooms.find(r=>entry[0].startsWith(r.id+'_'));}
+  return String(room?.baseRoom||'').trim();
+ }
+ const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ return {name,key,activities,roomLessons,set,prune,learnRoom,escape};
 });
