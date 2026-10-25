@@ -2401,10 +2401,10 @@ body.support-mode .logout-top-btn{
   <div class="ph">
     <div class="ph-left">
       <h1>📋 ประวัติการลาของครู</h1>
-      <p>ข้อมูลใบลาจากฐานข้อมูล · แสดงรายการโดยตรงจาก Sheet</p>
+      <p>ข้อมูลใบลาที่รับไว้ล่าสุด · กดรับข้อมูลเพื่ออัปเดตจากระบบใบลา</p>
     </div>
     <div class="ph-actions">
-      <button type="button" class="btn btn-out btn-sm" onclick="renderLeaveTest()">🔄 โหลดข้อมูลใหม่</button>
+      <button type="button" class="btn btn-out btn-sm" onclick="if(window.SCHOOL_OS_STORAGE===&#39;firebase&#39;){var button=this;button.disabled=true;window.schoolFirebaseReady.then(function(m){return m.refreshLeave();}).then(function(){return renderLeaveTest();}).catch(function(e){toast(e.message,&#39;err&#39;);}).finally(function(){button.disabled=false;});}else renderLeaveTest()">🔄 รับข้อมูลใบลาล่าสุด</button>
     </div>
   </div>
   <div class="card" style="margin-top:14px">
