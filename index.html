@@ -28660,7 +28660,7 @@ function renderPreview(){
         ${cv.teacher?`<div style="font-size:11px;color:#1a3a6e;font-weight:600">${cv.teacher}</div>`:''}
         ${cv.teacher2?`<div style="font-size:10px;color:#2a5298">+${cv.teacher2}</div>`:''}
         ${cv.teacher3?`<div style="font-size:10px;color:#4472c4">+${cv.teacher3}</div>`:''}
-        ${TeacherSchedule.learnRoom(DB,cv)?`<div class="cell-room-tag">ห้อง ${TeacherSchedule.escape(TeacherSchedule.learnRoom(DB,cv))}</div>`:''}
+        ${TeacherSchedule.learnRoom(DB,cv,r.id)?`<div class="cell-room-tag">ห้อง ${TeacherSchedule.escape(TeacherSchedule.learnRoom(DB,cv,r.id))}</div>`:''}
       </td>`;
     }).join('');
     return`<tr><td style="background:#eef3ff;border:1px solid #cdd;padding:8px 10px;text-align:center;font-weight:800;color:var(--pri);min-width:74px;width:74px">${d}</td>${cells}</tr>`;
@@ -28939,7 +28939,7 @@ async function buildDocx(docType,room){
       if(cv.teacher) paras.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:0},children:[t(cv.teacher,{size:15,color:'1a3a6e',bold:true})]}));
       if(cv.teacher2) paras.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:0},children:[t('+'+cv.teacher2,{size:14,color:'2a5298'})]}));
       if(cv.teacher3) paras.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:0},children:[t('+'+cv.teacher3,{size:14,color:'4472c4'})]}));
-      if(TeacherSchedule.learnRoom(DB,cv)) paras.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:0},children:[t('ห้อง '+TeacherSchedule.learnRoom(DB,cv),{size:13,color:'2A5298',italics:true})]}));
+      if(TeacherSchedule.learnRoom(DB,cv,room.id)) paras.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:0},children:[t('ห้อง '+TeacherSchedule.learnRoom(DB,cv,room.id),{size:13,color:'2A5298',italics:true})]}));
       return new TableCell({borders:ltB,width:{size:slotWidths[i],type:WidthType.DXA},margins:mg,
         shading:{fill,type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,children:paras});
     })
