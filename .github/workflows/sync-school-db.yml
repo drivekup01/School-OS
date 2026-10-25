@@ -33,6 +33,10 @@ jobs:
           const fs = require('fs');
 
           const config = fs.readFileSync('config.js','utf8');
+          if (/SCHOOL_OS_STORAGE\s*=\s*['"]firebase['"]/.test(config)) {
+            console.log('Firebase is authoritative; legacy JSON sync is disabled.');
+            process.exit(0);
+          }
           const match = config.match(/SCHOOL_OS_API_URL\s*=\s*['"]([^'"]+)['"]/);
           if (!match) throw new Error('SCHOOL_OS_API_URL not found in config.js');
           const api = match[1];

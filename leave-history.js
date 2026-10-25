@@ -26,7 +26,7 @@
 
     try{
       var url=base+'?action=leaveHistory&_='+Date.now();
-      var res=await fetch(url,{method:'GET',cache:'no-store'});
+      var res=window.SCHOOL_OS_STORAGE==='firebase'?{ok:true,json:async function(){return (await window.schoolFirebaseReady).leave('leaveHistory');}}:await fetch(url,{method:'GET',cache:'no-store'});
       if(!res.ok) throw new Error('HTTP '+res.status);
       var out=await res.json();
       if(!out||out.ok===false) throw new Error((out&&out.error)||'Leave API ตอบกลับไม่สำเร็จ');

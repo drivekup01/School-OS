@@ -58,7 +58,7 @@
     var base=String(window.SCHOOL_OS_LEAVE_API_URL||'').replace(/\/+$/,'');
     if(!base) return;
     try{
-      var res=await fetch(base+'?action=teacherLeave&date='+encodeURIComponent(dateStr)+'&_='+Date.now(),{method:'GET',cache:'no-store'});
+      var res=window.SCHOOL_OS_STORAGE==='firebase'?{ok:true,json:async function(){return (await window.schoolFirebaseReady).leave('teacherLeave',dateStr);}}:await fetch(base+'?action=teacherLeave&date='+encodeURIComponent(dateStr)+'&_='+Date.now(),{method:'GET',cache:'no-store'});
       var out=await res.json();
       leaveByDate[dateStr]=(out&&out.ok!==false&&Array.isArray(out.rows))?out.rows:[];
     }catch(e){

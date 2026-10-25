@@ -1900,15 +1900,7 @@ body.support-mode .logout-top-btn{
         <div class="dashboard-card-sub" id="loginCardSubtitle">เข้าสู่ระบบเพื่อใช้งานตามสิทธิ์ของผู้ใช้งาน</div>
       </div>
 
-      <div id="guestLoginBox" class="academic-login-box">
-        <input id="academicLoginId" type="text" autocomplete="username" placeholder="รหัสผู้ใช้งาน (User ID)" aria-label="ID ฝ่ายวิชาการ">
-        <div class="login-secret-wrap">
-          <input id="academicLoginPass" type="password" autocomplete="current-password" placeholder="รหัสผ่าน (Password)" aria-label="Password ฝ่ายวิชาการ" onkeydown="if(event.key==='Enter') academicLogin()">
-          <button type="button" class="login-secret-toggle" onclick="toggleLoginSecret()" aria-label="แสดงหรือซ่อนข้อความ">👁</button>
-        </div>
-        <button type="button" id="academicLoginBtn" class="dashboard-login-btn" onclick="academicLogin()">🔑 เข้าสู่ระบบ</button>
-        <div class="dashboard-login-note" id="academicLoginStatus">สำหรับฝ่ายวิชาการและผู้ดูแลระบบ</div>
-      </div>
+      <div id="guestLoginBox" class="academic-login-box"><button type="button" id="academicLoginBtn" class="dashboard-login-btn" onclick="academicLogin()">เข้าสู่ระบบด้วย Google</button><div class="dashboard-login-note" id="academicLoginStatus">ฝ่ายวิชาการใช้บัญชีที่ได้รับอนุมัติ ผู้เข้าใช้ทั่วไปดูตารางสอนได้</div></div>
 
       <div id="adminTopBox" class="admin-top-box dashboard-admin-box" style="display:none">
         <div class="dashboard-admin-icon">✓</div>
@@ -31161,6 +31153,7 @@ if(_subV2OldSetSubTeacher){
 })();
 </script>
 <script src="config.js?v=52aada5"></script>
+<script>window.schoolFirebaseReady=window.SCHOOL_OS_STORAGE==='firebase'?import('./js/firebase-timetable.js'):null;</script>
 <script id="school-os-online-adapter">
 (function(){
   var SAFE_LOGO_URL='https://drivekup01.github.io/School-OS/assets/school-logo.svg';
@@ -31175,6 +31168,7 @@ if(_subV2OldSetSubTeacher){
     el.className=cls||''; el.textContent=text;
   }
   async function getApi(action,timeoutMs){
+    if(window.SCHOOL_OS_STORAGE==='firebase')return (await window.schoolFirebaseReady).read(action,true);
     var url=window.SCHOOL_OS_API_URL||'';
     if(!url) throw new Error('ยังไม่ได้เชื่อม School-OS API');
     var sep=url.indexOf('?')>=0?'&':'?';
@@ -31205,6 +31199,7 @@ if(_subV2OldSetSubTeacher){
     if(currentPage==='announcements'&&typeof renderAnnouncements==='function') renderAnnouncements();
   }
   async function getStaticJson(path,timeoutMs){
+    if(window.SCHOOL_OS_STORAGE==='firebase'){var action=path.includes('home')?'home':path.includes('schedule')?'schedule':'core';return (await (await window.schoolFirebaseReady).read(action)).data;}
     var ctrl=new AbortController();
     var timer=setTimeout(function(){ctrl.abort();},timeoutMs||8000);
     try{
@@ -31347,6 +31342,7 @@ window.SCHOOL_AUTH = window.SCHOOL_AUTH || {loggedIn:false,token:'',role:'guest'
 function publicApiUrl(){ return window.SCHOOL_OS_API_URL || ''; }
 
 async function postSchoolApi(params){
+  if(window.SCHOOL_OS_STORAGE==='firebase')return (await window.schoolFirebaseReady).post(params);
   var url=publicApiUrl();
   if(!url) throw new Error('ยังไม่ได้เชื่อม School-OS API');
   var body=new URLSearchParams();
@@ -31375,6 +31371,7 @@ function setModeButtons(){
   if(d) d.classList.toggle('active',SCHOOL_AUTH.mode==='DAILY');
 }
 function canAccessPage(p){
+  if(window.SCHOOL_OS_STORAGE==='firebase')return window.schoolFirebaseCanAccess?window.schoolFirebaseCanAccess(p):['dashboard','teacher-view','teacher-all','export'].includes(p);
   var guestAllowed=['dashboard','teacher-view','teacher-all','substitute','export','announcements'];
   var supportAllowed=['dashboard','teacher-view','teacher-all','substitute','sub-history','leave-test'];
   var dailyAllowed=['dashboard','teacher-view','teacher-all','substitute','sub-history','announcements','leave-test'];
@@ -31420,6 +31417,7 @@ function toggleLoginSecret(){
 }
 var academicLoginPending=false;
 async function academicLogin(){
+  if(window.SCHOOL_OS_STORAGE==='firebase'){try{return await (await window.schoolFirebaseReady).login();}catch(e){toast(e.message,'err');return;}}
   if(academicLoginPending) return;
   var id=(document.getElementById('academicLoginId')||{}).value||'';
   var pass=(document.getElementById('academicLoginPass')||{}).value||'';
@@ -31471,6 +31469,7 @@ async function academicLogin(){
   }
 }
 async function academicLogout(){
+  if(window.SCHOOL_OS_STORAGE==='firebase'){try{return await (await window.schoolFirebaseReady).logout();}catch(e){toast(e.message,'err');return;}}
   var oldToken=SCHOOL_AUTH.token||'';
   onlineSaveGeneration++;
   onlineSavePending=false;
@@ -31539,6 +31538,7 @@ function renderTeacherAll(query){
     };
   });
 
+  if(window.SCHOOL_OS_STORAGE==='firebase'){SCHOOL_AUTH={loggedIn:false,token:'',role:'guest',mode:'DAILY'};window.schoolFirebaseReady.then(function(m){m.start();});return;}
   var token=sessionStorage.getItem('school_os_admin_token')||'';
 
   // Remove legacy local-admin sessions from the old frontend-only login.
@@ -31600,7 +31600,7 @@ async function renderLeaveTest(){
     var base=String(window.SCHOOL_OS_LEAVE_API_URL||'').replace(/\/+$/,'');
     if(!base) throw new Error('ยังไม่ได้เชื่อม Leave API แยก');
     var url=base+'?action=teacherLeave&date='+encodeURIComponent(iso)+'&_='+Date.now();
-    var res=await fetch(url,{method:'GET',cache:'no-store',signal:controller.signal});
+    var res=window.SCHOOL_OS_STORAGE==='firebase'?{ok:true,json:async function(){return (await window.schoolFirebaseReady).leave('teacherLeave',iso);}}:await fetch(url,{method:'GET',cache:'no-store',signal:controller.signal});
     if(!res.ok) throw new Error('Leave API HTTP '+res.status);
     var out=await res.json();
     if(!out||out.ok===false) throw new Error((out&&out.error)||'อ่านข้อมูลใบลาไม่สำเร็จ');
@@ -31682,3 +31682,9 @@ async function renderLeaveTest(){
 }
 </style>
 <style id="leave-test-isolated-style">body.guest-mode #nav-leave-test{display:none!important}#page-leave-test .tbl{width:100%;border-collapse:collapse}#page-leave-test .tbl th{background:#103B70;color:#fff;padding:9px 10px;text-align:left}#page-leave-test .tbl td{border-bottom:1px solid #E6ECF4;padding:9px 10px}#page-leave-test .tbl tr:hover td{background:#F8FAFD}</style>
+
+<script>if(window.SCHOOL_OS_STORAGE==='firebase'){var paintOriginal=window.applyAccessUI;window.applyAccessUI=function(){var r=paintOriginal.apply(this,arguments);if(window.schoolFirebasePaintIdentity)window.schoolFirebasePaintIdentity();return r;};}</script>
+
+<style>body.guest-mode.firebase-authenticated #adminTopBox{display:flex!important}body.firebase-authenticated #guestLoginBox{display:none!important}</style>
+
+<script>window.schoolFirebaseResetView=function(){DB=emptyDB();onlineSaveGeneration++;clearTimeout(saveTimer);onlineSavePending=false;if(typeof renderAllUI==='function')renderAllUI();if(typeof nav==='function')nav('dashboard');};</script>
