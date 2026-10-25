@@ -26,7 +26,7 @@ The former GitHub JSON sync exits immediately when Firebase storage is active.
 
 ## Separate leave system
 
-The separate leave application is still an upstream input. “รับข้อมูลใบลาล่าสุด” on the protected migration page refreshes its records into Firebase; there is currently no scheduled refresh. New leave entries must be refreshed before arranging substitutions.
+The separate leave application is still an upstream input. “รับข้อมูลใบลาล่าสุด” on the academic leave-history page (also available on the protected migration page) refreshes its records into Firebase; there is currently no scheduled refresh. New leave entries must be refreshed before arranging substitutions.
 After cutover, retire the old timetable Apps Script write deployment to prevent edits to a second source. Keep the leave deployment until its own migration is completed.
 
 ## Validation
@@ -36,3 +36,4 @@ Firestore emulator tests cover private profiles, all private timetable paths, ac
 Budget membership compatibility tests retain approved legacy roles and reject academic-to-budget privilege escalation.
 
 This software is a prototype and may contain errors or security vulnerabilities. It should not be used in production without thorough testing, security review, and appropriate monitoring. You are responsible for ensuring that the application meets your security and compliance requirements.
+
