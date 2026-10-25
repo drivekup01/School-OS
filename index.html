@@ -2,9 +2,9 @@
 <html lang="th">
 <head>
 <script src="js/ui-state.js?v=20261025-navigation1"></script>
-<script src="js/teacher-schedule-core.js?v=20261025-subject3"></script>
+<script src="js/teacher-schedule-core.js?v=20261025-teacherperiod1"></script>
 <link rel="stylesheet" href="css/teacher-builder.css?v=20261025-state1">
-<script src="js/teacher-builder.js?v=20261025-state1"></script>
+<script src="js/teacher-builder.js?v=20261025-teacher1"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ระบบจัดตารางเรียน - ตารางสอน</title>
@@ -2321,10 +2321,6 @@ body.support-mode .logout-top-btn{
     <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:4px">
       <button class="btn btn-gold" style="font-size:15px;padding:13px 24px" onclick="doExportSelected('student')">🎒 Word ตารางเรียน</button>
       <button class="btn btn-gold" style="font-size:15px;padding:13px 24px" onclick="exportSelectedRoomPng('student')">🖼️ PNG ตารางเรียน</button>
-      <button class="btn btn-pri" style="font-size:15px;padding:13px 24px" onclick="doExportSelected('teacher')">📖 Word ตารางสอน</button>
-      <button class="btn btn-pri" style="font-size:15px;padding:13px 24px" onclick="exportSelectedRoomPng('teacher')">🖼️ PNG ตารางสอน</button>
-      <button class="btn btn-succ" style="font-size:15px;padding:13px 24px" onclick="doExportSelected('both')">📋 Word ทั้งสองแบบ</button>
-      <button class="btn btn-succ" style="font-size:15px;padding:13px 24px" onclick="exportSelectedRoomPng('both')">🖼️ PNG ทั้งสองแบบ</button>
     </div>
     <div id="exportMsg" style="margin-top:12px"></div>
   </div>
@@ -26781,7 +26777,7 @@ function renderRoomTable(){
   if(!DB.rooms.length){
     wrap.innerHTML='<div class="empty-state"><div class="empty-icon">🚪</div><div class="empty-text">ยังไม่มีห้องเรียน</div><div class="empty-sub">กดปุ่ม "+ เพิ่มห้องเรียน"</div></div>';return;
   }
-  const total=DB.slots.length*DB.days.length;
+  const total=TeacherSchedule.studentSlots(DB).length*DB.days.length;
   wrap.innerHTML=`<table class="tbl"><thead><tr><th>#</th><th>ชั้น/ห้อง</th><th>ระดับ</th><th>ครูประจำชั้น</th><th>ความคืบหน้า</th><th>จัดการ</th></tr></thead>
   <tbody>${DB.rooms.map((r,i)=>{
     const f=Object.keys(DB.sched).filter(k=>k.startsWith(r.id+'_')&&DB.sched[k]&&DB.sched[k].subject).length;
@@ -26931,22 +26927,27 @@ function renderSlotsUI(){
     const isB=sl.isBreak||false;
     const rowBg=isB?'background:#FFF8E1;border-color:#FFC107':'background:#f5f8ff;border:1px solid var(--border)';
     return `<div class="slot-row-wrap" style="${rowBg}">
-      ${isB?'<span class="slot-break-badge">☀️ พัก</span>':'<span style="font-size:12px;font-weight:700;color:var(--pri);min-width:28px">${i+1}.</span>'}
+      ${isB?'<span class="slot-break-badge">☀️ พัก</span>':'<span style="font-size:12px;font-weight:700;color:var(--pri);min-width:28px">'+(i+1)+'.</span>'}
       <input type="text" value="${sl.label}" style="width:90px;padding:5px 7px;font-size:12px;${isB?'font-weight:700;color:#E65100':''}" data-sloti="${i}" data-field="label" oninput="updateSlotField(this)">
       <input type="time" value="${sl.start}" style="width:90px;padding:5px 7px;font-size:12px" data-sloti="${i}" data-field="start" onchange="updateSlotField(this)">
       <span style="font-size:12px;color:var(--muted)">–</span>
       <input type="time" value="${sl.end}" style="width:90px;padding:5px 7px;font-size:12px" data-sloti="${i}" data-field="end" onchange="updateSlotField(this)">
       <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:#E65100;font-weight:700;white-space:nowrap;cursor:pointer" title="ทำเครื่องหมายเป็นคาบพัก (จะไม่มีช่องวิชาในตาราง)">
         <input type="checkbox" class="slot-break-chk" ${isB?'checked':''} data-sloti="${i}" onchange="toggleBreakSlot(this)">พักเที่ยง</label>
+      <label style="display:flex;align-items:center;gap:4px;font-size:11px;font-weight:700;white-space:nowrap;cursor:pointer" title="แสดงในตารางครูเท่านั้น ไม่แสดงในตารางนักเรียน"><input type="checkbox" ${sl.teacherOnly?'checked':''} ${isB?'disabled':''} data-sloti="${i}" onchange="toggleTeacherOnlySlot(this)">เฉพาะครู</label>
       <button class="btn btn-danger btn-xs" onclick="removeSlot(${i})">ลบ</button>
     </div>`;
   }).join('');
 }
 
+function toggleTeacherOnlySlot(chk){
+ try{TeacherSchedule.setSlotTeacherOnly(DB,DB.slots[+chk.dataset.sloti].id,chk.checked);markDirty();}catch(error){toast(error.message,'warn');}renderSlotsUI();
+}
 function toggleBreakSlot(chk) {
   var i = +chk.dataset.sloti;
   if(DB.slots[i]) {
     DB.slots[i].isBreak = chk.checked;
+    if(chk.checked)DB.slots[i].teacherOnly=false;
     if(chk.checked) {
       // Auto-set label to พักเที่ยง if generic
       if(!DB.slots[i].label || DB.slots[i].label.startsWith('คาบ')) {
@@ -27044,11 +27045,11 @@ function renderBuilder(){
   tabs.innerHTML=DB.rooms.map(r=>`
     <div class="rtab${r.id===currentBuilderRoom?' active':''}" onclick="switchBuilderRoom('${r.id}')">🚪 ${r.label}</div>`).join('')+
     `<button class="btn btn-out btn-sm" onclick="nav('rooms')" style="margin-left:4px">+ ห้องใหม่</button>`;
-  if(!DB.slots.length||!DB.days.length){
+  if(!TeacherSchedule.studentSlots(DB).length||!DB.days.length){
     grid.innerHTML='<div class="alert a-warn">กรุณาตั้งค่าคาบเรียนและวันเรียนก่อน</div>';return;
   }
   // ตารางสอนแบบมาตรฐาน: วันอยู่แนวตั้งด้านซ้าย / คาบและเวลาอยู่แถวบน
-  const slotHds=DB.slots.map(sl=>{
+  const slotHds=TeacherSchedule.studentSlots(DB).map(sl=>{
     if(sl.isBreak){
       return `<th style="background:#E65100;min-width:66px;width:66px">
         <div style="font-weight:800">${sl.label}</div>
@@ -27062,7 +27063,7 @@ function renderBuilder(){
   }).join('');
 
   const rows=DB.days.map((d,dayIndex)=>{
-    const cells=DB.slots.map(sl=>{
+    const cells=TeacherSchedule.studentSlots(DB).map(sl=>{
       if(sl.isBreak){
         if(dayIndex>0) return '';
         return `<td class="builder-break-cell" rowspan="${DB.days.length}" style="min-width:66px;width:66px;background:#FFF8E1;vertical-align:middle;text-align:center">
@@ -27102,7 +27103,7 @@ function renderBuilder(){
     return `<tr><td class="td-period" style="font-weight:800;font-size:12px;color:var(--pri);min-width:74px;width:74px">${d}</td>${cells}</tr>`;
   }).join('');
 
-  grid.innerHTML=`<div class="sched-wrap"><table class="sched-tbl" style="min-width:${Math.max(700,74+(DB.slots.filter(s=>!s.isBreak).length*118)+(DB.slots.some(s=>s.isBreak)?66:0))}px">
+  grid.innerHTML=`<div class="sched-wrap"><table class="sched-tbl" style="min-width:${Math.max(700,74+(TeacherSchedule.studentSlots(DB).filter(s=>!s.isBreak).length*118)+(TeacherSchedule.studentSlots(DB).some(s=>s.isBreak)?66:0))}px">
     <thead><tr><th class="th-time" style="min-width:74px;width:74px">วัน/คาบ</th>${slotHds}</tr></thead>
     <tbody>${rows}</tbody></table></div>`;
   // bind events AFTER DOM is set
@@ -27235,7 +27236,7 @@ function renderQuotaPanel(roomId) {
   if(!roomSubjects.length) { el.innerHTML = '<div class="alert a-warn" style="margin:0 0 12px">ยังไม่มีวิชาสำหรับระดับ '+(roomGrade(roomId)||'-')+' — กรุณากำหนดระดับชั้นในเมนู วิชาเรียน</div>'; return; }
 
   var statuses = getQuotaStatus(roomId);
-  var totalSlots = DB.slots.length * DB.days.length;
+  var totalSlots = TeacherSchedule.studentSlots(DB).length * DB.days.length;
   var filled = Object.keys(DB.sched).filter(function(k) {
     return k.split('_')[0]===roomId && DB.sched[k] && DB.sched[k].subject;
   }).length;
@@ -27340,14 +27341,14 @@ function openAutoSchedule() {
   if(!currentBuilderRoom) { alert('\u0e01\u0e23\u0e38\u0e13\u0e32\u0e40\u0e25\u0e37\u0e2d\u0e01\u0e2b\u0e49\u0e2d\u0e07\u0e40\u0e23\u0e35\u0e22\u0e19\u0e01\u0e48\u0e2d\u0e19'); return; }
   if(!DB.subjects.length) { alert('\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e21\u0e35\u0e27\u0e34\u0e0a\u0e32'); return; }
 
-  var totalSlots = DB.slots.length * DB.days.length;
+  var totalSlots = TeacherSchedule.studentSlots(DB).length * DB.days.length;
   var totalHours = DB.subjects.reduce(function(a,s){return a+(s.hours||1);},0);
 
   var rows = DB.subjects.map(function(s) {
     return '<div class="auto-subj-row">' +
       '<div class="dot" style="background:'+s.color+'"></div>' +
       '<label>'+subjectOptionLabel(s)+'</label>' +
-      '<input type="number" id="aq_'+s.id+'" value="'+(s.hours||1)+'" min="0" max="'+DB.slots.length*DB.days.length+'">' +
+      '<input type="number" id="aq_'+s.id+'" value="'+(s.hours||1)+'" min="0" max="'+TeacherSchedule.studentSlots(DB).length*DB.days.length+'">' +
       '</div>';
   }).join('');
 
@@ -27373,7 +27374,7 @@ function runAutoSchedule() {
 
   var mode = document.getElementById('autoSchedMode').value;
   var clearFirst = document.getElementById('autoSchedClear').checked;
-  var slots = DB.slots;
+  var slots = TeacherSchedule.studentSlots(DB);
   var days  = DB.days;
   var roomId = currentBuilderRoom;
 
@@ -27558,7 +27559,7 @@ function selectAutoMode(mode, el) {
 function runAutoSchedulePage() {
   // ── 1. VALIDATE INPUTS ──────────────────────────────────
   if(!DB.subjects.length) { toast('ยังไม่มีวิชา กรุณาเพิ่มวิชาก่อน','warn'); return; }
-  if(!DB.slots.length || !DB.days.length) { toast('ยังไม่มีคาบ/วัน กรุณาตั้งค่าก่อน','warn'); return; }
+  if(!TeacherSchedule.studentSlots(DB).length || !DB.days.length) { toast('ยังไม่มีคาบ/วัน กรุณาตั้งค่าก่อน','warn'); return; }
   if(_autoSelectedRooms.size === 0) { toast('กรุณาเลือกห้องเรียนอย่างน้อย 1 ห้อง','warn'); return; }
 
   // ── 2. READ UI CONFIG ──────────────────────────────────
@@ -27660,7 +27661,7 @@ function runAutoSchedulePage() {
 
     // (b) BUILD VARIABLE LIST (unassigned cells in this room)
     var variables = [];                 // cells to fill
-    DB.slots.forEach(function(sl){
+    TeacherSchedule.studentSlots(DB).forEach(function(sl){
       if(sl.isBreak) return;
       DB.days.forEach(function(day){
         var k = room.id+'_'+sl.id+'_'+day;
@@ -27843,7 +27844,7 @@ function renderAutoResult(rooms, generated, totalQuota) {
       '<button class="btn btn-sm btn-ghost" onclick="autoApplyTeachersRoom(\''+room.id+'\')">💾 บันทึกห้องนี้</button>' +
       '</div>';
 
-    var slotHds = DB.slots.map(function(sl){
+    var slotHds = TeacherSchedule.studentSlots(DB).map(function(sl){
       if(sl.isBreak){
         return '<th style="background:#E65100;min-width:66px;width:66px">' +
           '<div style="font-weight:800">'+sl.label+'</div>' +
@@ -27857,7 +27858,7 @@ function renderAutoResult(rooms, generated, totalQuota) {
     }).join('');
 
     var rows = DB.days.map(function(day, dayIndex){
-      var cells = DB.slots.map(function(sl){
+      var cells = TeacherSchedule.studentSlots(DB).map(function(sl){
         if(sl.isBreak){
           if(dayIndex>0) return '';
           return '<td class="builder-break-cell" rowspan="'+DB.days.length+'" style="min-width:66px;width:66px;background:#FFF8E1;vertical-align:middle;text-align:center">' +
@@ -27925,7 +27926,7 @@ function renderAutoResult(rooms, generated, totalQuota) {
       return '<tr><td class="td-period" style="font-weight:800;font-size:12px;color:var(--pri);min-width:74px;width:74px">'+day+'</td>'+cells+'</tr>';
     }).join('');
 
-    html += '<div class="sched-wrap" style="margin-top:10px"><table class="sched-tbl" style="min-width:'+Math.max(760,74+(DB.slots.filter(function(s){return !s.isBreak;}).length*150)+(DB.slots.some(function(s){return s.isBreak;})?66:0))+'px">' +
+    html += '<div class="sched-wrap" style="margin-top:10px"><table class="sched-tbl" style="min-width:'+Math.max(760,74+(TeacherSchedule.studentSlots(DB).filter(function(s){return !s.isBreak;}).length*150)+(TeacherSchedule.studentSlots(DB).some(function(s){return s.isBreak;})?66:0))+'px">' +
       '<thead><tr><th class="th-time" style="min-width:74px;width:74px">วัน/คาบ</th>'+slotHds+'</tr></thead>' +
       '<tbody>'+rows+'</tbody></table></div>';
     html += '</div>';
@@ -28473,7 +28474,7 @@ async function buildTeacherDocx(teacherName, teacherObj) {
   const {Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,ImageRun,
     AlignmentType,PageOrientation,WidthType,ShadingType,BorderStyle,VerticalAlign}=window.docx;
 
-  const school=DB.school, font='TH Sarabun New', margin=540, contentW=15750;
+  const school=DB.school, font='TH SarabunPSK', margin=540, contentW=15750;
   const dayW=1250, remaining=contentW-dayW;
   const baseW=Math.floor(remaining/DB.slots.length);
   const colWidths=[dayW,...DB.slots.map((_,i)=>i===DB.slots.length-1?remaining-baseW*(DB.slots.length-1):baseW)];
@@ -28642,7 +28643,7 @@ function renderPreview(){
   if(!id){el.innerHTML='<div class="empty-state"><div class="empty-icon">🗓️</div><div class="empty-text">เลือกห้องเพื่อดูตัวอย่าง</div></div>';return;}
   const r=DB.rooms.find(x=>x.id===id); if(!r) return;
   const hr=DB.teachers.find(t=>t.id===r.homeroom);
-  const slotHds=DB.slots.map(sl=>{
+  const slotHds=TeacherSchedule.studentSlots(DB).map(sl=>{
     if(sl.isBreak){
       return `<th style="background:#E65100;color:#fff;padding:10px 6px;text-align:center;border:1px solid #c94a00;min-width:90px">
         <div style="font-weight:800">${sl.label}</div><div style="font-size:10px;opacity:.9">${sl.start}–${sl.end}</div></th>`;
@@ -28651,7 +28652,7 @@ function renderPreview(){
       <div style="font-weight:800">${sl.label}</div><div style="font-size:10px;opacity:.85">${sl.start}–${sl.end}</div></th>`;
   }).join('');
   const rows=DB.days.map((d,dayIndex)=>{
-    const cells=DB.slots.map(sl=>{
+    const cells=TeacherSchedule.studentSlots(DB).map(sl=>{
       if(sl.isBreak){
         if(dayIndex>0) return '';
         return `<td rowspan="${DB.days.length}" style="background:#FFF8E1;border:1px solid #FFC107;padding:4px;text-align:center;font-weight:800;color:#E65100;min-width:66px;width:66px;vertical-align:middle"><div style="writing-mode:vertical-lr;transform:none;text-orientation:mixed;margin:auto">พักเที่ยง</div></td>`;
@@ -28882,17 +28883,17 @@ async function buildDocx(docType,room){
   const {Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,ImageRun,
     AlignmentType,PageOrientation,WidthType,ShadingType,BorderStyle,VerticalAlign}=window.docx;
   const school=DB.school, docTitle=docType==='teacher'?'ตารางสอน':'ตารางเรียน';
-  const font='TH Sarabun New', margin=540, contentW=15800;
+  const font='TH SarabunPSK', margin=540, contentW=15800;
   const dayCW=1250;
-  const breakSlots=DB.slots.filter(sl=>sl.isBreak).length;
-  const normalSlots=DB.slots.length-breakSlots;
+  const breakSlots=TeacherSchedule.studentSlots(DB).filter(sl=>sl.isBreak).length;
+  const normalSlots=TeacherSchedule.studentSlots(DB).length-breakSlots;
   const breakCW=900;
   const usable=Math.max(1000,contentW-dayCW-(breakSlots*breakCW));
   const normalCW=normalSlots?Math.floor(usable/normalSlots):usable;
   let used=dayCW;
-  const slotWidths=DB.slots.map((sl,i)=>{
+  const slotWidths=TeacherSchedule.studentSlots(DB).map((sl,i)=>{
     let w=sl.isBreak?breakCW:normalCW;
-    if(i===DB.slots.length-1) w=contentW-used;
+    if(i===TeacherSchedule.studentSlots(DB).length-1) w=contentW-used;
     used+=w;
     return Math.max(700,w);
   });
@@ -28903,22 +28904,23 @@ async function buildDocx(docType,room){
   const brB={top:b('FFC107',4),bottom:b('FFC107',4),left:b('FFC107',4),right:b('FFC107',4)};
   const noB={style:BorderStyle.NONE,size:0,color:'FFFFFF'}, noBs={top:noB,bottom:noB,left:noB,right:noB};
   const mg={top:60,bottom:60,left:70,right:70};
-  const t=(text,opts={})=>new TextRun({text:String(text||''),font,...opts});
+  // PNG/CSS uses px; Word uses half-points. 1 px = 0.75 pt.
+  const t=(text,opts={})=>new TextRun({text:String(text||''),font,...opts,...(opts.size?{size:Math.round(opts.size*1.5),sizeComplexScript:Math.round(opts.size*1.5)}:{})});
   const hr=DB.teachers.find(x=>x.id===room.homeroom);
 
   // Header: วัน / คาบ | คาบ 1 | คาบ 2 | ... | พักเที่ยง | ...
   const hdrRow=new TableRow({tableHeader:true,children:[
     new TableCell({borders:dkB,width:{size:dayCW,type:WidthType.DXA},margins:mg,
       shading:{fill:'1a3a6e',type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,
-      children:[new Paragraph({alignment:AlignmentType.CENTER,children:[t('วัน / คาบ',{bold:true,color:'FFFFFF',size:22})]})]}),
-    ...DB.slots.map((sl,i)=>new TableCell({
+      children:[new Paragraph({alignment:AlignmentType.CENTER,children:[t('วัน / คาบ',{bold:true,color:'FFFFFF',size:14})]})]}),
+    ...TeacherSchedule.studentSlots(DB).map((sl,i)=>new TableCell({
       borders:sl.isBreak?brB:dkB,
       width:{size:slotWidths[i],type:WidthType.DXA},margins:mg,
       shading:{fill:sl.isBreak?'E65100':'1a3a6e',type:ShadingType.CLEAR},
       verticalAlign:VerticalAlign.CENTER,
       children:[
-        new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:0},children:[t(sl.label,{bold:true,color:'FFFFFF',size:20})]}),
-        new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:0},children:[t(sl.start+'–'+sl.end,{bold:sl.isBreak,color:'FFFFFF',size:15})]})
+        new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:0},children:[t(sl.label,{bold:true,color:'FFFFFF',size:14})]}),
+        new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:0},children:[t(sl.start+'–'+sl.end,{bold:sl.isBreak,color:'FFFFFF',size:10})]})
       ]
     }))
   ]});
@@ -28927,22 +28929,22 @@ async function buildDocx(docType,room){
   const dataRows=DB.days.map(day=>new TableRow({children:[
     new TableCell({borders:ltB,width:{size:dayCW,type:WidthType.DXA},margins:mg,
       shading:{fill:'EEF3FF',type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,
-      children:[new Paragraph({alignment:AlignmentType.CENTER,children:[t(day,{bold:true,size:22,color:'1a3a6e'})]})]}),
-    ...DB.slots.map((sl,i)=>{
+      children:[new Paragraph({alignment:AlignmentType.CENTER,children:[t(day,{bold:true,size:14,color:'1a3a6e'})]})]}),
+    ...TeacherSchedule.studentSlots(DB).map((sl,i)=>{
       if(sl.isBreak){
         return new TableCell({borders:brB,width:{size:slotWidths[i],type:WidthType.DXA},margins:mg,
           shading:{fill:'FFF8E1',type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,
-          children:[new Paragraph({alignment:AlignmentType.CENTER,children:[t('พัก',{bold:true,size:18,color:'E65100'})]})]});
+          children:[new Paragraph({alignment:AlignmentType.CENTER,children:[t('พักเที่ยง',{bold:true,size:14,color:'E65100'})]})]});
       }
       const cv=DB.sched[room.id+'_'+sl.id+'_'+day]||{};
       const subj=(typeof findSubjectForRoom==='function')?findSubjectForRoom(cv.subject,room.id):DB.subjects.find(s=>s.name===cv.subject);
       const fill='FFFFFF';
       const paras=[];
-      paras.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:10},children:[t(cv.subject||'',{bold:!!cv.subject,size:19})]}));
-      if(cv.teacher) paras.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:0},children:[t(cv.teacher,{size:15,color:'1a3a6e',bold:true})]}));
-      if(cv.teacher2) paras.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:0},children:[t('+'+cv.teacher2,{size:14,color:'2a5298'})]}));
-      if(cv.teacher3) paras.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:0},children:[t('+'+cv.teacher3,{size:14,color:'4472c4'})]}));
-      if(TeacherSchedule.learnRoom(DB,cv,room.id)) paras.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:0},children:[t('ห้อง '+TeacherSchedule.learnRoom(DB,cv,room.id),{size:13,color:'2A5298',italics:true})]}));
+      paras.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:10},children:[t(cv.subject||'',{bold:!!cv.subject,size:13})]}));
+      if(cv.teacher) paras.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:0},children:[t(cv.teacher,{size:11,color:'1a3a6e',bold:true})]}));
+      if(cv.teacher2) paras.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:0},children:[t('+'+cv.teacher2,{size:10,color:'2a5298'})]}));
+      if(cv.teacher3) paras.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:0},children:[t('+'+cv.teacher3,{size:10,color:'4472c4'})]}));
+      if(TeacherSchedule.learnRoom(DB,cv,room.id)) paras.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:0},children:[t('ห้อง '+TeacherSchedule.learnRoom(DB,cv,room.id),{size:9,color:'2A5298',italics:true})]}));
       return new TableCell({borders:ltB,width:{size:slotWidths[i],type:WidthType.DXA},margins:mg,
         shading:{fill,type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,children:paras});
     })
@@ -28952,9 +28954,9 @@ async function buildDocx(docType,room){
   function sig(title,name,pos){
     return new TableCell({borders:noBs,width:{size:sigCW,type:WidthType.DXA},margins:{top:70,bottom:70,left:140,right:140},
       children:[
-        new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:240,after:40},children:[t('ลงชื่อ ..........................................',{size:20})]}),
-        new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:30},children:[t('('+(name||'..........................................')+')',{size:20})]}),
-        new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:30},children:[t(pos||title,{bold:true,size:18,color:'1a3a6e'})]})
+        new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:240,after:40},children:[t('ลงชื่อ ..........................................',{size:13})]}),
+        new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:30},children:[t('('+(name||'..........................................')+')',{size:13})]}),
+        new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:30},children:[t(pos||title,{bold:true,size:12,color:'1a3a6e'})]})
       ]});
   }
   const sigCells=[];
@@ -28971,13 +28973,13 @@ async function buildDocx(docType,room){
   const logoType=logoMimeToType(exportLogo);
   const logoRun=new ImageRun({type:logoType,data:logoBuf,transformation:{width:logoSize.w,height:logoSize.h},altText:{title:'โลโก้โรงเรียน',description:'โลโก้โรงเรียน',name:'logo'}});
 
-  const doc=new Document({sections:[{
+  const doc=new Document({styles:{default:{document:{run:{font:'TH SarabunPSK',size:20,sizeComplexScript:20}}}},sections:[{
     properties:{page:{size:{width:11906,height:16838,orientation:PageOrientation.LANDSCAPE},margin:{top:margin,right:margin,bottom:margin,left:margin}}},
     children:[
       new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:50},children:[logoRun]}),
-      new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:60},children:[t(docTitle,{bold:true,size:44,color:'1a3a6e'})]}),
-      new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:30},children:[t('โรงเรียน'+(school.name||'')+' ชั้น '+room.label,{bold:true,size:26})]}),
-      new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:110},children:[t('ภาคเรียนที่ '+school.semester+' ปีการศึกษา '+school.year,{size:22,color:'5a6a80'})]}),
+      new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:60},children:[t(docTitle,{bold:true,size:20,color:'1a3a6e'})]}),
+      new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:30},children:[t('โรงเรียน'+(school.name||'')+' ชั้น '+room.label,{bold:true,size:15})]}),
+      new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:110},children:[t('ภาคเรียนที่ '+school.semester+' ปีการศึกษา '+school.year,{size:13,color:'5a6a80'})]}),
       new Table({width:{size:contentW,type:WidthType.DXA},columnWidths:colWidths,rows:[hdrRow,...dataRows]}),
       new Paragraph({spacing:{before:0,after:10},children:[]}),
       sigTable
@@ -29819,7 +29821,7 @@ async function buildSubstituteDocx(dateStr, day){
   const {Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,ImageRun,
     AlignmentType,PageOrientation,WidthType,ShadingType,BorderStyle,VerticalAlign}=window.docx;
   const s = DB.school;
-  const font = 'TH Sarabun New';
+  const font = 'TH SarabunPSK';
   const margin = 1080; // ~0.75 inch
   const contentW = 9360; // A4 portrait with margins
   const t = (text,opts={})=>new TextRun({text:String(text||''),font,...opts});
@@ -31191,7 +31193,7 @@ if(_subV2OldSetSubTeacher){
 })();
 </script>
 <script src="config.js?v=20261025-firebase2"></script>
-<script>window.schoolFirebaseReady=window.SCHOOL_OS_STORAGE==='firebase'?import('./js/firebase-timetable.js?v=20261025-state1'):null;</script>
+<script>window.schoolFirebaseReady=window.SCHOOL_OS_STORAGE==='firebase'?import('./js/firebase-timetable.js?v=20261025-teacher1'):null;</script>
 <script id="school-os-online-adapter">
 (function(){
   var SAFE_LOGO_URL='https://drivekup01.github.io/School-OS/assets/school-logo.svg';
