@@ -1,0 +1,28 @@
+/* Dashboard only: compact, consistent navigation cards. */
+#page-dashboard .dashboard-action-grid{grid-template-columns:minmax(0,1.3fr) minmax(280px,1fr);align-items:start}
+#page-dashboard .dashboard-action-card{min-height:0}
+#page-dashboard .dashboard-shortcut-panel{grid-column:1/-1}
+#page-dashboard .dashboard-card-head{margin-bottom:18px;padding-bottom:14px}
+#page-dashboard .dashboard-shortcut-panel .card-title{display:flex;align-items:center;gap:9px}
+#page-dashboard .dashboard-shortcut-panel .card-title svg{width:21px;height:21px;color:#67419b}
+#page-dashboard .guest-shortcut-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:auto;gap:14px;flex:0}
+#page-dashboard .guest-shortcut-card{--menu-color:#65429a;--menu-tint:#f7f3fc;min-height:132px;padding:21px 18px;display:grid;grid-template-columns:44px minmax(0,1fr) 20px;align-items:center;gap:13px;background:var(--menu-tint);color:var(--menu-color);border:1px solid color-mix(in srgb,var(--menu-color) 20%,white);border-radius:17px;box-shadow:none}
+#page-dashboard .guest-shortcut-card.blue{--menu-color:#245d9c;--menu-tint:#f0f6fd}
+#page-dashboard .guest-shortcut-card.green{--menu-color:#087769;--menu-tint:#eff9f6}
+#page-dashboard .guest-shortcut-card:hover{transform:translateY(-2px);border-color:var(--menu-color);box-shadow:0 8px 20px #2837500c}
+#page-dashboard .guest-shortcut-card:focus-visible,#page-dashboard .dashboard-shortcut:focus-visible{outline:3px solid #ab8bd7;outline-offset:3px}
+#page-dashboard .guest-shortcut-icon{width:44px;height:44px;border-radius:13px;background:white;color:var(--menu-color);box-shadow:0 3px 12px #253b5808}
+#page-dashboard .guest-shortcut-icon svg,#page-dashboard .dashboard-shortcut-icon svg{width:24px;height:24px}
+#page-dashboard .guest-shortcut-card strong{font-size:16px!important;line-height:1.5}
+#page-dashboard .guest-shortcut-card small{font-size:12px!important;line-height:1.7;color:#61718a;margin-top:6px}
+#page-dashboard .guest-shortcut-arrow{position:static;font-size:22px;opacity:.75;align-self:center}
+#page-dashboard .admin-shortcut-grid{grid-template-columns:repeat(3,minmax(0,1fr));flex:0;gap:12px}
+#page-dashboard .dashboard-shortcut{min-height:100px;padding:17px;gap:13px;border-radius:15px;background:#faf8fd;border:1px solid #e7def0;box-shadow:none}
+#page-dashboard .dashboard-shortcut-icon{width:43px;height:43px;min-width:43px;background:#eee6f7;color:#69419b;border-radius:12px;display:grid;place-items:center}
+#page-dashboard .dashboard-shortcut.primary{background:#f1eaf9;color:#533080}
+#page-dashboard .dashboard-shortcut.primary .dashboard-shortcut-icon{background:#e5d7f3;color:#60378e}
+#page-dashboard .login-alternative{font:12px Tahoma,sans-serif;color:#64748b;background:transparent;border:0;padding:5px 0;min-height:30px;text-align:center;cursor:pointer;text-decoration:underline;text-underline-offset:3px;box-shadow:none}
+#page-dashboard .login-alternative:hover{color:#523184}
+@media(max-width:1000px){#page-dashboard .dashboard-action-grid{grid-template-columns:1fr}#page-dashboard .guest-shortcut-card{padding:18px 14px;grid-template-columns:40px minmax(0,1fr);gap:11px}#page-dashboard .guest-shortcut-arrow{display:none}}
+@media(max-width:720px){#page-dashboard .guest-shortcut-grid,#page-dashboard .admin-shortcut-grid{grid-template-columns:1fr;grid-template-rows:auto;gap:10px}#page-dashboard .guest-shortcut-card{min-height:96px;padding:16px;grid-template-columns:44px minmax(0,1fr) 20px}#page-dashboard .guest-shortcut-arrow{display:block}#page-dashboard .guest-shortcut-card strong{font-size:15px!important}#page-dashboard .dashboard-shortcut{min-height:82px}#page-dashboard .dashboard-shortcut-panel{padding:18px}}
+
