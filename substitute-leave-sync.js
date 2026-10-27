@@ -1,10 +1,10 @@
-// School-OS Substitute page <- Leave API sync (read-only V1)
+// School-OS Substitute page <- Leave API sync
 // Purpose: show real leave records in the existing daily timetable.
-// Does not write DB.substitute and does not change the locked Leave History module.
+// Viewing is read-only; an explicit assignment persists the imported absence.
 (function(){
   'use strict';
 
-  var leaveByDate={};
+  var leaveByDate={},pending={},epoch=0,leaveError='';
   var originalGetSubViewDay=window.getSubViewDay || getSubViewDay;
   var originalLoadSubstituteDay=window.loadSubstituteDay || loadSubstituteDay;
 
@@ -35,7 +35,7 @@
       // for old API deployments during migration and can be removed later.
       var t=null;
       if(r.teacherId) t=(DB.teachers||[]).find(function(x){return String(x.id)===String(r.teacherId);});
-      if(!t){
+      if(!t&&!r.teacherId){
         var target=norm(r.name);
         t=(DB.teachers||[]).find(function(x){return teacherName(x)===target;});
       }
@@ -49,32 +49,54 @@
     var existing={};
     (day.absentList||[]).forEach(function(a){existing[String(a.teacherId)]=true;});
     apiAbsent(dateStr).forEach(function(a){
-      if(!existing[String(a.teacherId)]) day.absentList.push(a);
+      if(!existing[String(a.teacherId)]){day.absentList.push(a);existing[String(a.teacherId)]=true;}
     });
     return day;
   };
 
   async function fetchLeave(dateStr){
-    if(window.SCHOOL_OS_STORAGE==='firebase'&&!window.SCHOOL_AUTH?.loggedIn)return;
-    var base=String(window.SCHOOL_OS_LEAVE_API_URL||'').replace(/\/+$/,'');
-    if(!base) return;
-    try{
-      var res=window.SCHOOL_OS_STORAGE==='firebase'?{ok:true,json:async function(){return (await window.schoolFirebaseReady).leave('teacherLeave',dateStr);}}:await fetch(base+'?action=teacherLeave&date='+encodeURIComponent(dateStr)+'&_='+Date.now(),{method:'GET',cache:'no-store'});
-      var out=await res.json();
-      leaveByDate[dateStr]=(out&&out.ok!==false&&Array.isArray(out.rows))?out.rows:[];
-    }catch(e){
-      leaveByDate[dateStr]=[];
-    }
+    if(Object.prototype.hasOwnProperty.call(leaveByDate,dateStr))return;
+    if(pending[dateStr])return pending[dateStr];
+    var version=epoch;
+    var task=(async function(){
+      try{
+        var out;
+        if(window.SCHOOL_OS_STORAGE==='firebase'){
+          out=await (await window.schoolFirebaseReady).leave('teacherLeave',dateStr);
+        }else{
+          var base=String(window.SCHOOL_OS_LEAVE_API_URL||'').replace(/\/+$/,'');
+          if(!base)throw Error('ยังไม่ได้เชื่อมข้อมูลวันลาครู');
+          var res=await fetch(base+'?action=teacherLeave&date='+encodeURIComponent(dateStr)+'&_='+Date.now(),{method:'GET',cache:'no-store'});
+          if(!res.ok)throw Error('โหลดข้อมูลวันลาไม่สำเร็จ');
+          out=await res.json();
+        }
+        if(!out||out.ok===false||!Array.isArray(out.rows))throw Error('ข้อมูลวันลาไม่ถูกต้อง');
+        if(version===epoch){leaveByDate[dateStr]=out.rows;leaveError='';}
+      }catch(e){if(version===epoch)leaveError=e.message||'โหลดข้อมูลวันลาไม่สำเร็จ';}
+      finally{if(version===epoch)delete pending[dateStr];}
+    })();
+    pending[dateStr]=task;
+    return task;
   }
 
-  window.loadSubstituteDay=loadSubstituteDay=function(){
-    originalLoadSubstituteDay();
-    var dateStr=(document.getElementById('subDate')||{}).value||'';
-    if(!dateStr) return;
-    fetchLeave(dateStr).then(function(){
-      if(currentSubDate===dateStr) renderSubContent();
-    });
+  window.loadSubstituteDay=loadSubstituteDay=function(){return originalLoadSubstituteDay();};
+
+  // Only an explicit assignment copies an imported absence into saved data.
+  var originalEnsure=window.ensurePersistentAbsentFromView_ || ensurePersistentAbsentFromView_;
+  window.ensurePersistentAbsentFromView_=ensurePersistentAbsentFromView_=function(teacherId){
+    var saved=originalEnsure(teacherId);
+    if(saved)return saved;
+    var source=(getSubViewDay(currentSubDate).absentList||[]).find(function(a){return String(a.teacherId)===String(teacherId);});
+    if(!source)return null;
+    saved=JSON.parse(JSON.stringify(source));
+    delete saved._leaveApi;
+    getSubDay(currentSubDate).absentList.push(saved);
+    return saved;
   };
+
+  function invalidate(){epoch++;leaveByDate={};pending={};leaveError='';if(currentSubDate)renderSubContent();}
+  window.addEventListener('school-leave-updated',invalidate);
+  window.addEventListener('school-identity-changed',invalidate);
 
   // Keep all substitute exports in sync with the daily table view.
   // The legacy exporters read getSubDay(), which contains only saved substitute data
@@ -99,22 +121,18 @@
   }
   ['downloadSubstitutePNG','copySubstituteSummary','shareSubstituteOnline','exportSubstituteDocx'].forEach(wrapExport);
 
-  // V1 display rule requested: leave row/cells are gray; teaching cells keep subject+room and show "ลา".
-  var style=document.createElement('style');
-  style.textContent=
-    '.sub-v2-table tr.teacher-absent td{background:#f1f3f5!important;}'+
-    '.sub-v2-table tr.teacher-absent .sub-v2-cell{background:#e5e7eb!important;border-color:#d1d5db!important;color:#374151!important;}'+
-    '.sub-v2-table tr.teacher-absent .sub-v2-cell .sub-v2-action{color:#6b7280!important;}';
-  document.head.appendChild(style);
-
   var originalRenderSubContent=window.renderSubContent || renderSubContent;
   window.renderSubContent=renderSubContent=async function(){
+    var dateStr=currentSubDate,version=epoch;
+    if(dateStr)await fetchLeave(dateStr);
+    if(version!==epoch||dateStr!==currentSubDate)return;
     await originalRenderSubContent();
-    var rows=document.querySelectorAll('#subContent tr.teacher-absent');
-    rows.forEach(function(row){
-      row.querySelectorAll('.sub-v2-action').forEach(function(el){
-        if(el.textContent.indexOf('เลือกครูแทน')>=0) el.textContent='ลา';
-      });
-    });
+    var content=document.getElementById('subContent');
+    if(leaveError&&content){
+      var note=document.createElement('div');
+      note.className='alert a-warn';note.setAttribute('role','status');
+      note.textContent='ข้อมูลวันลายังไม่พร้อม: '+leaveError;
+      content.prepend(note);
+    }
   };
 })();
