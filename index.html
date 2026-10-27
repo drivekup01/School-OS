@@ -5,7 +5,8 @@
 <script src="js/ui-state.js?v=20261027-roles1"></script>
 <script src="js/student-signatures.js?v=20261027-signatures2"></script>
 <script src="js/teacher-schedule-core.js?v=20261025-teacherperiod1"></script>
-<script src="js/teacher-print.js?v=20261027-printfit1"></script>
+<script src="js/teacher-print.js?v=20261027-roomprint1"></script>
+<script src="js/student-print.js?v=20261027-roomprint1"></script>
 <link rel="stylesheet" href="css/teacher-builder.css?v=20261025-break1">
 <script src="js/teacher-builder.js?v=20261027-roles1"></script>
 <meta charset="UTF-8">
@@ -2327,17 +2328,19 @@ body.support-mode .logout-top-btn{
   <div class="ph"><div class="ph-left"><h1>🏫 ตารางสอนแต่ละห้องเรียน</h1><p>เลือกห้องเรียนเพื่อดูตารางประจำสัปดาห์ และส่งออกเมื่อมีสิทธิ์ใช้งาน</p></div></div>
   <div class="card export-actions-card">
     <div class="card-hd"><div class="card-title">📥 เลือกห้องที่ต้องการส่งออก</div></div>
-    <div id="exportRoomList"></div>
+    <div style="display:flex;gap:8px;margin-bottom:10px"><button class="btn btn-ghost btn-sm" onclick="document.querySelectorAll('#exportRoomList input').forEach(el=>el.checked=true)">เลือกทุกห้อง</button><button class="btn btn-ghost btn-sm" onclick="document.querySelectorAll('#exportRoomList input').forEach(el=>el.checked=false)">ยกเลิกทั้งหมด</button></div><div id="exportRoomList"></div>
     <div class="divider"></div>
     <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:4px">
-      <button class="btn btn-gold" style="font-size:15px;padding:13px 24px" onclick="doExportSelected('student')">🎒 Word ตารางเรียน</button>
+      <button class="btn btn-gold" style="font-size:15px;padding:13px 24px" onclick="doExportSelected('student')">🎒 Word แยกห้อง</button>
+      <button class="btn btn-pri" onclick="exportStudentRoomsCombined()">📚 Word รวมทุกห้องที่เลือก</button>
+      <button class="btn btn-out" onclick="printStudentRooms('selected')">🖨️ พิมพ์ / PDF รวมทุกห้องที่เลือก</button>
       <button class="btn btn-gold" style="font-size:15px;padding:13px 24px" onclick="exportSelectedRoomPng('student')">🖼️ PNG ตารางเรียน</button>
     </div>
     <div id="exportMsg" style="margin-top:12px"></div>
   </div>
   <div class="card">
     <div class="card-hd"><div class="card-title">👁️ ดูตัวอย่างตาราง</div>
-      <select id="previewRoomSel" onchange="renderPreview()" style="max-width:200px"></select>
+      <select id="previewRoomSel" onchange="renderPreview()" style="max-width:200px"></select><button class="btn btn-out btn-sm" onclick="printStudentRooms('current')">🖨️ พิมพ์ / PDF ห้องนี้</button>
     </div>
     <div id="previewContent">
       <div class="empty-state"><div class="empty-icon">🗓️</div><div class="empty-text">เลือกห้องเพื่อดูตัวอย่าง</div></div>
@@ -28559,6 +28562,9 @@ function renderPreview(){
   const el=document.getElementById('previewContent'); if(!el) return;
   if(!id){el.innerHTML='<div class="empty-state"><div class="empty-icon">🗓️</div><div class="empty-text">เลือกห้องเพื่อดูตัวอย่าง</div></div>';return;}
   const r=DB.rooms.find(x=>x.id===id); if(!r) return;
+  el.innerHTML=roomPreviewHTML(r);
+}
+function roomPreviewHTML(r,exportLogo){
   const hr=DB.teachers.find(t=>t.id===r.homeroom);
   const slotHds=TeacherSchedule.studentSlots(DB).map(sl=>{
     if(sl.isBreak){
@@ -28586,9 +28592,10 @@ function renderPreview(){
     }).join('');
     return`<tr><td style="background:#eef3ff;border:1px solid #cdd;padding:8px 10px;text-align:center;font-weight:800;color:var(--pri);min-width:74px;width:74px">${d}</td>${cells}</tr>`;
   }).join('');
-  const logoHtml=DB.school.logoDataUrl
-    ?`<img src="${DB.school.logoDataUrl}" style="width:60px;height:60px;object-fit:contain;margin-bottom:6px;display:block;margin-left:auto;margin-right:auto">`:'';
-  el.innerHTML=`<div style="text-align:center;margin-bottom:14px">
+  const logoSource=exportLogo||DB.school.logoDataUrl;
+  const logoHtml=logoSource
+    ?`<img src="${logoSource}" style="width:60px;height:60px;object-fit:contain;margin-bottom:6px;display:block;margin-left:auto;margin-right:auto">`:'';
+  return `<div style="text-align:center;margin-bottom:14px">
     ${logoHtml}
     <div style="font-family:'Noto Serif Thai',serif;font-size:20px;font-weight:700;color:var(--pri)">ตารางเรียน</div>
     <div style="font-weight:700;font-size:15px;margin-top:4px">โรงเรียน${DB.school.name||'...'} ชั้น ${r.label}</div>
@@ -28780,7 +28787,7 @@ function importBackup(event){
 //  DOCX EXPORT
 // ════════════════════════════════════════════
 const delay=ms=>new Promise(r=>setTimeout(r,ms));
-async function buildDocx(docType,room){
+async function buildRoomSection(docType,room){
   const {Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,ImageRun,
     AlignmentType,PageOrientation,WidthType,ShadingType,BorderStyle,VerticalAlign}=window.docx;
   const school=DB.school, docTitle=docType==='teacher'?'ตารางสอน':'ตารางเรียน';
@@ -28891,7 +28898,7 @@ async function buildDocx(docType,room){
   const logoType=logoMimeToType(exportLogo);
   const logoRun=new ImageRun({type:logoType,data:logoBuf,transformation:{width:logoSize.w,height:logoSize.h},altText:{title:'โลโก้โรงเรียน',description:'โลโก้โรงเรียน',name:'logo'}});
 
-  const doc=new Document({styles:{default:{document:{run:{font:'TH SarabunPSK',size:20,sizeComplexScript:20}}}},sections:[{
+  return {
     properties:{page:{size:{width:11906,height:16838,orientation:PageOrientation.LANDSCAPE},margin:{top:margin,right:margin,bottom:margin,left:margin}}},
     children:[
       new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:50},children:[logoRun]}),
@@ -28902,11 +28909,22 @@ async function buildDocx(docType,room){
       new Paragraph({spacing:{before:0,after:10},children:[]}),
       sigTable
     ]
-  }]});
-  const blob=await Packer.toBlob(doc);
-  const fname=(docTitle+'_'+room.label+'_ปี'+school.year+'_ภาค'+school.semester+'.docx').replace(/\//g,'-');
-  dlBlob(blob,fname);
+  };
 }
+function roomDocument(sections){return new window.docx.Document({styles:{default:{document:{run:{font:'TH SarabunPSK',size:20,sizeComplexScript:20}}}},sections});}
+async function buildDocx(docType,room){
+ const section=await buildRoomSection(docType,room),blob=await window.docx.Packer.toBlob(roomDocument([section]));
+ const title=docType==='teacher'?'ตารางสอน':'ตารางเรียน';
+ dlBlob(blob,(title+'_'+room.label+'_ปี'+DB.school.year+'_ภาค'+DB.school.semester+'.docx').replace(/\//g,'-'));
+}
+function selectedStudentRooms(mode='selected'){
+ const ids=mode==='current'?[document.getElementById('previewRoomSel').value]:[...document.querySelectorAll('#exportRoomList input:checked')].map(el=>el.value);
+ const rooms=ids.map(id=>DB.rooms.find(r=>r.id===id)).filter(Boolean);if(!rooms.length)throw Error('กรุณาเลือกห้องเรียนอย่างน้อย 1 ห้อง');return rooms;
+}
+async function exportStudentRoomsCombined(){
+ const msg=document.getElementById('exportMsg');try{const rooms=selectedStudentRooms();if(msg)msg.textContent='กำลังสร้าง Word รวม '+rooms.length+' ห้อง…';const sections=[];for(const room of rooms){const section=await buildRoomSection('student',room);section.properties.type=window.docx.SectionType.NEXT_PAGE;sections.push(section);}const blob=await window.docx.Packer.toBlob(roomDocument(sections));dlBlob(blob,('ตารางเรียน_รวม'+rooms.length+'ห้อง_ปี'+DB.school.year+'_ภาค'+DB.school.semester+'.docx').replace(/\//g,'-'));if(msg)msg.textContent='ส่งออก Word รวม '+rooms.length+' ห้องในไฟล์เดียวแล้ว';}catch(error){if(msg)msg.textContent=error.message;toast(error.message,'warn');}
+}
+async function printStudentRooms(mode){try{const rooms=selectedStudentRooms(mode),logo=await getRequiredExportLogo();await TeacherPrint.printHTML(StudentPrint.documentHTML(rooms,room=>roomPreviewHTML(room,logo)));}catch(error){toast(error.message,'warn');}}
 
 // ════════════════════════════════════════════
 //  MODAL HELPERS
@@ -29086,7 +29104,7 @@ function getConflictCells(){
 }
 
 function renderAllUI(){
-  updateTopbar(); updateSidebarCounts(); 
+  updateTopbar(); updateSidebarCounts();
   const p=currentPage;
   if(p==='dashboard') renderDashboard();
   else if(p==='school') fillSchoolForm();
