@@ -40,5 +40,10 @@ exports.timetableApi=onCall(options,request=>handle(async()=>{
  else if(method==='deleteAnnouncement'){data.announcements=data.announcements.filter(x=>x.id!==String(input.id));}
  else M.error('ไม่รองรับคำสั่งตารางสอน');
  if(caps&&!caps.admin&&JSON.stringify(data.school)!==JSON.stringify(current.data.school))M.error('การแก้ไขส่วนเว็บไซต์ใช้ได้เฉพาะผู้ดูแลระบบ','permission-denied');
- const result=await repo.save({data,expectedRevision:input.expectedRevision,requestId:input.requestId,uid:p.uid,method});return {...result,systemMode:data.systemMode};
+ const result=await repo.save({data,expectedRevision:input.expectedRevision,requestId:input.requestId,uid:p.uid,method});
+ if(['saveSubstitute','saveDatabase'].includes(method)){
+  const published=await repo.read();
+  if(published.version===result.version)await require('./substitute-attendance').service(db,stamp,Timestamp).revokeMissing({data:published.data,version:published.version,uid:p.uid});
+ }
+ return {...result,systemMode:data.systemMode};
 }));

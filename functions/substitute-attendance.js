@@ -66,6 +66,21 @@ function service(db,stamp,Timestamp){
    return {changes,assignments:wanted.length};
   });
  }
- return {sync};
+ async function revokeMissing({data,version,uid}){
+  let changes=0,more=true;
+  while(more){
+   const batch=await db.runTransaction(async tx=>{
+    const [state,p,c,j]=await Promise.all([tx.get(db.doc('timetable_state/current')),tx.get(db.collection('school_users')),tx.get(db.collection('attendance_classes')),tx.get(db.collection('attendance_assignments').where('source','==','timetable-substitute'))]);
+    if(state.data()?.version!==version)return 0;
+    const profiles=p.docs.map(d=>({uid:d.id,...d.data()})),classes=c.docs.map(d=>({id:d.id,...d.data()})),keep=new Set(profiles.flatMap(profile=>plan(data,profiles,classes,profile)).map(a=>a.id));
+    const stale=j.docs.filter(d=>d.id.startsWith('auto_substitute_')&&d.data().active&&!keep.has(d.id)).slice(0,400);
+    for(const old of stale)tx.update(old.ref,{active:false,updatedAt:stamp(),updatedBy:uid});
+    return stale.length;
+   });
+   changes+=batch;more=batch===400;
+  }
+  return {changes};
+ }
+ return {sync,revokeMissing};
 }
 module.exports={plan,service,assignmentId};

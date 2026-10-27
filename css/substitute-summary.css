@@ -73,3 +73,7 @@
  .sub-group-count{margin-left:auto}
  .sub-group-select{font-size:16px}
 }
+.sub-group-cancel{display:block;min-height:36px;padding:6px 4px;margin:5px auto 0;border:0;background:transparent;color:#b24753;font:inherit;font-size:11px;cursor:pointer;white-space:nowrap}
+.sub-group-cancel:hover{color:#8e2431;text-decoration:underline}
+.sub-group-cancel:focus-visible{outline:3px solid #e8aeb4;outline-offset:2px}
+.sub-group-cancel-wide{width:100%;font-size:13px;min-height:44px;margin-top:10px;border:1px solid #efd5da;border-radius:10px;background:#fff9fa}

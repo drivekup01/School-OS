@@ -45,3 +45,9 @@ test('a moved timetable or revoked profile cannot provision substitute permissio
   await assert.rejects(service(f.db,stamp,timestamps).sync(f));assert.ok(![...f.db.values.keys()].some(k=>k.startsWith('attendance_assignments/')));
  }
 });
+test('saving cancellation immediately revokes managed attendance jobs and preserves marks and manual jobs',async()=>{
+ const f=fixture(),s=service(f.db,stamp,timestamps);await s.sync(f);const id=plan(f.data,f.profiles,f.classes,f.profile)[0].id;
+ f.db.values.set('attendance_assignments/'+id+'/days/20261028/marks/s1',{status:'present'});f.db.values.set('attendance_assignments/manual',{active:true,kind:'substitute',teacherUid:'u2'});
+ f.data.substitute={};assert.equal((await s.revokeMissing({data:f.data,version:'stale',uid:'admin'})).changes,0);assert.equal(f.db.values.get('attendance_assignments/'+id).active,true);
+ assert.equal((await s.revokeMissing({...f,uid:'admin'})).changes,1);assert.equal(f.db.values.get('attendance_assignments/'+id).active,false);assert.equal(f.db.values.get('attendance_assignments/manual').active,true);assert.ok(f.db.values.has('attendance_assignments/'+id+'/days/20261028/marks/s1'));
+});

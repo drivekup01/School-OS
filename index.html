@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<link rel="stylesheet" href="css/substitute-summary.css?v=20261027-multiroom1">
+<link rel="stylesheet" href="css/substitute-summary.css?v=20261027-report1">
 <script src="js/teacher-export.js?v=20261027-roles1"></script>
 <script src="js/ui-state.js?v=20261027-roles1"></script>
 <script src="js/student-signatures.js?v=20261027-signatures2"></script>
@@ -29755,157 +29755,10 @@ async function exportSubDocxByDate(dateStr){
   }catch(e){ toast('❌ '+e.message,'err'); }
 }
 async function buildSubstituteDocx(dateStr, day){
-  const {Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,ImageRun,
-    AlignmentType,PageOrientation,WidthType,ShadingType,BorderStyle,VerticalAlign}=window.docx;
-  const s = DB.school;
-  const font = 'TH SarabunPSK';
-  const margin = 1080; // ~0.75 inch
-  const contentW = 9360; // A4 portrait with margins
-  const t = (text,opts={})=>new TextRun({text:String(text||''),font,...opts});
-  const bk=(c,sz)=>({style:BorderStyle.SINGLE,size:sz,color:c});
-  const dkB={top:bk('1a3a6e',6),bottom:bk('1a3a6e',6),left:bk('1a3a6e',4),right:bk('1a3a6e',4)};
-  const ltB={top:bk('c5d3ea',3),bottom:bk('c5d3ea',3),left:bk('c5d3ea',3),right:bk('c5d3ea',3)};
-  const mg = {top:80,bottom:80,left:120,right:120};
-
-  // logo — required on every exported Word file
-  const exportLogo = await getRequiredExportLogo();
-  const logoBuf = await logoToArrayBuffer(exportLogo);
-  const logoType = logoMimeToType(exportLogo);
-  const logoRun = new ImageRun({type:logoType,data:logoBuf,
-    transformation:{width:60,height:60},
-    altText:{title:'logo',description:'logo',name:'logo'}});
-
-  // col widths for main table
-  const C1=900, C2=1500, C3=1200, C4=1600, C5=1800, C6=2360;
-  const colW=[C1,C2,C3,C4,C5,C6];
-
-  const children = [];
-
-  // ── Header ──
-  children.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:60},children:[logoRun]}));
-  children.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:60},
-    children:[t('บันทึกการสอนแทน',{bold:true,size:44,color:'1a3a6e'})]}));
-  children.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:40},
-    children:[t('โรงเรียน'+s.name,{bold:true,size:28})]}));
-  if(s.address) children.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:40},
-    children:[t(s.address,{size:22,color:'5a6a80'})]}));
-  children.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:200},
-    children:[t('วันที่ '+formatDateThai(dateStr)+'  |  ปีการศึกษา '+s.year+'  ภาคเรียนที่ '+s.semester,{bold:true,size:26})]}));
-
-  // ── Per absent teacher table ──
-  day.absentList.forEach((absent,ai)=>{
-    const teacher = DB.teachers.find(x=>x.id===absent.teacherId)||{prefix:'',first:'?',last:'',dept:''};
-    const tName = teacher.prefix+teacher.first+' '+teacher.last;
-    const icon = ABSENCE_ICONS[absent.type]||'';
-
-    // absent header row
-    children.push(new Table({
-      width:{size:contentW,type:WidthType.DXA}, columnWidths:colW,
-      rows:[
-        // absent teacher header
-        new TableRow({children:[
-          new TableCell({borders:dkB,width:{size:contentW,type:WidthType.DXA},
-            columnSpan:6, shading:{fill:'1a3a6e',type:ShadingType.CLEAR},
-            margins:{top:80,bottom:80,left:160,right:160},
-            children:[new Paragraph({children:[
-              t((ai+1)+(absent.manualOnly?'. ครูเจ้าของคาบ: ':'. ครูที่ลา: '),{bold:true,size:26,color:'FFFFFF'}),
-              t(tName,{bold:true,size:28,color:'FFDD44'}),
-              t('  |  '+icon+' '+absent.type+(absent.note?'  ('+absent.note+')':''),{size:22,color:'FFE0A0'})
-            ]})]}),
-        ]}),
-        // column headers
-        new TableRow({tableHeader:true,children:[
-          new TableCell({borders:dkB,width:{size:C1,type:WidthType.DXA},margins:mg,
-            shading:{fill:'2a5298',type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,
-            children:[new Paragraph({alignment:AlignmentType.CENTER,children:[t('คาบที่',{bold:true,size:22,color:'FFFFFF'})]})] }),
-          new TableCell({borders:dkB,width:{size:C2,type:WidthType.DXA},margins:mg,
-            shading:{fill:'2a5298',type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,
-            children:[new Paragraph({alignment:AlignmentType.CENTER,children:[t('เวลา',{bold:true,size:22,color:'FFFFFF'})]})] }),
-          new TableCell({borders:dkB,width:{size:C3,type:WidthType.DXA},margins:mg,
-            shading:{fill:'2a5298',type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,
-            children:[new Paragraph({alignment:AlignmentType.CENTER,children:[t('ห้อง',{bold:true,size:22,color:'FFFFFF'})]})] }),
-          new TableCell({borders:dkB,width:{size:C4,type:WidthType.DXA},margins:mg,
-            shading:{fill:'2a5298',type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,
-            children:[new Paragraph({alignment:AlignmentType.CENTER,children:[t('วิชา',{bold:true,size:22,color:'FFFFFF'})]})] }),
-          new TableCell({borders:dkB,width:{size:C5,type:WidthType.DXA},margins:mg,
-            shading:{fill:'2a5298',type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,
-            children:[new Paragraph({alignment:AlignmentType.CENTER,children:[t('ครูสอนแทน',{bold:true,size:22,color:'FFFFFF'})]})] }),
-          new TableCell({borders:dkB,width:{size:C6,type:WidthType.DXA},margins:mg,            shading:{fill:'2a5298',type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,
-            children:[new Paragraph({alignment:AlignmentType.CENTER,children:[t('หมายเหตุ',{bold:true,size:22,color:'FFFFFF'})]})] }),
-        ]}),
-        // period rows
-        ...absent.periods.map((p,pi)=>{
-          const slot = DB.slots.find(sl=>String(sl.id)===String(p.slotId));
-          const room = DB.rooms.find(r=>r.id===p.roomId);
-          const rowFill = pi%2===0?'EEF3FF':'FFFFFF';
-          const assignFill = p.subTeacher?'E8F5E9':rowFill;
-          return new TableRow({children:[
-            new TableCell({borders:ltB,width:{size:C1,type:WidthType.DXA},margins:mg,
-              shading:{fill:rowFill,type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,
-              children:[new Paragraph({alignment:AlignmentType.CENTER,children:[t(slot?slot.label:'คาบ '+p.slotId,{bold:true,size:22,color:'1a3a6e'})]})] }),
-            new TableCell({borders:ltB,width:{size:C2,type:WidthType.DXA},margins:mg,
-              shading:{fill:rowFill,type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,
-              children:[new Paragraph({alignment:AlignmentType.CENTER,children:[t(slot?slot.start+'–'+slot.end:'',{size:20,color:'5a6a80'})]})] }),
-            new TableCell({borders:ltB,width:{size:C3,type:WidthType.DXA},margins:mg,
-              shading:{fill:rowFill,type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,
-              children:[new Paragraph({alignment:AlignmentType.CENTER,children:[t(room?room.label:'–',{size:22})]})] }),
-            new TableCell({borders:ltB,width:{size:C4,type:WidthType.DXA},margins:mg,
-              shading:{fill:rowFill,type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,
-              children:[new Paragraph({alignment:AlignmentType.CENTER,children:[t(p.subject||'–',{bold:true,size:22})]})] }),
-            new TableCell({borders:ltB,width:{size:C5,type:WidthType.DXA},margins:mg,
-              shading:{fill:assignFill,type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,
-              children:[new Paragraph({alignment:AlignmentType.CENTER,children:[t(p.subTeacher||'ยังไม่ได้มอบหมาย',{bold:!!p.subTeacher,size:22,color:p.subTeacher?'1b5e20':'c62828'})]})] }),
-            new TableCell({borders:ltB,width:{size:C6,type:WidthType.DXA},margins:mg,
-              shading:{fill:rowFill,type:ShadingType.CLEAR},verticalAlign:VerticalAlign.CENTER,
-              children:[new Paragraph({children:[t(p.subNote||'',{size:20,color:'5a6a80'})]})] }),
-          ]});
-        }),
-        // signature row
-        new TableRow({children:[
-          new TableCell({borders:dkB,width:{size:contentW,type:WidthType.DXA},columnSpan:6,
-            margins:{top:120,bottom:120,left:200,right:200},
-            children:[
-              new Paragraph({children:[t('ลงชื่อครูที่ลา: ............................................  วันที่ ........./........./.........',{size:20,color:'5a6a80'})]}),
-            ]}),
-        ]})
-      ]
-    }));
-    children.push(new Paragraph({spacing:{before:0,after:180},children:[]}));
-  });
-
-  // ── Signature footer ──
-  const sigCW = Math.floor(contentW/3);
-  children.push(new Table({
-    width:{size:contentW,type:WidthType.DXA}, columnWidths:[sigCW,sigCW,sigCW],
-    rows:[new TableRow({children:[
-      new TableCell({borders:{top:bk('FFFFFF',1),bottom:bk('FFFFFF',1),left:bk('FFFFFF',1),right:bk('FFFFFF',1)},
-        width:{size:sigCW,type:WidthType.DXA},margins:{top:80,bottom:80,left:180,right:180},
-        children:[
-          new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:300,after:40},children:[t('ลงชื่อ ..........................................',{size:22})]}),
-          new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:30},children:[t('('+( s.acadName||'..............................')+')',{size:22})]}),
-          new Paragraph({alignment:AlignmentType.CENTER,children:[t(s.acadPos||'ครูวิชาการ',{bold:true,size:20,color:'1a3a6e'})]}),
-          new Paragraph({alignment:AlignmentType.CENTER,children:[t('วันที่ ......./......./........',{size:18,color:'5a6a80'})]}),
-        ]}),
-      new TableCell({borders:{top:bk('FFFFFF',1),bottom:bk('FFFFFF',1),left:bk('FFFFFF',1),right:bk('FFFFFF',1)},
-        width:{size:sigCW,type:WidthType.DXA},children:[new Paragraph({children:[]})]}),
-      new TableCell({borders:{top:bk('FFFFFF',1),bottom:bk('FFFFFF',1),left:bk('FFFFFF',1),right:bk('FFFFFF',1)},
-        width:{size:sigCW,type:WidthType.DXA},margins:{top:80,bottom:80,left:180,right:180},
-        children:[
-          new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:300,after:40},children:[t('ลงชื่อ ..........................................',{size:22})]}),
-          new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:30},children:[t('('+( s.principalName||'..............................')+')',{size:22})]}),
-          new Paragraph({alignment:AlignmentType.CENTER,children:[t(s.principalPos||'ผู้อำนวยการโรงเรียน',{bold:true,size:20,color:'1a3a6e'})]}),
-          new Paragraph({alignment:AlignmentType.CENTER,children:[t('วันที่ ......./......./........',{size:18,color:'5a6a80'})]}),
-        ]}),
-    ]})]
-  }));
-
-  const doc = new Document({sections:[{
-    properties:{page:{size:{width:12240,height:15840},margin:{top:margin,right:margin,bottom:margin,left:margin}}},
-    children
-  }]});
-  const blob = await Packer.toBlob(doc);
-  const fname = 'ตารางสอนแทน_'+dateStr+'_'+s.name+'.docx';
-  dlBlob(blob,fname);
+  const logo=await getRequiredExportLogo();
+  const model=SubstituteReport.model(DB,dateStr,day);
+  const document=SubstituteReport.word(model,window.docx,{data:await logoToArrayBuffer(logo),type:logoMimeToType(logo)});
+  dlBlob(await window.docx.Packer.toBlob(document),'ตารางสอนแทน_'+dateStr+'_'+(DB.school.name||'โรงเรียน')+'.docx');
 }
 
 // ════════════════════════════════════════════
@@ -30660,6 +30513,7 @@ function loadDemoData(){
 </script>
 
 
+<script src="js/substitute-report.js?v=20261027-report1"></script>
 <script id="substitute-v2-script">
 /* ══ SUBSTITUTE V2 INTERACTION ═════════════════════════════ */
 var subV2SelectedTeacherId = '';
@@ -30910,6 +30764,7 @@ function renderSubSidePanel(){
     h+='<div class="sub-v2-no-free">ไม่พบครูว่างในคาบนี้</div>';
   }
   h+='</div>';
+  if((subV2RecordForTeacher(day,t.id)?.periods||[]).some(function(p){return String(p.slotId)===String(slot.id)&&p.subTeacher;}))h+='<button type="button" class="sub-group-cancel sub-group-cancel-wide" onclick="cancelSubV2Selected()">ยกเลิกสอนแทนทั้งคาบ</button>';
   panel.innerHTML=h;
 }
 
@@ -30983,13 +30838,23 @@ function subV2EditAssigned(ai,pi){
   renderSubContent();
 }
 function subV2ClearAssigned(ai,pi){
-  var day=getSubDay(currentSubDate), a=day.absentList[ai];
-  if(!a || !a.periods[pi]) return;
-  var slotId=a.periods[pi].slotId;
-  a.periods.filter(function(p){return String(p.slotId)===String(slotId);}).forEach(function(p){p.subTeacher='';});
-  markDirty();
-  renderSubContent();
-  toast('ลบครูสอนแทนออกแล้ว','info');
+  if(!subV2CanManage())return;
+  var day=getSubDay(currentSubDate),a=day.absentList[ai];
+  if(!a||!a.periods[pi])return;
+  var slotId=a.periods[pi].slotId,group=a.periods.filter(function(p){return String(p.slotId)===String(slotId);});
+  if(!window.confirm('ยกเลิกการสอนแทนทั้งคาบ รวม '+group.length+' ห้อง ใช่หรือไม่?'))return;
+  if(a.manualOnly){
+    a.periods=a.periods.filter(function(p){return String(p.slotId)!==String(slotId);});
+    if(!a.periods.length)day.absentList.splice(ai,1);
+  }else{group.forEach(function(p){p.subTeacher='';});}
+  subV2ManualSelection='';
+  markDirty();renderSubContent();toast('ยกเลิกการสอนแทนทั้งคาบแล้ว','info');
+}
+function cancelSubV2Selected(){
+  var day=getSubDay(currentSubDate),ai=day.absentList.findIndex(function(a){return String(a.teacherId)===String(subV2SelectedTeacherId);});
+  if(ai<0)return;
+  var pi=day.absentList[ai].periods.findIndex(function(p){return String(p.slotId)===String(subV2SelectedSlotId);});
+  if(pi>=0)subV2ClearAssigned(ai,pi);
 }
 
 /* ให้ฟังก์ชันเดิมอัปเดตหน้าใหม่ด้วย */
@@ -31059,7 +30924,7 @@ if(_subV2OldSetSubTeacher){
             '<td data-label="รูปแบบงาน"><select aria-label="รูปแบบงาน '+esc(slot?slot.label:p.slotId)+' '+esc(room?room.label:'')+'" class="sub-group-select" onchange="setSubWorkType('+ai+','+pi+',this.value)">'+works.map(function(x){return '<option '+(p.workType===x?'selected':'')+'>'+esc(x)+'</option>';}).join('')+'</select></td>'+
             '<td data-label="บันทึกข้อความ"><select aria-label="บันทึกข้อความ '+esc(slot?slot.label:p.slotId)+' '+esc(room?room.label:'')+'" class="sub-group-select" onchange="setSubMessageStatus('+ai+','+pi+',this.value)">'+msgs.map(function(x){return '<option value="'+esc(x)+'" '+(p.messageStatus===x?'selected':'')+'>'+(x||'–')+'</option>';}).join('')+'</select></td>'+
             '<td data-label="สถานะ"><span class="sub-status-pill '+(done?'done':'pending')+'">'+(done?'จัดแล้ว':'รอจัดครู')+'</span></td>'+
-            '<td class="sub-summary-action"><button type="button" class="sub-group-edit" onclick="subV2EditAssigned('+ai+','+pi+')">'+(done?'เปลี่ยนทั้งคาบ':'จัดแทนทั้งคาบ')+'</button></td>'+
+            '<td class="sub-summary-action"><button type="button" class="sub-group-edit" onclick="subV2EditAssigned('+ai+','+pi+')">'+(done?'เปลี่ยนทั้งคาบ':'จัดแทนทั้งคาบ')+'</button>'+(done&&subV2CanManage()?'<button type="button" class="sub-group-cancel" onclick="subV2ClearAssigned('+ai+','+pi+')">ยกเลิกทั้งคาบ</button>':'')+'</td>'+
             '</tr>';
         });
         h+='</tbody></table></div>';
@@ -31100,59 +30965,31 @@ if(_subV2OldSetSubTeacher){
     }
   };
 
-  function buildExportNode(){
-    if(!currentSubDate) return null;
-    var day=getSubDay(currentSubDate);
+  function buildExportNode(logo){
+    if(!currentSubDate)return null;
+    var model=SubstituteReport.model(DB,currentSubDate,getSubViewDay(currentSubDate));
     var root=document.createElement('div');
-    root.className='sub-export-canvas';
-    var school=(DB.school&&DB.school.name)||'โรงเรียน';
-    var h='<div id="subExportLogoHost" style="text-align:center;margin:0 0 10px"></div>'+
-      '<div class="sub-export-title">ตารางสอนแทน '+esc(school)+'</div>'+
-      '<div class="sub-export-date">'+esc(formatDateThai(currentSubDate))+'</div>';
-    if(!day.absentList||!day.absentList.length){
-      h+='<div style="padding:30px;text-align:center;font-size:18px;color:#27854c;font-weight:900">✅ ไม่มีครูลาในวันนี้</div>';
-    } else {
-      day.absentList.forEach(function(a){
-        var t=(DB.teachers||[]).find(function(x){return String(x.id)===String(a.teacherId);});
-        var name=tName(t)||'ไม่ระบุครู';
-        var dept=t&&t.dept?t.dept:'ไม่ระบุกลุ่มสาระ';
-        h+='<div class="sub-export-group"><div class="sub-export-group-head">'+(a.manualOnly?'ครูเจ้าของคาบ: ':'ครูลา: ')+esc(name)+' &nbsp; | &nbsp; กลุ่มสาระ: '+esc(dept)+' &nbsp; | &nbsp; สาเหตุ: '+esc(a.type||'ไม่ระบุ')+(a.note?' — '+esc(a.note):'')+'</div>';
-        h+='<table class="sub-export-table"><thead><tr><th>คาบ</th><th>เวลา</th><th>วิชา</th><th>ชั้น/ห้อง</th><th>ครูสอนแทน</th><th>รูปแบบงาน</th><th>บันทึก</th><th>สถานะ</th></tr></thead><tbody>';
-        (a.periods||[]).forEach(function(p){
-          ensurePeriodMeta(p);
-          var slot=(DB.slots||[]).find(function(s){return String(s.id)===String(p.slotId);});
-          var room=(DB.rooms||[]).find(function(r){return String(r.id)===String(p.roomId);});
-          var done=!!p.subTeacher;
-          h+='<tr class="'+(done?'sub-export-done':'sub-export-pending')+'"><td><b>'+esc(slot?slot.label:p.slotId)+'</b></td><td>'+esc(slot?(slot.start+'–'+slot.end):'–')+'</td><td>'+esc(p.subject||'–')+'</td><td>'+esc(room?room.label:'–')+'</td><td>'+esc(p.subTeacher||'รอจัดแทน')+'</td><td>'+esc(p.workType)+'</td><td>'+esc(p.messageStatus||'–')+'</td><td><b>'+(done?'จัดแล้ว':'รอดำเนินการ')+'</b></td></tr>';
-        });
-        h+='</tbody></table></div>';
-      });
-    }
-    root.innerHTML=h;
+    root.style.cssText='position:fixed;left:-100000px;top:0;width:1280px;background:#fff;pointer-events:none;';
+    root.innerHTML=SubstituteReport.html(model,logo);
     document.body.appendChild(root);
     return root;
   }
   async function renderBlob(){
-    if(typeof html2canvas==='undefined') throw new Error('ไลบรารีสร้างภาพยังไม่พร้อม');
-    var node=buildExportNode(); if(!node) throw new Error('ยังไม่ได้เลือกวันที่');
-    var exportLogo=await getRequiredExportLogo();
-    var host=node.querySelector('#subExportLogoHost');
-    if(!host){node.remove();throw new Error('ไม่พบพื้นที่ Logo ในไฟล์ PNG');}
-    var logoImg=document.createElement('img');
-    logoImg.src=exportLogo;
-    logoImg.alt='โลโก้โรงเรียน';
-    logoImg.style.cssText='width:72px;height:72px;object-fit:contain;display:block;margin:0 auto;';
-    host.appendChild(logoImg);
-    await new Promise(function(resolve,reject){
-      if(logoImg.complete&&logoImg.naturalWidth){resolve();}
-      else {logoImg.onload=resolve;logoImg.onerror=function(){reject(new Error('Logo สำหรับ PNG โหลดไม่สำเร็จ'));};}
-    });
-    await new Promise(function(r){setTimeout(r,120);});
-    var canvas=await html2canvas(node,{scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false});
-    node.remove();
-    var blob=await new Promise(function(res){canvas.toBlob(res,'image/png');});
-    return {canvas:canvas,blob:blob};
+    if(typeof html2canvas==='undefined')throw new Error('ไลบรารีสร้างภาพยังไม่พร้อม');
+    var logo=await getRequiredExportLogo(),node=buildExportNode(logo);
+    if(!node)throw new Error('ยังไม่ได้เลือกวันที่');
+    try{
+      var image=node.querySelector('img');
+      await image.decode();
+      if(document.fonts)await document.fonts.ready;
+      var target=node.querySelector('.sub-report');
+      var canvas=await html2canvas(target,{scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false,windowWidth:1280,scrollX:0,scrollY:0});
+      var blob=await new Promise(function(resolve){canvas.toBlob(resolve,'image/png');});
+      if(!blob)throw new Error('สร้างภาพรายงานไม่สำเร็จ');
+      return {canvas:canvas,blob:blob};
+    }finally{node.remove();}
   }
+
   window.downloadSubstitutePNG=async function(){
     if(!currentSubDate){toast('กรุณาเลือกวันที่ก่อน','warn');return;}
     try{
