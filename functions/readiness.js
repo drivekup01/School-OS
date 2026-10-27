@@ -25,7 +25,7 @@ function build({users=[],invites=[],authUsers=[],timetable,classes=[],assignment
   for(const room of rooms)for(const slot of slots.filter(s=>!s.isBreak&&!s.teacherOnly))for(const d of days){const cell=timetable?.sched?.[room.id+'_'+slot.id+'_'+d];if(name&&cell?.subject&&[cell.teacher,cell.teacher2,cell.teacher3].some(v=>clean(v)===name))expectedLessons++;}
   const lessons=jobs.filter(a=>a.kind==='subject').length;
   for(const room of expectedRooms)if(!morning.some(m=>clean(m)===clean(room)))issues.push('ยังไม่มอบหมายเช็คชื่อประจำชั้น '+room);
-  if(expectedLessons>0&&lessons===0)issues.push('มีคาบในตารางสอน แต่ยังไม่มอบหมายงานเช็คชื่อรายคาบ');else if(expectedLessons!==lessons&&teaching(p.schoolRole))warnings.push('จำนวนคาบในตารางสอนและงานเช็คชื่อรายคาบต่างกัน');
+  if(expectedLessons>0&&lessons===0&&!['director','deputy'].includes(p.schoolRole))issues.push('มีคาบในตารางสอน แต่ยังไม่มอบหมายงานเช็คชื่อรายคาบ');else if(expectedLessons!==lessons&&teaching(p.schoolRole))warnings.push('จำนวนคาบในตารางสอนและงานเช็คชื่อรายคาบต่างกัน');
   const ownClassIds=new Set(jobs.map(a=>a.classId));const emptyClasses=classes.filter(c=>ownClassIds.has(c.id)&&c.active!==false&&c.studentCount===0).map(c=>c.name);for(const name of emptyClasses)issues.push('ห้อง '+name+' ยังไม่มีนักเรียน');
   const report=reports.find(r=>r.uid===uid),checks=report?.checks||[];
   const errors=checks.filter(c=>c.status==='error');if(errors.length)issues.push('การทดสอบอ่านข้อมูลล่าสุดพบปัญหา');
