@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<link rel="stylesheet" href="css/substitute-summary.css?v=20261027-manual1">
+<link rel="stylesheet" href="css/substitute-summary.css?v=20261027-multiroom1">
 <script src="js/teacher-export.js?v=20261027-roles1"></script>
 <script src="js/ui-state.js?v=20261027-roles1"></script>
 <script src="js/student-signatures.js?v=20261027-signatures2"></script>
@@ -30682,24 +30682,42 @@ function subV2CandidateAvailable(day,c,t,slot,schedDay,p){
   if(String(c.id)===String(t.id)||subV2AbsentForTeacher(day,c.id,slot.id))return false;
   var name=subV2TeacherName(c);
   if(subV2FindTeachingCell(c,slot,schedDay))return false;
-  return !(day.absentList||[]).some(function(a){return (a.periods||[]).some(function(other){return String(other.slotId)===String(slot.id)&&other.subTeacher===name&&!(String(a.teacherId)===String(t.id)&&String(other.roomId)===String(p.roomId));});});
+  return !(day.absentList||[]).some(function(a){return (a.periods||[]).some(function(other){return String(other.slotId)===String(slot.id)&&other.subTeacher===name&&!(String(a.teacherId)===String(t.id));});});
 }
 
 function subV2TeacherName(t){
   return t ? ((t.prefix||'')+(t.first||'')+' '+(t.last||'')).trim() : '';
 }
-function subV2FindTeachingCell(teacher, slot, schedDay){
-  if(!teacher || !slot) return null;
-  var tName=subV2TeacherName(teacher);
-  for(var i=0;i<DB.rooms.length;i++){
-    var room=DB.rooms[i];
+function subV2FindTeachingCells(teacher, slot, schedDay){
+  if(!teacher || !slot || slot.isBreak)return [];
+  var tName=subV2TeacherName(teacher),out=[];
+  (DB.rooms||[]).forEach(function(room){
     var cv=DB.sched[room.id+'_'+slot.id+'_'+schedDay];
-    if(cv && (cv.teacher===tName || cv.teacher2===tName || cv.teacher3===tName)){
-      return {room:room, cv:cv};
-    }
-  }
-  var a=TeacherSchedule.activities(DB,tName,slot.id,schedDay)[0];
-  return a?{room:{id:'',label:'เลือกวิชา'},cv:{subject:a.subject,teacher:tName},teacherOnly:true}:null;
+    if(cv&&cv.subject&&(cv.teacher===tName||cv.teacher2===tName||cv.teacher3===tName))out.push({room:room,cv:cv});
+  });
+  TeacherSchedule.activities(DB,tName,slot.id,schedDay).forEach(function(a){out.push({room:{id:'',label:'กิจกรรมครู'},cv:{subject:a.subject,teacher:tName},teacherOnly:true});});
+  return out;
+}
+function subV2FindTeachingCell(teacher,slot,schedDay){return subV2FindTeachingCells(teacher,slot,schedDay)[0]||null;}
+function subV2TeachingMarkup(lessons,record,slotId,replacement){
+  return lessons.map(function(lesson){
+    var room=lesson.room,cv=lesson.cv,learn=TeacherSchedule.learnRoom(DB,cv,room.id);
+    var p=(record&&record.periods||[]).find(function(p){return String(p.slotId)===String(slotId)&&String(p.roomId)===String(room.id);});
+    return '<div class="sub-v2-lesson"><div class="sub-v2-subj">'+subV2Escape(cv.subject||'ไม่ระบุวิชา')+'</div>'+
+      '<div class="sub-v2-room">'+subV2Escape(room.label||'ไม่ระบุห้อง')+(learn?' · ห้อง '+subV2Escape(learn):'')+'</div>'+
+      (replacement&&!lesson.teacherOnly?'<div class="sub-v2-action">'+(p&&p.subTeacher?'✓ '+subV2Escape(p.subTeacher):'รอจัดครูแทน')+'</div>':'')+'</div>';
+  }).join('');
+}
+function subV2SlotGroups(record){
+  var groups={};(record.periods||[]).forEach(function(p){(groups[String(p.slotId)]||(groups[String(p.slotId)]=[])).push(p);});
+  var teacher=(DB.teachers||[]).find(function(t){return String(t.id)===String(record.teacherId);});
+  Object.keys(groups).forEach(function(id){
+    var slot=(DB.slots||[]).find(function(s){return String(s.id)===id;});
+    subV2FindTeachingCells(teacher,slot,mapDayNameToSched(currentSubDate)).filter(function(l){return !l.teacherOnly;}).forEach(function(l){
+      if(!groups[id].some(function(p){return String(p.roomId)===String(l.room.id);}))groups[id].push({slotId:slot.id,roomId:l.room.id,subTeacher:''});
+    });
+  });
+  return Object.values(groups);
 }
 function subV2AbsentForTeacher(day, teacherId, slotId){
   var a=subV2RecordForTeacher(day,teacherId);
@@ -30741,9 +30759,9 @@ async function renderSubContent(){
   var absentList=day.absentList||[];
 
   var totalAbsent=absentList.filter(function(a){return !a.manualOnly;}).length;
-  var totalPeriods=absentList.reduce(function(s,a){return s+(a.periods||[]).length;},0);
+  var totalPeriods=absentList.reduce(function(s,a){return s+subV2SlotGroups(a).length;},0);
   var totalAssigned=absentList.reduce(function(s,a){
-    return s+(a.periods||[]).filter(function(p){return !!p.subTeacher;}).length;
+    return s+subV2SlotGroups(a).filter(function(group){return group.every(function(p){return !!p.subTeacher;});}).length;
   },0);
 
   var el;
@@ -30782,21 +30800,17 @@ async function renderSubContent(){
         h+='<td><div class="sub-v2-cell break">พักเที่ยง</div></td>';
         return;
       }
-      var teach=subV2FindTeachingCell(t,slot,schedDay);
-      var p=subV2PeriodForAbsent(subV2RecordForTeacher(day,t.id),slot.id);
+      var lessons=subV2FindTeachingCells(t,slot,schedDay),teach=lessons[0];
+      var record=subV2RecordForTeacher(day,t.id),p=subV2PeriodForAbsent(record,slot.id);
+      var replacements=lessons.filter(function(l){return !l.teacherOnly;});
+      var covered=replacements.filter(function(l){return (record&&record.periods||[]).some(function(p){return String(p.slotId)===String(slot.id)&&String(p.roomId)===String(l.room.id)&&!!p.subTeacher;});}).length;
       var cls='free', body='<div class="sub-v2-subj">ว่าง</div><div class="sub-v2-room">พร้อมสอนแทน</div>';
-      if(teach){
-        cls='busy';
-        body='<div class="sub-v2-subj">'+subV2Escape(teach.cv.subject||'ไม่ระบุวิชา')+'</div>'+
-          '<div class="sub-v2-room">'+subV2Escape((teach.room.label||'ไม่ระบุห้อง')+(TeacherSchedule.learnRoom(DB,teach.cv)?' · ห้อง '+TeacherSchedule.learnRoom(DB,teach.cv):''))+'</div>';
-      }
-      if((absent || p) && teach && !teach.teacherOnly){
-        cls=(p&&p.subTeacher)?'assigned':'need';
-        body='<div class="sub-v2-subj">'+subV2Escape(teach.cv.subject||'ไม่ระบุวิชา')+'</div>'+
-          '<div class="sub-v2-room">'+subV2Escape((teach.room.label||'ไม่ระบุห้อง')+(TeacherSchedule.learnRoom(DB,teach.cv)?' · ห้อง '+TeacherSchedule.learnRoom(DB,teach.cv):''))+'</div>'+
-          '<div class="sub-v2-action">'+(p&&p.subTeacher?'✓ '+subV2Escape(p.subTeacher):'เลือกครูแทน')+'</div>';
+      if(teach){cls='busy';body=subV2TeachingMarkup(lessons,record,slot.id,false);}
+      if((absent || p) && replacements.length){
+        cls=covered===replacements.length?'assigned':'need';
+        body=subV2TeachingMarkup(lessons,record,slot.id,true)+
+          '<div class="sub-v2-group-status">'+covered+'/'+replacements.length+' ห้อง · จัดแทนทั้งคาบ</div>';
       }else if(absent && !teach){
-        cls='free';
         body='<div class="sub-v2-subj">ว่าง</div><div class="sub-v2-room">(ลา)</div>';
       }
       var sel=(String(subV2SelectedTeacherId)===String(t.id)&&String(subV2SelectedSlotId)===String(slot.id))?' selected':'';
@@ -30835,18 +30849,19 @@ function renderSubSidePanel(){
     panel.innerHTML='<div class="sub-v2-side-empty"><strong>ไม่พบข้อมูลคาบที่เลือก</strong></div>'; return;
   }
   var absent=subV2AbsentForTeacher(day,t.id);
-  var teach=subV2FindTeachingCell(t,slot,schedDay);
+  var lessons=subV2FindTeachingCells(t,slot,schedDay),studentLessons=lessons.filter(function(l){return !l.teacherOnly;}),teach=studentLessons[0]||lessons[0];
   var p=subV2PeriodForAbsent(subV2RecordForTeacher(day,t.id),slot.id);
 
   var status=absent ? 'ครูลา' : (p?'จัดสอนแทนเฉพาะคาบ':(teach?'มีคาบสอน':'ว่าง'));
   var h='<div class="sub-v2-side-head"><div class="sub-v2-side-kicker">รายละเอียดคาบที่เลือก</div>'+
     '<div class="sub-v2-side-title">'+subV2Escape(slot.label||('คาบ '+slot.id))+' • '+subV2Escape(subV2TeacherName(t))+'</div></div>'+
     '<div class="sub-v2-side-detail">'+
-      '<div class="sub-v2-detail-box"><div class="sub-v2-detail-label">วิชา</div><div class="sub-v2-detail-value">'+subV2Escape(teach?teach.cv.subject:'–')+'</div></div>'+
-      '<div class="sub-v2-detail-box"><div class="sub-v2-detail-label">ห้อง</div><div class="sub-v2-detail-value">'+subV2Escape(teach?teach.room.label:'–')+'</div></div>'+
+      '<div class="sub-v2-detail-box"><div class="sub-v2-detail-label">วิชา</div><div class="sub-v2-detail-value">'+subV2Escape(lessons.length?[...new Set(lessons.map(function(l){return l.cv.subject;}))].join(' / '):'–')+'</div></div>'+
+      '<div class="sub-v2-detail-box"><div class="sub-v2-detail-label">ห้อง</div><div class="sub-v2-detail-value">'+subV2Escape(lessons.length?lessons.map(function(l){return l.room.label;}).join(', '):'–')+'</div></div>'+
       '<div class="sub-v2-detail-box"><div class="sub-v2-detail-label">เวลา</div><div class="sub-v2-detail-value">'+subV2Escape((slot.start||'')+'–'+(slot.end||''))+'</div></div>'+
       '<div class="sub-v2-detail-box"><div class="sub-v2-detail-label">สถานะ</div><div class="sub-v2-detail-value">'+subV2Escape(status)+'</div></div>'+
     '</div>';
+  if(lessons.length)h+='<div class="sub-v2-side-section sub-v2-selected-lessons">'+subV2TeachingMarkup(lessons,subV2RecordForTeacher(day,t.id),slot.id,!!(absent||p))+'</div>';
 
   if(absent){
     h+='<div class="sub-v2-side-section"><div class="sub-v2-side-section-title"><span>📝 รายละเอียดการลา</span></div>'+
@@ -30886,11 +30901,11 @@ function renderSubSidePanel(){
   if(candidates.length){
     h+='<div class="sub-v2-free-list">'+candidates.map(function(c){
       var cName=subV2TeacherName(c);
-      var canTeach=!teach.cv.subject || (c.subjects||[]).includes(teach.cv.subject);
+      var canTeach=studentLessons.every(function(l){return !l.cv.subject||(c.subjects||[]).includes(l.cv.subject);});
       return '<label class="sub-v2-free-item"><input type="radio" name="subV2Candidate" value="'+subV2Escape(cName)+'" '+(p.subTeacher===cName?'checked':'')+'>'+
         '<div style="flex:1"><div class="sub-v2-free-name">'+subV2Escape(cName)+'</div><div class="sub-v2-free-meta">'+subV2Escape(c.dept||'ไม่ระบุกลุ่มสาระ')+(canTeach?' • ตรงวิชา':'')+'</div></div>'+
         '<span class="sub-v2-free-tag">ว่าง</span></label>';
-    }).join('')+'</div><button class="sub-v2-confirm" onclick="confirmSubV2Teacher()">✓ ยืนยันครูสอนแทน</button>';
+    }).join('')+'</div><p class="sub-v2-info-note">ครูที่เลือกจะสอนแทนครบ '+studentLessons.length+' ห้องในคาบนี้</p><button class="sub-v2-confirm" onclick="confirmSubV2Teacher()">✓ ยืนยันครูสอนแทนทั้งคาบ</button>';
   }else{
     h+='<div class="sub-v2-no-free">ไม่พบครูว่างในคาบนี้</div>';
   }
@@ -30905,7 +30920,7 @@ function confirmSubV2Teacher(){
   var day=getSubViewDay(currentSubDate),schedDay=mapDayNameToSched(currentSubDate);
   var t=(DB.teachers||[]).find(function(x){return String(x.id)===String(subV2SelectedTeacherId);});
   var slot=(DB.slots||[]).find(function(x){return String(x.id)===String(subV2SelectedSlotId);});
-  var teach=subV2FindTeachingCell(t,slot,schedDay);
+  var lessons=subV2FindTeachingCells(t,slot,schedDay),studentLessons=lessons.filter(function(l){return !l.teacherOnly;}),teach=studentLessons[0]||lessons[0];
   if(!currentSubDate||!slot||slot.isBreak||!teach||teach.teacherOnly)return;
   var view=subV2RecordForTeacher(day,t.id),p=subV2PeriodForAbsent(view,slot.id);
   if(!subV2AbsentForTeacher(day,t.id)&&!p&&subV2ManualSelection!==subV2SelectionKey())return;
@@ -30917,12 +30932,14 @@ function confirmSubV2Teacher(){
     absent={teacherId:t.id,type:'จัดสอนแทนเฉพาะคาบ',note:'',manualOnly:true,periods:[]};
     getSubDay(currentSubDate).absentList.push(absent);
   }
-  p=subV2PeriodForAbsent(absent,slot.id);
-  if(!p){p=Object.assign({},target);absent.periods.push(p);}
-  p.subTeacher=picked.value;
+  studentLessons.forEach(function(lesson){
+    var entry=(absent.periods||[]).find(function(p){return String(p.slotId)===String(slot.id)&&String(p.roomId)===String(lesson.room.id);});
+    if(!entry){entry={slotId:slot.id,day:schedDay,roomId:lesson.room.id,subject:lesson.cv.subject,subTeacher:'',subNote:''};absent.periods.push(entry);}
+    entry.subject=lesson.cv.subject;entry.day=schedDay;entry.subTeacher=picked.value;
+  });
   subV2ManualSelection='';
   markDirty();
-  toast('✅ บันทึกครูสอนแทนแล้ว','succ');
+  toast('✅ บันทึกครูแทนทั้งคาบครบ '+studentLessons.length+' ห้องแล้ว','succ');
   renderSubContent();
 }
 
@@ -30968,7 +30985,8 @@ function subV2EditAssigned(ai,pi){
 function subV2ClearAssigned(ai,pi){
   var day=getSubDay(currentSubDate), a=day.absentList[ai];
   if(!a || !a.periods[pi]) return;
-  a.periods[pi].subTeacher='';
+  var slotId=a.periods[pi].slotId;
+  a.periods.filter(function(p){return String(p.slotId)===String(slotId);}).forEach(function(p){p.subTeacher='';});
   markDirty();
   renderSubContent();
   toast('ลบครูสอนแทนออกแล้ว','info');
@@ -31014,13 +31032,13 @@ if(_subV2OldSetSubTeacher){
       var name=tName(t)||'ไม่ระบุครู';
       var dept=t&&t.dept?t.dept:'ไม่ระบุกลุ่มสาระ';
       var periods=a.periods||[];
-      var assigned=periods.filter(function(p){return !!p.subTeacher;}).length;
+      var periodGroups=subV2SlotGroups(a),assigned=periodGroups.filter(function(group){return group.every(function(p){return !!p.subTeacher;});}).length;
       h+='<section class="sub-group-card"><header class="sub-group-head">'+
         '<div class="sub-group-avatar">'+(ai+1)+'</div>'+
         '<div class="sub-group-main"><div class="sub-group-eyebrow">'+(a.manualOnly?'จัดสอนแทนเฉพาะคาบ':'จัดสอนแทน • ครูลา')+'</div><h3 class="sub-group-name">'+esc(name)+'</h3>'+
         '<div class="sub-group-meta">'+esc(dept)+'<span aria-hidden="true"> · </span>'+esc(a.type||'ไม่ระบุสาเหตุ')+(a.note?' · '+esc(a.note):'')+'</div></div>'+
-        '<span class="sub-group-count">'+periods.length+' คาบ</span></header>'+
-        '<div class="sub-group-progress"><span><i class="sub-summary-dot done"></i>จัดแล้ว <strong>'+assigned+'</strong></span><span><i class="sub-summary-dot pending"></i>รอจัดครู <strong>'+(periods.length-assigned)+'</strong></span></div>';
+        '<span class="sub-group-count">'+periodGroups.length+' คาบ · '+periods.length+' รายการห้อง</span></header>'+
+        '<div class="sub-group-progress"><span><i class="sub-summary-dot done"></i>จัดแล้ว <strong>'+assigned+'</strong></span><span><i class="sub-summary-dot pending"></i>รอจัดครู <strong>'+(periodGroups.length-assigned)+'</strong></span></div>';
       if(!periods.length){
         h+='<div style="padding:14px;color:#7b8798;font-size:12px">ไม่มีคาบสอนในวันนี้</div>';
       }else{
@@ -31041,7 +31059,7 @@ if(_subV2OldSetSubTeacher){
             '<td data-label="รูปแบบงาน"><select aria-label="รูปแบบงาน '+esc(slot?slot.label:p.slotId)+' '+esc(room?room.label:'')+'" class="sub-group-select" onchange="setSubWorkType('+ai+','+pi+',this.value)">'+works.map(function(x){return '<option '+(p.workType===x?'selected':'')+'>'+esc(x)+'</option>';}).join('')+'</select></td>'+
             '<td data-label="บันทึกข้อความ"><select aria-label="บันทึกข้อความ '+esc(slot?slot.label:p.slotId)+' '+esc(room?room.label:'')+'" class="sub-group-select" onchange="setSubMessageStatus('+ai+','+pi+',this.value)">'+msgs.map(function(x){return '<option value="'+esc(x)+'" '+(p.messageStatus===x?'selected':'')+'>'+(x||'–')+'</option>';}).join('')+'</select></td>'+
             '<td data-label="สถานะ"><span class="sub-status-pill '+(done?'done':'pending')+'">'+(done?'จัดแล้ว':'รอจัดครู')+'</span></td>'+
-            '<td class="sub-summary-action"><button type="button" class="sub-group-edit" onclick="subV2EditAssigned('+ai+','+pi+')">'+(done?'เปลี่ยนครู':'จัดครูแทน')+'</button></td>'+
+            '<td class="sub-summary-action"><button type="button" class="sub-group-edit" onclick="subV2EditAssigned('+ai+','+pi+')">'+(done?'เปลี่ยนทั้งคาบ':'จัดแทนทั้งคาบ')+'</button></td>'+
             '</tr>';
         });
         h+='</tbody></table></div>';

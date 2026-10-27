@@ -49,6 +49,18 @@ test('reader, free period, break, teacher-only activity and changed date cannot 
   ctx.startSubV2Manual();if(kind==='date')ctx.currentSubDate='2026-10-29';ctx.picked='ครูสอง ทดสอบ';ctx.confirmSubV2Teacher();assert.equal(ctx.writes,0,kind);
  }
 });
+test('three rooms render together, one confirmation covers all and later changes preserve room metadata',async()=>{
+ const {ctx,nodes}=boot();ctx.DB.rooms.push({id:'r3',label:'ม.1/3'});
+ ctx.DB.sched.r2_1_พุธ={subject:'สังคมศึกษา',teacher2:'ครูหนึ่ง ทดสอบ'};ctx.DB.sched.r3_1_พุธ={subject:'แนะแนว',teacher3:'ครูหนึ่ง ทดสอบ'};
+ await ctx.renderSubContent();ctx.renderSubSidePanel();
+ for(const text of ['ม.1/1','ม.1/2','ม.1/3','สังคมศึกษา','แนะแนว']){assert.ok(nodes.subContent.innerHTML.includes(text));assert.ok(nodes.subSidePanel.innerHTML.includes(text));}
+ ctx.startSubV2Manual();ctx.picked='ครูสอง ทดสอบ';ctx.confirmSubV2Teacher();
+ const group=ctx.getSubDay(ctx.currentSubDate).absentList[0];assert.equal(group.periods.length,3);assert.ok(group.periods.every(p=>p.subTeacher===ctx.picked));assert.equal(ctx.writes,1);
+ group.periods[0].workType='ใบงาน';group.periods[1].subNote='ทดสอบ';ctx.picked='ครูสาม ทดสอบ';ctx.confirmSubV2Teacher();
+ assert.equal(group.periods.length,3);assert.ok(group.periods.every(p=>p.subTeacher===ctx.picked));assert.equal(group.periods[0].workType,'ใบงาน');assert.equal(group.periods[1].subNote,'ทดสอบ');
+ await ctx.renderSubContent();assert.equal(nodes.sumPeriods.textContent,1);assert.equal(nodes.sumAssigned.textContent,1);assert.match(nodes.subContent.innerHTML,/3\/3 ห้อง/);
+ ctx.subV2ClearAssigned(0,1);assert.ok(group.periods.every(p=>!p.subTeacher));
+});
 test('summary preserves controls, accessible labels and escapes teacher/lesson text',()=>{
  const {ctx,nodes}=boot();ctx.DB.teachers[0].first='<script>one</script>';ctx.DB.substitute[ctx.currentSubDate]={absentList:[{teacherId:'t1',manualOnly:true,type:'จัดสอนแทนเฉพาะคาบ',periods:[{slotId:1,roomId:'r1',subject:'<b>test</b>'}]}]};
  ctx.renderSubAssignedList();const output=nodes.subAssignedList.innerHTML;
