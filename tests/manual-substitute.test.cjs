@@ -8,7 +8,7 @@ function boot(){
  ctx.getSubDay=date=>db.substitute[date]??={absentList:[]};ctx.peekSubDay=date=>db.substitute[date];
  ctx.getSubViewDay=date=>JSON.parse(JSON.stringify(db.substitute[date]||{absentList:[]}));
  ctx.ensurePersistentAbsentFromView_=id=>(ctx.getSubDay(ctx.currentSubDate).absentList||[]).find(a=>String(a.teacherId)===String(id))||null;
- ctx.window=ctx;vm.createContext(ctx);scripts.forEach(code=>vm.runInContext(code,ctx));
+ ctx.confirm=()=>true;ctx.window=ctx;vm.createContext(ctx);scripts.forEach(code=>vm.runInContext(code,ctx));
  ctx.subV2SelectedTeacherId='t1';ctx.subV2SelectedSlotId='1';return {ctx,nodes,messages};
 }
 test('manual button opens the existing picker without creating leave or saving until confirmation',async()=>{
@@ -67,4 +67,14 @@ test('summary preserves controls, accessible labels and escapes teacher/lesson t
  assert.match(output,/&lt;script&gt;one/);assert.match(output,/&lt;b&gt;test/);assert.doesNotMatch(output,/<script>|<b>test/);
  assert.match(output,/aria-label="รูปแบบงาน/);assert.match(output,/aria-label="บันทึกข้อความ/);assert.match(output,/setSubWorkType\(0,0/);assert.match(output,/subV2EditAssigned\(0,0/);assert.match(output,/<\/section>/);
  assert.equal((output.match(/<td[ >]/g)||[]).length,7);assert.match(output,/data-label="คาบ \/ เวลา"/);assert.match(output,/data-label="วิชา \/ ชั้นเรียน"/);
+});
+test('cancelling a manual period restores the regular timetable and keeps other periods',async()=>{
+ const {ctx,nodes}=boot();ctx.startSubV2Manual();ctx.picked='ครูสอง ทดสอบ';ctx.confirmSubV2Teacher();ctx.subV2SelectedSlotId='2';ctx.startSubV2Manual();ctx.confirmSubV2Teacher();
+ ctx.confirm=()=>false;ctx.subV2ClearAssigned(0,0);assert.equal(ctx.getSubDay(ctx.currentSubDate).absentList[0].periods.length,2);
+ ctx.confirm=()=>true;ctx.subV2ClearAssigned(0,0);const remaining=ctx.getSubDay(ctx.currentSubDate).absentList[0].periods;assert.equal(remaining.length,1);assert.equal(remaining[0].slotId,2);
+ ctx.subV2ClearAssigned(0,0);assert.equal(ctx.getSubDay(ctx.currentSubDate).absentList.length,0);await ctx.renderSubContent();assert.doesNotMatch(nodes.subContent.innerHTML,/รอจัดครูแทน|✓ ครูสอง/);
+});
+test('cancelling a leave-based replacement keeps the absence and room work details pending',()=>{
+ const {ctx}=boot();ctx.DB.substitute[ctx.currentSubDate]={absentList:[{teacherId:'t1',type:'ลาป่วย',periods:[{slotId:1,roomId:'r1',subTeacher:'ครูสอง ทดสอบ',workType:'ใบงาน',subNote:'แจกเอกสาร'},{slotId:1,roomId:'r2',subTeacher:'ครูสอง ทดสอบ',messageStatus:'ส่งแล้ว'}]}]};
+ ctx.subV2ClearAssigned(0,0);const a=ctx.getSubDay(ctx.currentSubDate).absentList[0];assert.equal(a.type,'ลาป่วย');assert.equal(a.periods.length,2);assert.ok(a.periods.every(p=>!p.subTeacher));assert.equal(a.periods[0].subNote,'แจกเอกสาร');assert.equal(a.periods[1].messageStatus,'ส่งแล้ว');
 });
