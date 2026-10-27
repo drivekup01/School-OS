@@ -1,0 +1,65 @@
+#subAssignedList{container-type:inline-size;container-name:sub-summary;padding:18px;background:#f7f9fc;border-radius:0 0 18px 18px}
+.sub-group-wrap{display:grid;gap:20px}
+.sub-group-card{min-width:0;overflow:hidden;background:#fff;border:1px solid #dfe7f1;border-radius:16px;box-shadow:0 3px 12px #173a6b05}
+.sub-group-head{display:flex;align-items:center;gap:13px;padding:20px 22px 16px;background:linear-gradient(115deg,#edf4fc,#f9fbfe);border-bottom:1px solid #e7edf5}
+.sub-group-avatar{display:grid;place-items:center;flex:0 0 42px;height:42px;border-radius:13px;background:#173e70;color:#fff;font-size:17px;font-weight:800}
+.sub-group-main{min-width:0;flex:1}
+.sub-group-eyebrow{font-size:11px;font-weight:600;letter-spacing:.02em;color:#647a96;margin-bottom:5px}
+.sub-group-head .sub-group-name{margin:0;color:#163964;font-size:16px;line-height:1.5;font-weight:800;overflow-wrap:anywhere}
+.sub-group-meta{font-size:12px;line-height:1.7;color:#63738a;margin-top:5px;overflow-wrap:anywhere}
+.sub-group-count{flex-shrink:0;padding:6px 11px;border:1px solid #d4e1f1;border-radius:9px;background:#fff;color:#315a8b;font-size:12px;font-weight:700;white-space:nowrap}
+.sub-group-progress{display:flex;flex-wrap:wrap;gap:20px;align-items:center;padding:12px 22px;color:#697b90;font-size:12px;border-bottom:1px solid #e7edf5}
+.sub-group-progress>span{display:inline-flex;align-items:center;gap:7px}
+.sub-group-progress strong{color:#213d60;font-size:13px}
+.sub-summary-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#d29a32}
+.sub-summary-dot.done{background:#269577}
+.sub-group-table-wrap{overflow-x:auto}
+.sub-group-table{border-collapse:collapse;width:100%;text-align:left;color:#344861;font-size:12px;line-height:1.6}
+.sub-group-table th{padding:12px 14px;white-space:nowrap;background:#fbfcfe;border-bottom:1px solid #e7edf5;color:#7b899c;font-size:11px;font-weight:600;text-align:left}
+.sub-group-table td{padding:15px 14px;vertical-align:middle;border-bottom:1px solid #edf1f6}
+.sub-group-table tbody tr:last-child td{border-bottom:0}
+.sub-group-table tbody tr:hover{background:#f8fbff}
+.sub-group-table td strong{display:block;font-size:12px;font-weight:700;color:#243f63}
+.sub-group-table td small{display:block;font-size:11px;color:#7b8aa0;margin-top:4px;white-space:nowrap}
+.sub-summary-period{white-space:nowrap}
+.sub-summary-teacher{display:block;min-width:95px;max-width:170px;line-height:1.6;overflow-wrap:anywhere}
+.sub-summary-teacher.assigned{color:#24735e;font-weight:700}
+.sub-summary-teacher.unassigned{color:#9d7b43;font-size:11px}
+.sub-group-select{width:100%;min-width:112px;min-height:40px;padding:8px 27px 8px 11px;border:1px solid #dce4ef;border-radius:9px;background:#fff;color:#36516f;font:inherit;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.sub-group-select:hover{border-color:#95b2d4}
+.sub-group-select:focus-visible,.sub-group-edit:focus-visible{outline:3px solid #a8caf0;outline-offset:2px}
+.sub-status-pill{display:inline-flex;align-items:center;gap:6px;border-radius:7px;padding:5px 8px;white-space:nowrap;font-size:11px;font-weight:600}
+.sub-status-pill::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
+.sub-status-pill.pending{background:#fff5e3;color:#a36b18}
+.sub-status-pill.done{background:#eaf6f0;color:#28795d}
+.sub-group-edit{min-height:40px;padding:9px 13px;border:1px solid #234e82;border-radius:9px;background:#234e82;color:#fff;font:inherit;font-weight:600;white-space:nowrap;cursor:pointer;transition:background .15s}
+.sub-group-edit:hover{background:#173c69}
+.done .sub-group-edit{background:#fff;color:#315a8b;border-color:#d6e1ee}
+.done .sub-group-edit:hover{background:#edf4fc}
+.sub-summary-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@container sub-summary (max-width:850px){
+ .sub-group-head{padding:17px 16px;gap:11px;align-items:flex-start}
+ .sub-group-count{font-size:11px;padding:5px 9px}
+ .sub-group-progress{padding:12px 16px}
+ .sub-group-table-wrap{padding:0 14px 14px;overflow:visible}
+ .sub-group-table,.sub-group-table tbody{display:block}
+ .sub-group-table thead{display:none}
+ .sub-group-table tbody{display:grid;gap:12px;padding-top:14px}
+ .sub-group-table tr{display:grid;grid-template-columns:1fr 1fr;gap:13px 18px;padding:16px;border:1px solid #e3eaf3;border-radius:12px;background:#fff}
+ .sub-group-table td{display:block;padding:0;border:0;min-width:0}
+ .sub-group-table td::before{content:attr(data-label);display:block;color:#8290a3;font-size:10px;margin-bottom:5px}
+ .sub-group-table td:nth-child(3){grid-column:1/-1}
+ .sub-group-table td:nth-child(6){align-self:center}
+ .sub-group-table td.sub-summary-action{align-self:end;justify-self:stretch}
+ .sub-group-table td.sub-summary-action::before{display:none}
+ .sub-summary-teacher{max-width:none}
+ .sub-group-select{min-width:0;font-size:14px;min-height:44px}
+ .sub-group-edit{width:100%;min-height:44px}
+}
+@media(max-width:600px){
+ #subAssignedList{padding:12px}
+ .sub-group-head .sub-group-name{font-size:15px}
+ .sub-group-avatar{flex-basis:34px;height:34px;border-radius:10px;font-size:14px}
+ .sub-group-count{margin-left:auto}
+ .sub-group-select{font-size:16px}
+}
