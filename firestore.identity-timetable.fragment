@@ -13,6 +13,12 @@
     function schoolHasUser() {
       return schoolGoogle() && exists(/databases/$(database)/documents/school_users/$(request.auth.uid));
     }
+    // Unified role grants are server-managed. Teachers read school data, not private account profiles.
+    function schoolUnified() { return schoolHasUser() && schoolRole('schoolRole') != 'none'; }
+    function schoolUnifiedActive() { return schoolUnified() && schoolActive() && schoolRole('schoolRole') in ['admin','director','deputy','teacher','timetable','budget','procurement','student_support']; }
+    function schoolTeaches() { return schoolUnifiedActive() && !(schoolRole('schoolRole') in ['director','deputy']); }
+    function schoolBudgetWrite() { return schoolUnifiedActive() && schoolRole('schoolRole') in ['admin','deputy','budget']; }
+    function schoolDocumentWrite() { return schoolUnifiedActive() && schoolRole('schoolRole') in ['admin','deputy','budget','procurement']; }
     function schoolActive() {
       return schoolHasUser() && get(/databases/$(database)/documents/school_users/$(request.auth.uid)).data.active == true;
     }
