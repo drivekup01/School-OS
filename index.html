@@ -4,7 +4,7 @@
 <script src="js/teacher-export.js?v=20261027-roles1"></script>
 <script src="js/ui-state.js?v=20261027-roles1"></script>
 <script src="js/teacher-schedule-core.js?v=20261025-teacherperiod1"></script>
-<script src="js/teacher-print.js?v=20261027-selector1"></script>
+<script src="js/teacher-print.js?v=20261027-printfit1"></script>
 <link rel="stylesheet" href="css/teacher-builder.css?v=20261025-break1">
 <script src="js/teacher-builder.js?v=20261027-roles1"></script>
 <meta charset="UTF-8">
@@ -1761,7 +1761,7 @@ body.support-mode .logout-top-btn{
 }
 </style>
 <link rel="stylesheet" href="dashboard-shortcuts.css?v=20261025-layout1">
-<link rel="stylesheet" href="timetable-navigation.css?v=20261027-selector1">
+<link rel="stylesheet" href="timetable-navigation.css?v=20261027-printfit1">
 </head>
 <body class="guest-mode">
 <script>
@@ -2487,6 +2487,19 @@ body.support-mode .logout-top-btn{
       </div>
     </section>
 
+
+  </div>
+
+  <div class="sub-v2-bottom-layout">
+  <section class="sub-v2-assigned-card">
+    <div class="sub-v2-card-head">
+      <div>
+        <div class="sub-v2-card-title">✅ สรุปการจัดสอนแทนวันนี้</div>
+        <div class="sub-v2-card-sub">จัดกลุ่มตามครูลา • เพิ่มรูปแบบงานและสถานะข้อความ • พร้อม Export/แชร์</div>
+      </div>
+    </div>
+    <div id="subAssignedList"></div>
+  </section>
     <aside class="sub-v2-side-card">
       <div id="subSidePanel">
         <div class="sub-v2-side-empty">
@@ -2497,16 +2510,6 @@ body.support-mode .logout-top-btn{
       </div>
     </aside>
   </div>
-
-  <section class="sub-v2-assigned-card">
-    <div class="sub-v2-card-head">
-      <div>
-        <div class="sub-v2-card-title">✅ สรุปการจัดสอนแทนวันนี้</div>
-        <div class="sub-v2-card-sub">จัดกลุ่มตามครูลา • เพิ่มรูปแบบงานและสถานะข้อความ • พร้อม Export/แชร์</div>
-      </div>
-    </div>
-    <div id="subAssignedList"></div>
-  </section>
 </div>
 
 <!-- ═══════════ PAGE: SUB HISTORY ═══════════ -->
@@ -28345,16 +28348,8 @@ function getTeacherScheduleData(teacherName) {
 }
 
 // Use a normal-flow print overlay so every teacher can paginate.
-function printTeacherViews(teachers){
- try{
-  const html=TeacherPrint.pages(DB,teachers);let overlay=document.getElementById('tvPrintOverlay');
-  if(!overlay){overlay=document.createElement('div');overlay.id='tvPrintOverlay';document.body.appendChild(overlay);}
-  overlay.innerHTML=html;overlay.style.display='block';document.body.classList.add('teacher-printing');
-  const previousTitle=document.title;document.title=teachers.length===1?'ตารางสอน_'+TeacherSchedule.name(teachers[0]):'ตารางสอนครูทั้งหมด_'+(DB.school.year||'');
-  const cleanup=()=>{overlay.style.display='none';document.body.classList.remove('teacher-printing');document.title=previousTitle;};
-  window.addEventListener('afterprint',cleanup,{once:true});
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{try{window.print();}catch(error){cleanup();toast(error.message,'warn');}}));
- }catch(error){toast(error.message,'warn');}
+async function printTeacherViews(teachers){
+ try{await TeacherPrint.print(DB,teachers,{logo:await getRequiredExportLogo()});}catch(error){toast(error.message,'warn');}
 }
 function printTeacherView(){const teacher=DB.teachers.find(t=>t.id===_tvCurrentTeacherId);if(!teacher){toast('กรุณาเลือกครูก่อน','warn');return;}printTeacherViews([teacher]);}
 function printAllTeacherViews(){printTeacherViews(DB.teachers);}
