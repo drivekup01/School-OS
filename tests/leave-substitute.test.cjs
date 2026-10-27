@@ -41,3 +41,11 @@ test('leave ranges include both endpoints and convert Thai Buddhist years',async
  vm.createContext(ctx);vm.runInContext(source.slice(source.indexOf('function mapDay('),source.indexOf('export async function refreshLeave(')).replace('export async function','async function'),ctx);
  for(const [date,count] of [['2026-10-27',0],['2026-10-28',1],['2026-10-29',2],['2026-10-30',1],['2026-10-31',0]])assert.equal((await ctx.leave('teacherLeave',date)).rows.length,count,date);
 });
+test('a later leave expands a manual record without losing assignments or changing saved data during viewing',async()=>{
+ const h=boot(async()=>({ok:true,rows:[{teacherId:'t1',type:'ลาป่วย'}]}));
+ h.ctx.DB.slots.push({id:3});h.ctx.DB.sched.r1_3_พุธ={subject:'แนะแนว',teacher:'ครูหนึ่ง ทดสอบ'};
+ const saved={teacherId:'t1',manualOnly:true,type:'จัดสอนแทนเฉพาะคาบ',periods:[{slotId:1,roomId:'r1',subject:'ไทย',subTeacher:'สอง ทดสอบ',workType:'ใบงาน'}]};
+ h.ctx.DB.substitute['2026-10-28']={absentList:[saved]};await h.ctx.renderSubContent();
+ const view=h.paints.at(-1).absentList;assert.equal(view.length,1);assert.equal(view[0].manualOnly,undefined);assert.equal(view[0].periods.length,2);assert.equal(view[0].periods[0].subTeacher,'สอง ทดสอบ');assert.equal(saved.manualOnly,true);assert.equal(saved.periods.length,1);
+ const persistent=h.ctx.ensurePersistentAbsentFromView_('t1');assert.equal(persistent,saved);assert.equal(saved.manualOnly,undefined);assert.equal(saved.type,'ลาป่วย');assert.equal(saved.periods.length,2);assert.equal(saved.periods[0].workType,'ใบงาน');
+});

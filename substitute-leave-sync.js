@@ -47,9 +47,20 @@
   window.getSubViewDay=getSubViewDay=function(dateStr){
     var day=originalGetSubViewDay(dateStr);
     var existing={};
-    (day.absentList||[]).forEach(function(a){existing[String(a.teacherId)]=true;});
+    (day.absentList||[]).forEach(function(a){existing[String(a.teacherId)]=a;});
     apiAbsent(dateStr).forEach(function(a){
-      if(!existing[String(a.teacherId)]){day.absentList.push(a);existing[String(a.teacherId)]=true;}
+      var saved=existing[String(a.teacherId)];
+      if(!saved){day.absentList.push(a);existing[String(a.teacherId)]=a;}
+      else if(saved.manualOnly){
+        // A later leave record expands the view while retaining prior assignments.
+        var periods=a.periods.map(function(p){
+          var old=(saved.periods||[]).find(function(x){return String(x.slotId)===String(p.slotId)&&String(x.roomId)===String(p.roomId);});
+          return Object.assign({},p,old||{});
+        });
+        (saved.periods||[]).forEach(function(p){if(!periods.some(function(x){return String(x.slotId)===String(p.slotId)&&String(x.roomId)===String(p.roomId);}))periods.push(Object.assign({},p));});
+        Object.assign(saved,a,{periods:periods});
+        delete saved.manualOnly;
+      }
     });
     return day;
   };
@@ -85,8 +96,12 @@
   var originalEnsure=window.ensurePersistentAbsentFromView_ || ensurePersistentAbsentFromView_;
   window.ensurePersistentAbsentFromView_=ensurePersistentAbsentFromView_=function(teacherId){
     var saved=originalEnsure(teacherId);
-    if(saved)return saved;
+    if(saved&&!saved.manualOnly)return saved;
     var source=(getSubViewDay(currentSubDate).absentList||[]).find(function(a){return String(a.teacherId)===String(teacherId);});
+    if(saved){
+      if(source&&!source.manualOnly){Object.assign(saved,JSON.parse(JSON.stringify(source)));delete saved.manualOnly;delete saved._leaveApi;}
+      return saved;
+    }
     if(!source)return null;
     saved=JSON.parse(JSON.stringify(source));
     delete saved._leaveApi;
