@@ -1,3 +1,13 @@
+.sub-v2-table .sub-v2-cell{height:auto;min-height:72px}
+.sub-v2-lesson{padding:7px 3px;min-width:0}
+.sub-v2-lesson+.sub-v2-lesson{border-top:1px solid #173a6b20}
+.sub-v2-lesson .sub-v2-subj,.sub-v2-lesson .sub-v2-room{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
+.sub-v2-group-status{font-size:10px;line-height:1.6;border-top:1px solid #173a6b20;padding-top:7px;margin-top:3px;font-weight:700;color:#44658a}
+.sub-v2-selected-lessons{display:grid;gap:8px}
+.sub-v2-selected-lessons .sub-v2-lesson{padding:11px 12px;background:#f6f9fd;border:1px solid #e0e9f3;border-radius:10px}
+.sub-v2-selected-lessons .sub-v2-subj{font-size:13px;font-weight:700;color:#23466f}
+.sub-v2-selected-lessons .sub-v2-room{font-size:12px;line-height:1.7;color:#6a7f98;margin-top:4px}
+.sub-v2-selected-lessons .sub-v2-action{font-size:11px;line-height:1.6;color:#54836b;margin-top:5px}
 #subAssignedList{container-type:inline-size;container-name:sub-summary;padding:18px;background:#f7f9fc;border-radius:0 0 18px 18px}
 .sub-group-wrap{display:grid;gap:20px}
 .sub-group-card{min-width:0;overflow:hidden;background:#fff;border:1px solid #dfe7f1;border-radius:16px;box-shadow:0 3px 12px #173a6b05}

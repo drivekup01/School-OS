@@ -27,13 +27,14 @@ function plan(data,profiles,classes,p){
     if(matches.length!==1||!lesson?.subject||period.subject!==lesson.subject||![lesson.teacher,lesson.teacher2,lesson.teacher3].some(n=>norm(n)===norm(name(source)))||!Number.isInteger(number)||number<1||number>20)continue;
     if(data.rooms.some(r=>{const cell=data.sched[r.id+'_'+slot.id+'_'+schedDay];return cell&&[cell.teacher,cell.teacher2,cell.teacher3].some(n=>norm(n)===target);})||Object.values(data.teacherSched||{}).some(a=>a.teacherId===teacher.id&&String(a.slotId)===String(slot.id)&&a.day===schedDay))continue;
     const c=matches[0],id=assignmentId(p.uid,date,source.id,room.id,slot.id);
-    out.set(id,{id,teacherUid:p.uid,active:true,kind:'substitute',classId:c.id,className:c.name,subject:lesson.subject,period:number,weekday,date,from:date,to:date,time:slot.start+'–'+slot.end,sourceTeacherId:source.id,coveredTeacherName:name(source),source:'timetable-substitute'});
+    out.set(id,{id,teacherUid:p.uid,active:true,kind:'substitute',classId:c.id,className:c.name,subject:lesson.subject,period:number,weekday,date,from:date,to:date,time:slot.start+'–'+slot.end,sourceTeacherId:source.id,sourceSlotId:String(slot.id),coveredTeacherName:name(source),source:'timetable-substitute'});
    }
   }
  }
- // Do not grant a teacher two different rooms in the same period.
- const counts=new Map();for(const a of out.values()){const key=a.date+'|'+a.period;counts.set(key,(counts.get(key)||0)+1);}
- return [...out.values()].filter(a=>counts.get(a.date+'|'+a.period)===1);
+ // Several rooms belonging to one original teacher/slot form one lesson group.
+ // A different source teacher or slot at the same time remains a conflict.
+ const groups=new Map();for(const a of out.values()){const key=a.date+'|'+a.period;if(!groups.has(key))groups.set(key,new Set());groups.get(key).add(JSON.stringify([a.sourceTeacherId,a.sourceSlotId]));}
+ return [...out.values()].filter(a=>groups.get(a.date+'|'+a.period).size===1);
 }
 function service(db,stamp,Timestamp){
  async function sync({data,profiles,classes,profile,version}){
