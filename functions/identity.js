@@ -3,11 +3,12 @@ const M=require('./model');
 function auth(request){const a=request.auth;if(!a||a.token.email_verified!==true||a.token.firebase?.sign_in_provider!=='google.com'||typeof a.token.email!=='string')M.error('กรุณาเข้าสู่ระบบด้วยบัญชี Google ที่ยืนยันอีเมลแล้ว','unauthenticated');return a;}
 const inviteId=email=>M.hash(email.trim().toLowerCase());
 function service(db,stamp){
+ const homeroom=require('./homeroom').service(db,stamp);
  async function resolve(request){
   const a=auth(request),ref=db.doc('school_users/'+a.uid),email=a.token.email.trim().toLowerCase();
-  const existing=await ref.get();if(existing.exists){if(!existing.data().active)M.error('บัญชีนี้ถูกระงับ','permission-denied');return {...existing.data(),uid:a.uid,email,registered:true};}
+  const existing=await ref.get();if(existing.exists){if(!existing.data().active)M.error('บัญชีนี้ถูกระงับ','permission-denied');const p={...existing.data(),uid:a.uid,email,registered:true};await homeroom.provision(p);return p;}
   const invitation=db.doc('school_invites/'+inviteId(email));
-  return db.runTransaction(async tx=>{
+  const result=await db.runTransaction(async tx=>{
    const [current,invite,attendance,budget]=await Promise.all([tx.get(ref),tx.get(invitation),tx.get(db.doc('attendance_teachers/'+a.uid)),tx.get(db.doc('budget_users/'+a.uid))]);
    if(current.exists){if(!current.data().active)M.error('บัญชีนี้ถูกระงับ','permission-denied');return {...current.data(),uid:a.uid,email,registered:true};}
    let p;
@@ -18,6 +19,7 @@ function service(db,stamp){
    }
    tx.create(ref,{...p,createdAt:stamp(),updatedAt:stamp()});tx.create(db.collection('school_identity_audit').doc(),{action:'claim-profile',uid:a.uid,createdAt:stamp()});return {...p,uid:a.uid,email,registered:true};
   });
+  await homeroom.provision(result);return result;
  }
  async function requireAdmin(request){const p=await resolve(request);if(!p.active||(p.schoolRole?p.schoolRole!=='admin':!p.identityAdmin))M.error('เฉพาะผู้ดูแลบัญชีกลาง','permission-denied');return p;}
  async function liveAdmin(tx,uid){const snap=await tx.get(db.doc('school_users/'+uid)),p=snap.data();if(!snap.exists||!p.active||(p.schoolRole?p.schoolRole!=='admin':!p.identityAdmin))M.error('สิทธิ์ผู้ดูแลเปลี่ยนแล้ว','permission-denied');}
