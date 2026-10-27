@@ -3,6 +3,7 @@ const {onCall,HttpsError}=require('firebase-functions/v2/https');
 const {initializeApp,getApps}=require('firebase-admin/app');
 const {getFirestore,FieldValue}=require('firebase-admin/firestore');
 const {defineString}=require('firebase-functions/params');
+const {getAuth}=require('firebase-admin/auth');
 const M=require('./model'),I=require('./identity'),{repository}=require('./storage');
 if(!getApps().length)initializeApp();const db=getFirestore(),stamp=()=>FieldValue.serverTimestamp(),identity=I.service(db,stamp),repo=repository(db,stamp),importSource=require('./migration').migration(db,repo,stamp);
 const LEGACY_API=defineString('SCHOOL_TIMETABLE_LEGACY_API',{default:''}),LEAVE_API=defineString('SCHOOL_TIMETABLE_LEGACY_LEAVE_API',{default:''});
@@ -13,7 +14,8 @@ async function handle(work){try{return await work();}catch(e){if(e instanceof Ht
 async function academic(request){const p=await identity.resolve(request);M.assertAcademic(p);return p;}
 async function legacy(url,action){if(!url||!/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(url))M.error('ยังไม่ได้ตั้ง URL แหล่งข้อมูลเดิม','failed-precondition');const res=await fetch(url+'?action='+encodeURIComponent(action)+'&_='+Date.now(),{signal:AbortSignal.timeout(90000)});if(!res.ok)M.error('แหล่งข้อมูลเดิมตอบ HTTP '+res.status,'failed-precondition');const body=await res.json();if(!body.ok)M.error('แหล่งข้อมูลเดิมตอบไม่สำเร็จ','failed-precondition');return body;}
 async function source(){const [body,leave]=await Promise.all([legacy(LEGACY_API.value(),'refresh'),legacy(LEAVE_API.value(),'leaveHistory')]);const data=M.normalize(body.data),rows=Array.isArray(leave.rows)?leave.rows:[];M.validJson(rows);if(Buffer.byteLength(JSON.stringify(rows))>800000)M.error('ประวัติลาใหญ่เกินขอบเขต');return {data,leaveRows:rows,sourceHash:M.hash({data,rows}),counts:{...M.counts(data),leaveRecords:rows.length}};}
-exports.schoolIdentity=onCall(options,request=>handle(async()=>{const input=request.data||{};switch(input.method){case 'resolveProfile':return identity.resolve(request);case 'listUsers':return identity.list(request);case 'saveInvitation':return identity.saveInvite(request,input);case 'updateUser':return identity.updateUser(request,input);default:M.error('ไม่รองรับคำสั่งบัญชี');}}));
+const readiness=require('./readiness').service(db,identity,repo,getAuth(),stamp);
+exports.schoolIdentity=onCall(options,request=>handle(async()=>{const input=request.data||{};switch(input.method){case 'readiness':return readiness.get(request);case 'reportReadiness':return readiness.report(request,input);case 'resolveProfile':return identity.resolve(request);case 'listUsers':return identity.list(request);case 'saveInvitation':return identity.saveInvite(request,input);case 'updateUser':return identity.updateUser(request,input);default:M.error('ไม่รองรับคำสั่งบัญชี');}}));
 exports.timetableApi=onCall(options,request=>handle(async()=>{
  const input=request.data||{},method=input.method,p=await identity.resolve(request);
  const caps=require('./school-roles').capabilities(p);

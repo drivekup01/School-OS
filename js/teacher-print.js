@@ -31,14 +31,15 @@ table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:.2mm s
  function fit(root){
   return [...root.querySelectorAll('.teacher-print-page')].map(page=>{const inner=page.querySelector('.teacher-print-inner');inner.style.transform='none';const scale=Math.min(1,(page.clientWidth-2)/inner.scrollWidth,(page.clientHeight-3)/inner.scrollHeight);inner.style.transform='scale('+scale+')';return {scale,width:inner.scrollWidth*scale,height:inner.scrollHeight*scale,pageHeight:page.clientHeight};});
  }
- async function print(db,teachers,options={}){
+ async function printHTML(html){
   const frame=document.createElement('iframe');frame.title='พิมพ์ตารางสอนแนวนอน';frame.setAttribute('aria-hidden','true');frame.style.cssText='position:fixed;left:-20000px;top:0;width:1123px;height:794px;border:0;';
-  const loaded=new Promise((resolve,reject)=>{frame.onload=resolve;frame.onerror=()=>reject(Error('เตรียมหน้าพิมพ์ไม่สำเร็จ'));});frame.srcdoc=documentHTML(db,teachers,options);document.body.appendChild(frame);
+  const loaded=new Promise((resolve,reject)=>{frame.onload=resolve;frame.onerror=()=>reject(Error('เตรียมหน้าพิมพ์ไม่สำเร็จ'));});frame.srcdoc=html;document.body.appendChild(frame);
   try{await loaded;const doc=frame.contentDocument;for(const face of document.fonts){if(face.status==='loaded')doc.fonts.add(face);}await doc.fonts.ready;await Promise.all([...doc.images].map(img=>img.decode()));fit(doc);await new Promise(resolve=>frame.contentWindow.requestAnimationFrame(resolve));
    const cleanup=()=>{setTimeout(()=>frame.remove(),0);};frame.contentWindow.addEventListener('afterprint',cleanup,{once:true});frame.contentWindow.focus();frame.contentWindow.print();
   }catch(error){frame.remove();throw error;}
  }
- return {pages,documentHTML,fit,print,css};
+ async function print(db,teachers,options={}){return printHTML(documentHTML(db,teachers,options));}
+ return {pages,documentHTML,fit,print,printHTML,css};
 });
 
 if(typeof document!=='undefined'){const style=document.createElement('style');style.textContent='@media screen{html body.guest-mode #page-teacher-view .tv-header-controls{display:flex!important}html body.guest-mode #tvExportBar:not([style*="display: none"]):not([style*="display:none"]){display:flex!important}}';document.head.appendChild(style);}
