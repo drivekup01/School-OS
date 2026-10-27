@@ -15,7 +15,9 @@ async function legacy(url,action){if(!url||!/^https:\/\/script\.google\.com\/mac
 async function source(){const [body,leave]=await Promise.all([legacy(LEGACY_API.value(),'refresh'),legacy(LEAVE_API.value(),'leaveHistory')]);const data=M.normalize(body.data),rows=Array.isArray(leave.rows)?leave.rows:[];M.validJson(rows);if(Buffer.byteLength(JSON.stringify(rows))>800000)M.error('ประวัติลาใหญ่เกินขอบเขต');return {data,leaveRows:rows,sourceHash:M.hash({data,rows}),counts:{...M.counts(data),leaveRecords:rows.length}};}
 exports.schoolIdentity=onCall(options,request=>handle(async()=>{const input=request.data||{};switch(input.method){case 'resolveProfile':return identity.resolve(request);case 'listUsers':return identity.list(request);case 'saveInvitation':return identity.saveInvite(request,input);case 'updateUser':return identity.updateUser(request,input);default:M.error('ไม่รองรับคำสั่งบัญชี');}}));
 exports.timetableApi=onCall(options,request=>handle(async()=>{
- const input=request.data||{},p=await academic(request),method=input.method;
+ const input=request.data||{},method=input.method,p=await identity.resolve(request);
+ const caps=require('./school-roles').capabilities(p);
+ if(['bootstrap','leaveHistory'].includes(method)){if(!(caps?caps.readAll:p.active&&p.timetableRole==='academic'))M.error('ไม่มีสิทธิ์ดูข้อมูลตารางสอน','permission-denied');}else M.assertAcademic(p);
  if(method==='bootstrap')return {ok:true,...await repo.read()};
  if(method==='migrationPreview'){await identity.requireAdmin(request);const s=await source();return {ok:true,counts:s.counts,sourceHash:s.sourceHash};}
  if(method==='migrateLegacy'){
@@ -33,5 +35,6 @@ exports.timetableApi=onCall(options,request=>handle(async()=>{
  else if(method==='saveAnnouncement'){const a=typeof input.announcement==='string'?JSON.parse(input.announcement):input.announcement||input;const id=String(a.id||'');if(!id||id.length>100||typeof a.title!=='string'||!a.title.trim()||a.title.length>500||typeof a.body!=='string'||a.body.length>10000)M.error('ประกาศไม่ถูกต้อง');const old=data.announcements.find(x=>x.id===id),next={id,title:a.title,body:a.body,type:String(a.type||'ทั่วไป').slice(0,80),date:String(a.date||'').slice(0,30),createdAt:old?.createdAt||Date.now(),updatedAt:Date.now()};data.announcements=data.announcements.filter(x=>x.id!==id).concat(next);}
  else if(method==='deleteAnnouncement'){data.announcements=data.announcements.filter(x=>x.id!==String(input.id));}
  else M.error('ไม่รองรับคำสั่งตารางสอน');
+ if(caps&&!caps.admin&&JSON.stringify(data.school)!==JSON.stringify(current.data.school))M.error('การแก้ไขส่วนเว็บไซต์ใช้ได้เฉพาะผู้ดูแลระบบ','permission-denied');
  const result=await repo.save({data,expectedRevision:input.expectedRevision,requestId:input.requestId,uid:p.uid,method});return {...result,systemMode:data.systemMode};
 }));

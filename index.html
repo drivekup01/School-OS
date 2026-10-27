@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<script src="js/teacher-export.js?v=20261025-export1"></script>
-<script src="js/ui-state.js?v=20261025-navigation1"></script>
+<script src="js/teacher-export.js?v=20261027-roles1"></script>
+<script src="js/ui-state.js?v=20261027-roles1"></script>
 <script src="js/teacher-schedule-core.js?v=20261025-teacherperiod1"></script>
+<script src="js/teacher-print.js?v=20261027-roles1"></script>
 <link rel="stylesheet" href="css/teacher-builder.css?v=20261025-break1">
-<script src="js/teacher-builder.js?v=20261025-teacher1"></script>
+<script src="js/teacher-builder.js?v=20261027-roles1"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ระบบจัดตารางเรียน - ตารางสอน</title>
@@ -447,10 +448,18 @@ textarea{resize:vertical;min-height:64px}
 }
 @media print {
   /* Hide EVERYTHING except the dedicated print overlay */
-  body > *:not(#tvPrintOverlay) { display: none !important; }
-  #tvPrintOverlay { display: block !important; }
+  body.teacher-printing > *:not(#tvPrintOverlay) { display: none !important; }
+  body.teacher-printing #tvPrintOverlay { display:block!important;position:static!important;overflow:visible!important;width:auto!important;height:auto!important;padding:0!important; }
   @page { size: A4 landscape; margin: 1cm; }
 }
+
+#tvPrintOverlay{display:none;background:white;color:#172b4d;font-family:'TH Sarabun New','Sarabun',Arial,sans-serif}
+.teacher-print-page{break-after:page;page-break-after:always;box-sizing:border-box;padding:0;width:100%;font-size:10pt}
+.teacher-print-page:last-child{break-after:auto;page-break-after:auto}
+.teacher-print-page header{text-align:center;margin:0 0 5mm}.teacher-print-page h1{font-size:19pt;margin:0}.teacher-print-page h2{font-size:15pt;margin:1mm 0}.teacher-print-page p{font-size:11pt;margin:0}
+.teacher-print-page table{width:100%;border-collapse:collapse;table-layout:fixed}.teacher-print-page th,.teacher-print-page td{border:1px solid #91a4bf;padding:2mm;text-align:center;vertical-align:middle;overflow-wrap:anywhere}.teacher-print-page thead th{background:#eaf0fa;font-size:10pt}.teacher-print-page thead th:first-child{width:15mm}.teacher-print-page tbody td{height:20mm}.teacher-print-page small{display:block;font-size:8pt}.teacher-print-break{background:#fff6df!important}.teacher-print-lesson+.teacher-print-lesson{border-top:1px dotted #aab7ca;margin-top:1mm;padding-top:1mm}.teacher-print-page footer{text-align:right;font-size:8pt;margin-top:3mm}
+@media print{.teacher-print-page{break-inside:avoid;page-break-inside:avoid}.teacher-print-page tr{break-inside:avoid;page-break-inside:avoid}body.teacher-printing{margin:0!important;padding:0!important;background:white!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
 .print-header {
   display: none;
   text-align: center; margin-bottom: 12px;
@@ -2278,7 +2287,7 @@ body.support-mode .logout-top-btn{
         <div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">กำลังโหลด...</div>
       </div>
       <div style="padding:8px 10px;border-top:1px solid var(--border);display:flex;gap:6px" class="no-print">
-        <button class="btn btn-out btn-xs" onclick="exportTeacherViewDocxAll()">📚 ส่งออกทุกคน</button>
+        <button id="tvExportAllDocx" class="btn btn-out btn-xs" onclick="exportTeacherViewDocxAll()">📚 Word รวมทุกคน</button><button class="btn btn-out btn-xs" onclick="printAllTeacherViews()">🖨️ พิมพ์ / PDF ทุกคน</button>
       </div>
     </div>
 
@@ -2293,7 +2302,7 @@ body.support-mode .logout-top-btn{
         <div id="tvTeacherTitle" class="tv-teacher-title"></div>
         <div style="flex:1"></div>
         <div id="tvStatsChips" class="tv-stats-chips"></div>
-        <button class="btn btn-pri btn-sm" onclick="exportTeacherViewDocx()">📄 Word</button>
+        <button class="btn btn-pri btn-sm" onclick="exportTeacherViewDocx()">📄 Word รายคน</button><button class="btn btn-out btn-sm" onclick="printTeacherView()">🖨️ พิมพ์ / PDF รายคน</button>
         <button class="btn btn-ghost btn-sm" onclick="exportTeacherViewPng()">🖼️ PNG</button>
       </div>
       <div id="teacherViewContent" style="overflow-x:auto"></div>
@@ -28383,72 +28392,20 @@ function getTeacherScheduleData(teacherName) {
   return data;
 }
 
-// Print teacher timetable
-function printTeacherView() {
-  var id = _tvCurrentTeacherId;
-  if(!id) { toast('กรุณาเลือกครูก่อน','warn'); return; }
-  var teacher = DB.teachers.find(function(x){ return x.id===id; });
-  if(!teacher) return;
-  var name = teacher.prefix+teacher.first+' '+teacher.last;
-  var school = DB.school;
-
-  var TH = 'background:#1A3A6E;color:#fff;padding:7px 5px;text-align:center;font-size:12px;font-weight:700;border:1px solid #1a2f5e;';
-  var TH_BREAK = 'background:#E65100;color:#fff;padding:7px 5px;text-align:center;font-size:12px;font-weight:700;border:1px solid #D95A00;';
-  var TD_DAY = 'background:#EEF3FF;padding:8px 6px;text-align:center;font-size:12px;font-weight:800;color:#1A3A6E;border:1px solid #c5d3ea;white-space:nowrap;';
-  var TD = 'border:1px solid #c5d3ea;padding:5px;vertical-align:top;min-width:92px;';
-  var TD_BREAK = 'background:#FFF8E1;border:1px solid #FFD05A;padding:6px;text-align:center;vertical-align:middle;font-weight:800;font-size:12px;color:#E65100;';
-
-  var thead = '<tr><th style="'+TH+'min-width:68px;width:68px">วัน/คาบ</th>';
-  DB.slots.forEach(function(sl){
-    var sty = sl.isBreak ? TH_BREAK : TH;
-    thead += '<th style="'+sty+'">'+sl.label+'<div style="font-size:9px;font-weight:600;opacity:.9">'+sl.start+'–'+sl.end+'</div></th>';
-  });
-  thead += '</tr>';
-
-  var tbody = '';
-  DB.days.forEach(function(day,dayIndex){
-    tbody += '<tr><td style="'+TD_DAY+'width:68px;">'+day+'</td>';
-    DB.slots.forEach(function(sl){
-      if(sl.isBreak){ if(dayIndex===0) tbody += '<td rowspan="'+DB.days.length+'" style="'+TD_BREAK+'width:58px;">พักเที่ยง</td>'; return; }
-      var matches=[];
-      DB.rooms.forEach(function(r){
-        var cv=DB.sched[r.id+'_'+sl.id+'_'+day];
-        if(cv&&cv.subject&&(cv.teacher===name||cv.teacher2===name||cv.teacher3===name)){
-          matches.push({cv:cv, room:r.label});
-        }
-      });
-      TeacherSchedule.activities(DB,name,sl.id,day).forEach(a=>matches.push({cv:{subject:a.subject},room:'เลือกวิชา'}));
-      if(!matches.length){ tbody += '<td style="'+TD+'">&nbsp;</td>'; return; }
-      var html='<td style="'+TD+'background:#FFFFFF">';
-      matches.forEach(function(m){
-        html += '<div style="background:#FFFFFF;border:1px solid #D9E2F2;border-radius:5px;padding:4px 5px;margin:1px 0">'+
-                '<div style="font-weight:700;font-size:11px;color:#1A3A6E">'+m.cv.subject+'</div>'+
-                '<div style="font-size:9px;color:#666">'+m.room+'</div>'+
-                (TeacherSchedule.learnRoom(DB,m.cv)?'<div style="font-size:9px;color:#555">ห้อง '+TeacherSchedule.escape(TeacherSchedule.learnRoom(DB,m.cv))+'</div>':'')+
-                '</div>';
-      });
-      html += '</td>'; tbody += html;
-    });
-    tbody += '</tr>';
-  });
-
-  var rankLine=(teacher.rank||'')+(teacher.dept?'  |  กลุ่มสาระ'+teacher.dept:'');
-  var logoHtml=school.logoDataUrl?'<img src="'+school.logoDataUrl+'" style="width:56px;height:56px;object-fit:contain;margin-bottom:4px">':'';
-  var html='<div style="font-family:\'TH Sarabun New\',\'Sarabun\',Arial,sans-serif;padding:10px 0">'+
-    '<div style="text-align:center;margin-bottom:12px">'+logoHtml+
-    '<div style="font-size:26px;font-weight:800;color:#1A3A6E">ตารางสอน</div>'+
-    '<div style="font-size:20px;font-weight:800;color:#1A3A6E">'+name+'</div>'+
-    (rankLine?'<div style="font-size:14px;color:#4A5568">'+rankLine+'</div>':'')+
-    '<div style="font-size:14px;color:#666">โรงเรียน'+(school.name||'')+'</div>'+
-    '<div style="font-size:13px;color:#888">ภาคเรียนที่ '+(school.semester||'')+' ปีการศึกษา '+(school.year||'')+'</div></div>'+
-    '<table style="width:100%;border-collapse:collapse;table-layout:fixed"><thead>'+thead+'</thead><tbody>'+tbody+'</tbody></table>'+
-    '</div>';
-
-  var overlay=document.getElementById('tvPrintOverlay');
-  if(!overlay){overlay=document.createElement('div');overlay.id='tvPrintOverlay';overlay.style.cssText='display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:99999;overflow:auto;padding:1cm;box-sizing:border-box;';document.body.appendChild(overlay);}
-  overlay.innerHTML=html; overlay.style.display='block';
-  setTimeout(function(){window.print();overlay.style.display='none';},250);
+// Use a normal-flow print overlay so every teacher can paginate.
+function printTeacherViews(teachers){
+ try{
+  const html=TeacherPrint.pages(DB,teachers);let overlay=document.getElementById('tvPrintOverlay');
+  if(!overlay){overlay=document.createElement('div');overlay.id='tvPrintOverlay';document.body.appendChild(overlay);}
+  overlay.innerHTML=html;overlay.style.display='block';document.body.classList.add('teacher-printing');
+  const previousTitle=document.title;document.title=teachers.length===1?'ตารางสอน_'+TeacherSchedule.name(teachers[0]):'ตารางสอนครูทั้งหมด_'+(DB.school.year||'');
+  const cleanup=()=>{overlay.style.display='none';document.body.classList.remove('teacher-printing');document.title=previousTitle;};
+  window.addEventListener('afterprint',cleanup,{once:true});
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{try{window.print();}catch(error){cleanup();toast(error.message,'warn');}}));
+ }catch(error){toast(error.message,'warn');}
 }
+function printTeacherView(){const teacher=DB.teachers.find(t=>t.id===_tvCurrentTeacherId);if(!teacher){toast('กรุณาเลือกครูก่อน','warn');return;}printTeacherViews([teacher]);}
+function printAllTeacherViews(){printTeacherViews(DB.teachers);}
 
 // Export teacher timetable to Word (.docx)
 function exportTeacherViewDocx() {
@@ -28459,19 +28416,20 @@ function exportTeacherViewDocx() {
   buildTeacherDocx(t.prefix+t.first+' '+t.last, t);
 }
 
-function exportTeacherViewDocxAll() {
-  if(!DB.teachers.length) { alert('ยังไม่มีข้อมูลครู'); return; }
-  var delay = 0;
-  DB.teachers.forEach(function(t, i) {
-    setTimeout(function() {
-      var name = t.prefix + t.first + ' ' + t.last;
-      buildTeacherDocx(name, t);
-    }, delay);
-    delay += 400;
-  });
+async function exportTeacherViewDocxAll(){
+ const button=document.getElementById('tvExportAllDocx');if(button?.disabled)return;
+ if(!DB.teachers.length){toast('ยังไม่มีข้อมูลครู','warn');return;}
+ if(typeof window.docx==='undefined'){toast('ไลบรารี Word ยังไม่พร้อม','warn');return;}
+ const label=button?.textContent;if(button){button.disabled=true;button.textContent='กำลังรวมตารางสอน…';}
+ try{
+  const sections=[],logo=await getRequiredExportLogo();
+  for(const teacher of DB.teachers)sections.push(await buildTeacherDocx(TeacherSchedule.name(teacher),teacher,{sectionOnly:true,logo}));
+  const doc=new window.docx.Document({styles:{default:{document:{run:{font:'TH SarabunPSK',size:18,sizeComplexScript:18}}}},sections});
+  const blob=await window.docx.Packer.toBlob(doc);dlBlob(blob,'ตารางสอนครูทั้งหมด_ปี'+(DB.school.year||'')+'.docx');toast('ดาวน์โหลดตารางสอน '+sections.length+' คน ในไฟล์เดียวแล้ว','succ');
+ }catch(error){toast('ส่งออกไม่สำเร็จ: '+error.message,'warn');}finally{if(button){button.disabled=false;button.textContent=label;}}
 }
 
-async function buildTeacherDocx(teacherName, teacherObj) {
+async function buildTeacherDocx(teacherName, teacherObj, options={}) {
   if(typeof docx === 'undefined') { alert('ไลบรารี docx ยังไม่พร้อม'); return; }
   const {Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,ImageRun,
     AlignmentType,PageOrientation,WidthType,ShadingType,BorderStyle,VerticalAlign}=window.docx;
@@ -28519,13 +28477,13 @@ async function buildTeacherDocx(teacherName, teacherObj) {
     return new TableRow({children:cells});
   });
 
-  const exportLogo=await getRequiredExportLogo();
+  const exportLogo=options.logo||await getRequiredExportLogo();
   const logoSize=LOGO_SIZES['medium']||LOGO_SIZES.small;
   const logoBuf=await logoToArrayBuffer(exportLogo);
   const logoType=logoMimeToType(exportLogo);
   const logoRun=new ImageRun({type:logoType,data:logoBuf,transformation:{width:logoSize.w,height:logoSize.h},altText:{title:'logo',description:'logo',name:'logo'}});
   const rankTxt=teacherObj&&teacherObj.rank?teacherObj.rank+(teacherObj.dept?'  กลุ่มสาระ'+teacherObj.dept:''):'';
-  const doc=new Document({styles:{default:{document:{run:{font:'TH SarabunPSK',size:18,sizeComplexScript:18}}}},sections:[{properties:{page:{size:{width:11906,height:16838,orientation:PageOrientation.LANDSCAPE},margin:{top:margin,right:margin,bottom:margin,left:margin}}},children:[
+  const section={properties:{type:window.docx.SectionType.NEXT_PAGE,page:{size:{width:11906,height:16838,orientation:PageOrientation.LANDSCAPE},margin:{top:margin,right:margin,bottom:margin,left:margin}}},children:[
     new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:60},children:[logoRun]}),
     new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:50},children:[t('ตารางสอน',{bold:true,size:20,color:'1A3A6E'})]}),
     new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:35},children:[t(teacherName,{bold:true,size:16,color:'1A3A6E'})]}),
@@ -28533,7 +28491,9 @@ async function buildTeacherDocx(teacherName, teacherObj) {
     new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:30},children:[t('โรงเรียน'+(school.name||''),{bold:true,size:15})]}),
     new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:120},children:[t('ภาคเรียนที่ '+(school.semester||'')+'   ปีการศึกษา '+(school.year||''),{size:13})]}),
     new Table({width:{size:contentW,type:WidthType.DXA},columnWidths:colWidths,rows:[hdrRow,...rows]})
-  ]}]});
+  ]};
+  if(options.sectionOnly)return section;
+  const doc=new Document({styles:{default:{document:{run:{font:'TH SarabunPSK',size:18,sizeComplexScript:18}}}},sections:[section]});
   const blob=await Packer.toBlob(doc);
   const safe=teacherName.replace(/[^\u0e00-\u0e7fa-zA-Z0-9]/g,'_');
   dlBlob(blob,'ตารางสอน_'+safe+'_ปี'+(school.year||'')+'.docx');
@@ -31195,8 +31155,8 @@ if(_subV2OldSetSubTeacher){
   }
 })();
 </script>
-<script src="config.js?v=20261025-firebase2"></script>
-<script>window.schoolFirebaseReady=window.SCHOOL_OS_STORAGE==='firebase'?import('./js/firebase-timetable.js?v=20261025-teacher1'):null;</script>
+<script src="config.js?v=20261027-roles1"></script>
+<script>window.schoolFirebaseReady=window.SCHOOL_OS_STORAGE==='firebase'?import('./js/firebase-timetable.js?v=20261027-roles1'):null;</script>
 <script id="school-os-online-adapter">
 (function(){
   var SAFE_LOGO_URL='https://drivekup01.github.io/School-OS/assets/school-logo.svg';
@@ -31668,9 +31628,9 @@ async function renderLeaveTest(){
   }finally{ clearTimeout(timer); }
 }
 </script>
-<script src="leave-timetable-bridge.js?v=20261006-1"></script>
-<script src="substitute-leave-sync.js?v=20261025-views1"></script>
-<script src="leave-history.js?v=20261025-firebase2"></script>
+<script src="leave-timetable-bridge.js?v=20261027-roles1"></script>
+<script src="substitute-leave-sync.js?v=20261027-roles1"></script>
+<script src="leave-history.js?v=20261027-roles1"></script>
 </body>
 </html>
 <style id="builder-full-height-fix">
