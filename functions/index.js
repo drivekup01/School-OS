@@ -1,7 +1,7 @@
 'use strict';
 const {onCall,HttpsError}=require('firebase-functions/v2/https');
 const {initializeApp,getApps}=require('firebase-admin/app');
-const {getFirestore,FieldValue}=require('firebase-admin/firestore');
+const {getFirestore,FieldValue,Timestamp}=require('firebase-admin/firestore');
 const {defineString}=require('firebase-functions/params');
 const {getAuth}=require('firebase-admin/auth');
 const M=require('./model'),I=require('./identity'),{repository}=require('./storage');
@@ -16,7 +16,8 @@ async function legacy(url,action){if(!url||!/^https:\/\/script\.google\.com\/mac
 async function source(){const [body,leave]=await Promise.all([legacy(LEGACY_API.value(),'refresh'),legacy(LEAVE_API.value(),'leaveHistory')]);const data=M.normalize(body.data),rows=Array.isArray(leave.rows)?leave.rows:[];M.validJson(rows);if(Buffer.byteLength(JSON.stringify(rows))>800000)M.error('ประวัติลาใหญ่เกินขอบเขต');return {data,leaveRows:rows,sourceHash:M.hash({data,rows}),counts:{...M.counts(data),leaveRecords:rows.length}};}
 const readiness=require('./readiness').service(db,identity,repo,getAuth(),stamp);
 const attendanceSchedule=require('./attendance-schedule').service(db,identity,repo);
-exports.schoolIdentity=onCall(options,request=>handle(async()=>{const input=request.data||{};switch(input.method){case 'attendanceSchedule':return attendanceSchedule.get(request,input);case 'readiness':return readiness.get(request);case 'reportReadiness':return readiness.report(request,input);case 'resolveProfile':return identity.resolve(request);case 'listUsers':return identity.list(request);case 'saveInvitation':return identity.saveInvite(request,input);case 'updateUser':return identity.updateUser(request,input);default:M.error('ไม่รองรับคำสั่งบัญชี');}}));
+const morning=require('./morning').service(db,identity,repo,stamp,Timestamp);
+exports.schoolIdentity=onCall(options,request=>handle(async()=>{const input=request.data||{};switch(input.method){case 'morningClasses':case 'morningSession':case 'saveMorningSession':return morning.handle(request,input);case 'attendanceSchedule':return attendanceSchedule.get(request,input);case 'readiness':return readiness.get(request);case 'reportReadiness':return readiness.report(request,input);case 'resolveProfile':return identity.resolve(request);case 'listUsers':return identity.list(request);case 'saveInvitation':return identity.saveInvite(request,input);case 'updateUser':return identity.updateUser(request,input);default:M.error('ไม่รองรับคำสั่งบัญชี');}}));
 exports.timetableApi=onCall(options,request=>handle(async()=>{
  const input=request.data||{},method=input.method,p=await identity.resolve(request);
  const caps=require('./school-roles').capabilities(p);

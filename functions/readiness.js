@@ -20,13 +20,14 @@ function build({users=[],invites=[],authUsers=[],timetable,classes=[],assignment
   if(teacher&&clean(p.name)!==clean((teacher.prefix||'')+(teacher.first||'')+' '+(teacher.last||'')))warnings.push('ชื่อบัญชีไม่ตรงกับชื่อในตารางสอน');
   const expectedRooms=rooms.filter(r=>[r.homeroom,r.homeroom2,r.homeroom3].includes(p.teacherId)&&p.teacherId).map(r=>r.label);
   const jobs=assignments.filter(a=>a.teacherUid===uid&&a.active===true&&(!day(a.from)||day(a.from)<=stamp)&&(!day(a.to)||day(a.to)>=stamp));
-  const morning=[...new Map(jobs.filter(a=>a.kind==='morning').map(a=>[a.classId,a.className])).values()];
+  const homeroomClasses=classes.filter(c=>c.active!==false&&expectedRooms.some(r=>clean(r)===clean(c.name))&&(!timetable?.school?.year||c.academicYear===Number(timetable.school.year))&&(!timetable?.school?.semester||c.term===Number(timetable.school.semester)));
+  const morning=homeroomClasses.map(c=>c.name);
   const name=teacher?clean((teacher.prefix||'')+(teacher.first||'')+' '+(teacher.last||'')):'';let expectedLessons=0;
   for(const room of rooms)for(const slot of slots.filter(s=>!s.isBreak&&!s.teacherOnly))for(const d of days){const cell=timetable?.sched?.[room.id+'_'+slot.id+'_'+d];if(name&&cell?.subject&&[cell.teacher,cell.teacher2,cell.teacher3].some(v=>clean(v)===name))expectedLessons++;}
   const lessons=jobs.filter(a=>a.kind==='subject').length;
-  for(const room of expectedRooms)if(!morning.some(m=>clean(m)===clean(room)))issues.push('ยังไม่มอบหมายเช็คชื่อประจำชั้น '+room);
+  for(const room of expectedRooms)if(!morning.some(m=>clean(m)===clean(room)))issues.push('ยังไม่มีห้องหรือรายชื่อสำหรับเช็คชื่อประจำชั้น '+room);
   if(expectedLessons>0&&lessons===0&&!['director','deputy'].includes(p.schoolRole))issues.push('มีคาบในตารางสอน แต่ยังไม่มอบหมายงานเช็คชื่อรายคาบ');else if(expectedLessons!==lessons&&teaching(p.schoolRole))warnings.push('จำนวนคาบในตารางสอนและงานเช็คชื่อรายคาบต่างกัน');
-  const ownClassIds=new Set(jobs.map(a=>a.classId));const emptyClasses=classes.filter(c=>ownClassIds.has(c.id)&&c.active!==false&&c.studentCount===0).map(c=>c.name);for(const name of emptyClasses)issues.push('ห้อง '+name+' ยังไม่มีนักเรียน');
+  const ownClassIds=new Set([...jobs.map(a=>a.classId),...homeroomClasses.map(c=>c.id)]);const emptyClasses=classes.filter(c=>ownClassIds.has(c.id)&&c.active!==false&&c.studentCount===0).map(c=>c.name);for(const name of emptyClasses)issues.push('ห้อง '+name+' ยังไม่มีนักเรียน');
   const report=reports.find(r=>r.uid===uid),checks=report?.checks||[];
   const errors=checks.filter(c=>c.status==='error');if(errors.length)issues.push('การทดสอบอ่านข้อมูลล่าสุดพบปัญหา');
   const checkedAt=iso(report?.checkedAt),fresh=checkedAt&&now.getTime()-Date.parse(checkedAt)<86400000;
