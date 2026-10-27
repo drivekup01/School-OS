@@ -5,3 +5,15 @@ body.guest-mode #page-substitute .sub-v2-stats,body.guest-mode #page-substitute 
 body.guest-mode #page-substitute .sub-v2-cell{cursor:default;pointer-events:none}
 #page-teacher-view #tvTeacherList[aria-busy="true"]{min-height:110px}
 @media(max-width:600px){.school-topbar{flex-wrap:wrap}.school-topbar .school-brand{flex:1 1 100%;min-width:0}.school-topbar .public-topbar-tools{margin-left:auto}.school-portal-link{font-size:12px;min-height:36px}}
+
+#page-teacher-view .tv-page-layout{display:block;min-width:0;max-width:100%}
+#page-teacher-view .tv-header-controls{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;margin-bottom:16px}
+.tv-teacher-choice{display:grid;gap:7px;flex:1 1 320px;max-width:560px;min-width:0;font-weight:700;color:#173f73}
+.tv-teacher-choice small{font-size:12px;font-weight:400;color:#738096;margin-left:8px}
+.tv-teacher-choice select{width:100%;min-width:0;min-height:44px;padding:9px 12px;border:1px solid #cbd8ea;border-radius:10px;background:white;color:#173f73;font:inherit}
+.tv-all-exports{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+#page-teacher-view #tvMainPanel{min-width:0;max-width:100%;min-height:0}
+#page-teacher-view #teacherViewContent{overflow:hidden!important;min-width:0;max-width:100%}
+#page-teacher-view .teacher-view-wrap{max-width:100%;overflow:auto;overscroll-behavior:contain}
+@media(max-width:600px){.tv-teacher-choice{max-width:none;flex-basis:100%}.tv-all-exports{margin-left:0}}
+#tvTeacherRetry[hidden]{display:none!important}

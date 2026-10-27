@@ -4,7 +4,7 @@
 <script src="js/teacher-export.js?v=20261027-roles1"></script>
 <script src="js/ui-state.js?v=20261027-roles1"></script>
 <script src="js/teacher-schedule-core.js?v=20261025-teacherperiod1"></script>
-<script src="js/teacher-print.js?v=20261027-roles1"></script>
+<script src="js/teacher-print.js?v=20261027-selector1"></script>
 <link rel="stylesheet" href="css/teacher-builder.css?v=20261025-break1">
 <script src="js/teacher-builder.js?v=20261027-roles1"></script>
 <meta charset="UTF-8">
@@ -1761,7 +1761,7 @@ body.support-mode .logout-top-btn{
 }
 </style>
 <link rel="stylesheet" href="dashboard-shortcuts.css?v=20261025-layout1">
-<link rel="stylesheet" href="timetable-navigation.css?v=20261025-views1">
+<link rel="stylesheet" href="timetable-navigation.css?v=20261027-selector1">
 </head>
 <body class="guest-mode">
 <script>
@@ -2276,18 +2276,14 @@ body.support-mode .logout-top-btn{
   <div id="tvPrintHeader" class="print-header"><h2></h2><p></p></div>
 
   <div class="tv-page-layout" id="tvPageLayout">
-    <!-- LEFT: Teacher list sidebar -->
-    <div class="tv-sidebar card" id="tvSidebar">
-      <div class="card-hd" style="padding-bottom:8px">
-        <div class="card-title" style="font-size:13px">👩‍🏫 รายชื่อครู</div>
-        <span id="tvTeacherCount" style="font-size:11px;color:var(--muted)"></span>
-      </div>
-      <input type="text" id="tvSearchBox" class="tv-search" placeholder="🔍 ค้นหาชื่อครู..." oninput="filterTeacherList(this.value)">
-      <div class="tv-teacher-list" id="tvTeacherList">
-        <div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">กำลังโหลด...</div>
-      </div>
-      <div style="padding:8px 10px;border-top:1px solid var(--border);display:flex;gap:6px" class="no-print">
-        <button id="tvExportAllDocx" class="btn btn-out btn-xs" onclick="exportTeacherViewDocxAll()">📚 Word รวมทุกคน</button><button class="btn btn-out btn-xs" onclick="printAllTeacherViews()">🖨️ พิมพ์ / PDF ทุกคน</button>
+    <div class="tv-header-controls card no-print">
+      <label class="tv-teacher-choice" for="tvTeacherList"><span>เลือกครู <small id="tvTeacherCount"></small></span>
+        <select id="tvTeacherList" aria-label="เลือกครูเพื่อดูตารางสอน" onchange="selectTeacherView(this.value)"><option value="">กำลังโหลดรายชื่อครู…</option></select>
+      </label>
+      <button id="tvTeacherRetry" class="btn btn-out btn-sm" hidden onclick="renderTeacherViewPage()">ลองโหลดรายชื่อใหม่</button>
+      <div class="tv-all-exports">
+        <button id="tvExportAllDocx" class="btn btn-out btn-sm" onclick="exportTeacherViewDocxAll()">📚 Word รวมทุกคน</button>
+        <button class="btn btn-out btn-sm" onclick="printAllTeacherViews()">🖨️ พิมพ์ / PDF ทุกคน</button>
       </div>
     </div>
 
@@ -2295,7 +2291,7 @@ body.support-mode .logout-top-btn{
     <div class="tv-main-panel" id="tvMainPanel">
       <div id="tvNoTeacher" class="tv-no-teacher">
         <div class="tv-no-teacher-icon">📖</div>
-        <div class="tv-no-teacher-text">กดชื่อครูด้านซ้าย<br>เพื่อดูตารางสอน</div>
+        <div class="tv-no-teacher-text">เลือกครูที่หัวตาราง<br>เพื่อดูตารางสอน</div>
       </div>
       <!-- Action bar (hidden until teacher selected) -->
       <div id="tvExportBar" style="display:none;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center" class="no-print">
@@ -28212,12 +28208,12 @@ var _tvCurrentTeacherId = '';
 
 async function renderTeacherViewPage() {
   if(window.SCHOOL_OS_STORAGE==='firebase' && window.SCHOOL_ONLINE && (!SCHOOL_ONLINE.isReady() || SCHOOL_ONLINE.isLoading())) {
-    var list=document.getElementById('tvTeacherList'),count=document.getElementById('tvTeacherCount');
+    var list=document.getElementById('tvTeacherList'),count=document.getElementById('tvTeacherCount'),retry=document.getElementById('tvTeacherRetry');if(retry)retry.hidden=true;
     if(count)count.textContent='กำลังโหลด…';
-    if(list){list.setAttribute('aria-busy','true');list.innerHTML='<div class="sub-v2-empty" role="status">กำลังโหลดรายชื่อครู…</div>';}
+    if(list){list.setAttribute('aria-busy','true');list.disabled=true;list.innerHTML='<option value="">กำลังโหลดรายชื่อครู…</option>';}
     try{await SCHOOL_ONLINE.loadDatabaseOnce();}
-    catch(e){if(count)count.textContent='โหลดไม่สำเร็จ';if(list)list.innerHTML='<div class="sub-v2-empty">โหลดรายชื่อครูไม่สำเร็จ <button class="btn btn-out btn-sm" onclick="renderTeacherViewPage()">ลองใหม่</button></div>';return;}
-    finally{if(list)list.removeAttribute('aria-busy');}
+    catch(e){if(count)count.textContent='โหลดไม่สำเร็จ';if(list)list.innerHTML='<option value="">โหลดรายชื่อไม่สำเร็จ ลองใหม่</option>';if(retry)retry.hidden=false;return;}
+    finally{if(list){list.removeAttribute('aria-busy');list.disabled=false;}}
   }
   renderTeacherList();
   // If a teacher was previously selected, re-render their timetable (live update)
@@ -28226,75 +28222,31 @@ async function renderTeacherViewPage() {
   }
 }
 
-function renderTeacherList() {
-  var list = document.getElementById('tvTeacherList');
-  var countEl = document.getElementById('tvTeacherCount');
-  if(!list) return;
-
-  if(!DB.teachers.length) {
-    list.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:12px">\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e21\u0e35\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e04\u0e23\u0e39</div>';
-    if(countEl) countEl.textContent = '0 \u0e04\u0e19';
-    return;
-  }
-
-  // Count periods per teacher from DB.sched
-  var periodCount = {};
-  var conflictTeachers = new Set(detectConflicts().map(function(cf){return cf.teacherName;}));
-  DB.teachers.forEach(function(t){ periodCount[t.id] = 0; });
-  Object.values(DB.sched).forEach(function(cv){
-    if(!cv || !cv.subject) return;
-    var t1 = DB.teachers.find(function(t){return t.prefix+t.first+' '+t.last === cv.teacher;});
-    var t2 = DB.teachers.find(function(t){return t.prefix+t.first+' '+t.last === cv.teacher2;});
-    var t3 = DB.teachers.find(function(t){return t.prefix+t.first+' '+t.last === cv.teacher3;});
-    if(t1) periodCount[t1.id] = (periodCount[t1.id]||0)+1;
-    if(t2) periodCount[t2.id] = (periodCount[t2.id]||0)+1;
-    if(t3) periodCount[t3.id] = (periodCount[t3.id]||0)+1;
-  });
-
-  TeacherSchedule.activities(DB).forEach(a=>{periodCount[a.teacherId]=(periodCount[a.teacherId]||0)+1;});
-  var searchVal = (document.getElementById('tvSearchBox')||{}).value||'';
-  var filtered = DB.teachers.filter(function(t){
-    if(!searchVal) return true;
-    var name = (t.prefix+t.first+' '+t.last+' '+(t.dept||'')).toLowerCase();
-    return name.includes(searchVal.toLowerCase());
-  });
-
-  if(countEl) countEl.textContent = filtered.length+'/'+DB.teachers.length+' \u0e04\u0e19';
-
-  list.innerHTML = filtered.map(function(t,ti){
-    var name = t.prefix+t.first+' '+t.last;
-    var periods = periodCount[t.id]||0;
-    var hasConflict = conflictTeachers.has(name);
-    var isActive = t.id === _tvCurrentTeacherId;
-    var badgeClass = hasConflict?'tv-period-badge has-conflict':periods===0?'tv-period-badge zero':'tv-period-badge';
-    var badgeTitle = hasConflict?'\u0e15\u0e32\u0e23\u0e32\u0e07\u0e0a\u0e19':'';
-    return '<div class="tv-teacher-item'+(isActive?' active':'')+'" onclick="selectTeacherView(\''+t.id+'\')" id="tvItem_'+t.id+'">' +
-      '<div class="tv-teacher-avatar">'+(ti+1)+'</div>' +
-      '<div class="tv-teacher-info">' +
-        '<div class="tv-teacher-name" title="'+name+'">'+name+'</div>' +
-        '<div class="tv-teacher-meta">'+(t.dept||'\u0e44\u0e21\u0e48\u0e23\u0e30\u0e1a\u0e38')+(t.rank?'  &middot;  '+t.rank:'')+' </div>' +
-      '</div>' +
-      '<div class="'+badgeClass+'" title="'+badgeTitle+'">'+
-        (hasConflict?'\u26a0\ufe0f':periods)+
-      '</div></div>';
-  }).join('');
+function renderTeacherList(){
+  const select=document.getElementById('tvTeacherList'),count=document.getElementById('tvTeacherCount');
+  if(!select)return;
+  const available=DB.teachers.some(t=>t.id===_tvCurrentTeacherId);
+  if(!available)_tvCurrentTeacherId='';
+  select.replaceChildren(new Option(DB.teachers.length?'เลือกครู':'ยังไม่มีข้อมูลครู',''),...DB.teachers.map((teacher,index)=>new Option((index+1)+'. '+TeacherSchedule.name(teacher),teacher.id)));
+  select.value=_tvCurrentTeacherId;select.disabled=!DB.teachers.length;
+  if(count)count.textContent=DB.teachers.length+' คน';
+  if(!_tvCurrentTeacherId){document.getElementById('teacherViewContent').innerHTML='';document.getElementById('tvExportBar').style.display='none';document.getElementById('tvNoTeacher').style.display='';}
 }
 
 function filterTeacherList(val) {
   renderTeacherViewPage();
 }
 
-function selectTeacherView(teacherId) {
-  _tvCurrentTeacherId = teacherId;
-  // Update active state in list
-  document.querySelectorAll('.tv-teacher-item').forEach(function(el){
-    el.classList.toggle('active', el.id === 'tvItem_'+teacherId);
-  });
+function selectTeacherView(teacherId){
+  _tvCurrentTeacherId=teacherId;
+  const select=document.getElementById('tvTeacherList');if(select)select.value=teacherId;
+  if(!teacherId){renderTeacherList();return;}
   renderTeacherViewById(teacherId);
 }
 
 function renderTeacherViewById(teacherId) {
   _tvCurrentTeacherId=teacherId;
+  const teacherSelect=document.getElementById('tvTeacherList');if(teacherSelect)teacherSelect.value=teacherId;
   var t = DB.teachers.find(function(x){return x.id===teacherId;});
   var el = document.getElementById('teacherViewContent');
   var exportBar = document.getElementById('tvExportBar');

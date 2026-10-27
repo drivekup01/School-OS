@@ -18,4 +18,4 @@
  return {pages};
 });
 
-if(typeof document!=='undefined'){const style=document.createElement('style');style.textContent='@media screen{html body.guest-mode #page-teacher-view .no-print{display:flex!important}#tvSidebar>.no-print{flex-wrap:wrap}}';document.head.appendChild(style);}
+if(typeof document!=='undefined'){const style=document.createElement('style');style.textContent='@media screen{html body.guest-mode #page-teacher-view .tv-header-controls{display:flex!important}html body.guest-mode #tvExportBar:not([style*="display: none"]):not([style*="display:none"]){display:flex!important}}';document.head.appendChild(style);}
