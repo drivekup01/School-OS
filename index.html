@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<link rel="stylesheet" href="css/substitute-summary.css?v=20261027-report1">
+<link rel="stylesheet" href="css/substitute-summary.css?v=20261028-compact1">
+<link rel="stylesheet" href="css/daily-teacher-report.css?v=20261028-daily1">
 <script src="js/teacher-export.js?v=20261027-roles1"></script>
 <script src="js/ui-state.js?v=20261027-roles1"></script>
 <script src="js/student-signatures.js?v=20261027-signatures2"></script>
@@ -2438,7 +2439,8 @@ body.support-mode .logout-top-btn{
     <div class="ph-actions sub-share-actions">
       <button class="btn btn-out btn-sm" onclick="nav('sub-history')">📂 ประวัติ</button>
       <button class="btn btn-out btn-sm" onclick="copySubstituteSummary()">📋 คัดลอกข้อความ</button>
-      <button class="btn btn-out btn-sm" onclick="downloadSubstitutePNG()">⬇️ PNG</button>
+      <button class="btn btn-out btn-sm" onclick="downloadSubstitutePNG()">⬇️ PNG สรุป</button>
+      <button class="btn btn-gold btn-sm" onclick="openDailyTeacherReport()">🖼️ ภาพตารางรวมครู</button>
       <button class="btn btn-gold btn-sm" onclick="exportSubstituteDocx()">🖨️ Word</button>
     </div>
   </div>
@@ -30513,7 +30515,7 @@ function loadDemoData(){
 </script>
 
 
-<script src="js/substitute-report.js?v=20261027-report2"></script>
+<script src="js/substitute-report.js?v=20261028-teachergroups1"></script>
 <script id="substitute-v2-script">
 /* ══ SUBSTITUTE V2 INTERACTION ═════════════════════════════ */
 var subV2SelectedTeacherId = '';
@@ -31490,7 +31492,9 @@ async function renderLeaveTest(){
 }
 </script>
 <script src="leave-timetable-bridge.js?v=20261027-roles1"></script>
-<script src="substitute-leave-sync.js?v=20261027-manual1"></script>
+<script src="substitute-leave-sync.js?v=20261028-daily1"></script>
+<script src="js/daily-teacher-report.js?v=20261028-daily1"></script>
+<script src="js/daily-teacher-report-ui.js?v=20261028-daily1"></script>
 <script src="leave-history.js?v=20261027-roles1"></script>
 </body>
 </html>

@@ -20,6 +20,12 @@ test('Firebase readers receive leave without a legacy API URL or editor login fl
  await h.ctx.renderSubContent();assert.equal(h.paints.at(-1).absentList[0].periods[0].subTeacher,'สอง ทดสอบ');
  assert.equal(h.ctx.ensurePersistentAbsentFromView_('t1'),saved);assert.equal(h.ctx.DB.substitute['2026-10-28'].absentList.length,1);
 });
+
+test('dated report awaits imported leave and blocks export when leave data cannot load',async()=>{
+ const h=boot(async()=>({ok:true,rows:[{teacherId:'t1',type:'ลาป่วย'}]}));
+ const day=await h.ctx.loadSubstituteReportDay('2026-10-29');assert.equal(day.absentList.length,1);assert.equal(Object.keys(h.ctx.DB.substitute).length,0);assert.equal(h.ctx.currentSubDate,'2026-10-28');
+ const failed=boot(async()=>{throw Error('offline');});await assert.rejects(failed.ctx.loadSubstituteReportDay('2026-10-29'),/offline/);
+});
 test('refresh event invalidates leave, failures stay visible and retry can recover',async()=>{
  let rows=[{teacherId:'t1'}],fail=false;
  const h=boot(async()=>{if(fail)throw Error('offline');return {ok:true,rows};});

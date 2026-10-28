@@ -91,6 +91,13 @@
   }
 
   window.loadSubstituteDay=loadSubstituteDay=function(){return originalLoadSubstituteDay();};
+  window.loadSubstituteReportDay=async function(dateStr){
+    var version=epoch;
+    await fetchLeave(dateStr);
+    if(version!==epoch)throw Error('ข้อมูลหรือบัญชีเปลี่ยนแล้ว กรุณาเปิดรายงานใหม่');
+    if(leaveError)throw Error(leaveError);
+    return getSubViewDay(dateStr);
+  };
 
   // Only an explicit assignment copies an imported absence into saved data.
   var originalEnsure=window.ensurePersistentAbsentFromView_ || ensurePersistentAbsentFromView_;
