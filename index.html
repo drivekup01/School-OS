@@ -30520,7 +30520,7 @@ function loadDemoData(){
 </script>
 
 
-<script src="js/substitute-report.js?v=20261028-teachertables3"></script>
+<script src="js/substitute-report.js?v=20261028-absentgroups1"></script>
 <script id="substitute-v2-script">
 /* ══ SUBSTITUTE V2 INTERACTION ═════════════════════════════ */
 var subV2SelectedTeacherId = '';
@@ -30926,7 +30926,7 @@ if(_subV2OldSetSubTeacher){
         h+='<div style="padding:14px;color:#7b8798;font-size:12px">ไม่มีคาบสอนในวันนี้</div>';
       }else{
         h+='<div class="sub-group-table-wrap"><table class="sub-group-table"><caption class="sub-summary-sr">คาบสอนแทนของ '+esc(name)+'</caption><thead><tr>'+
-          '<th scope="col">คาบ / เวลา</th><th scope="col">วิชา / ชั้นเรียน</th><th scope="col">ครูสอนแทน</th><th scope="col">รูปแบบงาน</th><th scope="col">บันทึกข้อความ</th><th scope="col">สถานะ</th><th scope="col"><span class="sub-summary-sr">จัดการ</span></th>'+
+          '<th scope="col">คาบ / เวลา</th><th scope="col">วิชา / ชั้นเรียน</th><th scope="col">ครูสอนแทน</th><th scope="col">ภาระงาน</th><th scope="col">บันทึกข้อความ</th><th scope="col">สถานะ</th><th scope="col"><span class="sub-summary-sr">จัดการ</span></th>'+
           '</tr></thead><tbody>';
         subSummaryPeriodRows(periods).forEach(function(entry){
           var p=entry.p,pi=entry.index;
@@ -30962,7 +30962,8 @@ if(_subV2OldSetSubTeacher){
     day.absentList.forEach(function(a){
       var t=(DB.teachers||[]).find(function(x){return String(x.id)===String(a.teacherId);});
       lines.push((a.manualOnly?'👤 ครูเจ้าของคาบ: ':'👤 ครูลา: ')+(tName(t)||'ไม่ระบุ')+' ('+(a.type||'ไม่ระบุ')+')');
-      (a.periods||[]).forEach(function(p){
+      subSummaryPeriodRows(a.periods||[]).forEach(function(entry){
+        var p=entry.p;
         ensurePeriodMeta(p);
         var slot=(DB.slots||[]).find(function(s){return String(s.id)===String(p.slotId);});
         var room=(DB.rooms||[]).find(function(r){return String(r.id)===String(p.roomId);});
