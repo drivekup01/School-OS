@@ -1,6 +1,6 @@
 'use strict';
 const crypto=require('node:crypto');
-const ROOT=['school','teachers','subjects','rooms','slots','days','sched','teacherSched','substitute','announcements','customDepts','subjectColorSchemeVersion','systemMode'];
+const ROOT=['school','teachers','subjects','rooms','slots','days','sched','teacherSched','exchanges','exchangeTerm','substitute','announcements','customDepts','subjectColorSchemeVersion','systemMode'];
 const clone=v=>JSON.parse(JSON.stringify(v));
 function error(message,code='invalid-argument'){const e=new Error(message);e.code=code;throw e;}
 function object(v){return v&&typeof v==='object'&&!Array.isArray(v);}
@@ -24,6 +24,8 @@ function normalize(input){
    if(key!==JSON.stringify([v.teacherId,v.slotId,v.day])||!d.teachers.some(t=>t.id===v.teacherId)||!d.slots.some(s=>String(s.id)===v.slotId&&!s.isBreak)||!d.days.includes(v.day))error('ครู วัน หรือคาบรายครูไม่ถูกต้อง');
   }
  }
+ if(d.exchanges!==undefined&&(!object(d.exchanges)||Object.keys(d.exchanges).length>500))error('ข้อมูลแลกคาบไม่ถูกต้อง');
+ if(d.exchangeTerm!==undefined&&(!object(d.exchangeTerm)||typeof d.exchangeTerm.from!=='string'||typeof d.exchangeTerm.to!=='string'))error('ช่วงภาคเรียนไม่ถูกต้อง');
  if(d.teachers.length>1000||d.rooms.length>500||d.subjects.length>5000||Object.keys(d.sched).length>20000)error('ฐานข้อมูลใหญ่เกินขอบเขตที่รองรับ');
  if(!['DAILY','SETUP'].includes(d.systemMode||'DAILY'))error('โหมดระบบไม่ถูกต้อง');d.systemMode=d.systemMode||'DAILY';
  if(Buffer.byteLength(JSON.stringify(d))>6*1024*1024)error('ฐานข้อมูลเกิน 6 MB');return d;
@@ -34,7 +36,7 @@ function publicView(data){
  // contacts, private notes, leave records or auth settings into public documents.
  const fields=(v,keys)=>Object.fromEntries(keys.filter(k=>v[k]!==undefined).map(k=>[k,clone(v[k])]));
  const out={school,teachers:d.teachers.map(t=>fields(t,['id','prefix','first','last','dept','subjects'])),subjects:d.subjects.map(t=>fields(t,['id','code','name','grade','dept','hours','color'])),rooms:d.rooms.map(t=>fields(t,['id','level','grade','room','label','homeroom','homeroom2','homeroom3','planName','baseRoom'])),slots:d.slots.map(t=>fields(t,['id','label','start','end','isBreak','teacherOnly'])),days:clone(d.days),sched:Object.fromEntries(Object.entries(d.sched).map(([k,v])=>[k,fields(v,['subject','teacher','teacher2','teacher3','learnRoom','locked'])])),substitute:{},announcements:[],customDepts:clone(d.customDepts),subjectColorSchemeVersion:d.subjectColorSchemeVersion||2,systemMode:'DAILY'};
- if(d.teacherSched)out.teacherSched=clone(d.teacherSched);return out;
+ if(d.teacherSched)out.teacherSched=clone(d.teacherSched);if(d.exchanges){const side=s=>({...fields(s,['date','teacherId','slotId','roomId','teacherName','className','period','time']),lesson:fields(s.lesson,['subject','teacher','teacher2','teacher3','learnRoom','locked'])});out.exchanges=Object.fromEntries(Object.entries(d.exchanges).map(([id,x])=>[id,{...fields(x,['id','active','year','term']),a:side(x.a),b:side(x.b)}]));}return out;
 }
 const hash=v=>crypto.createHash('sha256').update(typeof v==='string'?v:JSON.stringify(v)).digest('hex');
 function parts(data){const text=JSON.stringify(data),chars=Array.from(text),out=[];let current='',bytes=0;for(const char of chars){const n=Buffer.byteLength(char);if(bytes+n>150000){out.push(current);current='';bytes=0;}current+=char;bytes+=n;}if(current||!out.length)out.push(current);return {parts:out,hash:hash(text),bytes:Buffer.byteLength(text)};}

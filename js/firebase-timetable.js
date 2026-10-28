@@ -35,3 +35,5 @@ function lockReadOnly(){
  });
 }
 new MutationObserver(lockReadOnly).observe(document.body,{childList:true,subtree:true});
+
+export async function exchange(input){if(!academic(currentProfile))throw Error('บัญชีนี้ไม่มีสิทธิ์ฝ่ายวิชาการ');const result=await identity.call('timetableApi',input);if(['exchangeConfirm','exchangeCancel','exchangeSetTerm'].includes(input.method)){revision=result.revision;privateCache=null;publicCache=null;}return result;}

@@ -5,6 +5,7 @@
  const timeLabel=v=>{const n=minutes(v);return n===null?String(v||''):String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0');};
  const labels={normal:'สอนตามตาราง',absent:'คาบเดิมที่จัดแทนแล้ว',pending:'ยังขาดครูสอนแทน',substitute:'สอนแทน',swap:'แลกคาบ',combined:'ควบชั้น',break:'พัก'};
  function model(db,date,day={}){
+  if(typeof globalThis.PeriodExchange!=='undefined')db=globalThis.PeriodExchange.effective(db,date);else if(typeof module==='object'&&module.exports)db=require('./exchange-core').effective(db,date);
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date+'T00:00:00Z'))||new Date(date+'T00:00:00Z').toISOString().slice(0,10)!==date)throw Error('กรุณาเลือกวันที่ที่ถูกต้อง');
   const weekday=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'][new Date(date+'T12:00:00+07:00').getUTCDay()];
   const slots=(db.slots||[]).map((s,i)=>({...s,order:i})).sort((a,b)=>minutes(a.start)!==null&&minutes(b.start)!==null?minutes(a.start)-minutes(b.start):a.order-b.order);
@@ -12,7 +13,7 @@
   const warnings=[],sources=[],seen=new Set();
   for(const row of rows)for(const slot of slots){if(slot.isBreak)continue;
    const cells=row.cells[String(slot.id)];
-   for(const {cv,room} of T.roomLessons(db,row.name,slot.id,weekday))cells.push({subject:cv.subject,rooms:[room.label],roomId:String(room.id),location:T.learnRoom(db,cv,room.id),kind:'normal'});
+   for(const {cv,room} of T.roomLessons(db,row.name,slot.id,weekday))cells.push({subject:cv.subject,rooms:[room.label],roomId:String(room.id),location:T.learnRoom(db,cv,room.id),kind:cv.exchangeId?'swap':'normal'});
    for(const a of T.activities(db,row.name,slot.id,weekday))cells.push({subject:a.subject,rooms:[],roomId:'',location:'กิจกรรมครู',kind:'normal',teacherOnly:true});
   }
   for(const absent of day.absentList||[]){

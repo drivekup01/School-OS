@@ -18,7 +18,8 @@
     (DB.rooms||[]).forEach(function(room){
       (DB.slots||[]).forEach(function(slot){
         if(slot.isBreak) return;
-        var cv=DB.sched[room.id+'_'+slot.id+'_'+schedDay];
+        var table=window.PeriodExchange?PeriodExchange.effective(DB,dateStr):DB;
+        var cv=table.sched[room.id+'_'+slot.id+'_'+schedDay];
         if(!cv||!cv.subject) return;
         if(cv.teacher!==name&&cv.teacher2!==name&&cv.teacher3!==name) return;
         periods.push({slotId:slot.id,day:schedDay,roomId:room.id,subject:cv.subject||'',subTeacher:'',subNote:''});

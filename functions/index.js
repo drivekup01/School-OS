@@ -22,6 +22,7 @@ exports.timetableApi=onCall(options,request=>handle(async()=>{
  const input=request.data||{},method=input.method,p=await identity.resolve(request);
  const caps=require('./school-roles').capabilities(p);
  if(['bootstrap','leaveHistory'].includes(method)){if(!(caps?caps.readAll:p.active&&p.timetableRole==='academic'))M.error('ไม่มีสิทธิ์ดูข้อมูลตารางสอน','permission-denied');}else M.assertAcademic(p);
+ if(typeof method==='string'&&method.startsWith('exchange'))return require('./exchanges').service(db,identity,repo,stamp).handle(request,input);
  if(method==='bootstrap')return {ok:true,...await repo.read()};
  if(method==='migrationPreview'){await identity.requireAdmin(request);const s=await source();return {ok:true,counts:s.counts,sourceHash:s.sourceHash};}
  if(method==='migrateLegacy'){
@@ -39,6 +40,7 @@ exports.timetableApi=onCall(options,request=>handle(async()=>{
  else if(method==='saveAnnouncement'){const a=typeof input.announcement==='string'?JSON.parse(input.announcement):input.announcement||input;const id=String(a.id||'');if(!id||id.length>100||typeof a.title!=='string'||!a.title.trim()||a.title.length>500||typeof a.body!=='string'||a.body.length>10000)M.error('ประกาศไม่ถูกต้อง');const old=data.announcements.find(x=>x.id===id),next={id,title:a.title,body:a.body,type:String(a.type||'ทั่วไป').slice(0,80),date:String(a.date||'').slice(0,30),createdAt:old?.createdAt||Date.now(),updatedAt:Date.now()};data.announcements=data.announcements.filter(x=>x.id!==id).concat(next);}
  else if(method==='deleteAnnouncement'){data.announcements=data.announcements.filter(x=>x.id!==String(input.id));}
  else M.error('ไม่รองรับคำสั่งตารางสอน');
+ require('./exchanges').preserve(data,current.data);require('./exchanges').compatible(data);
  if(caps&&!caps.admin&&JSON.stringify(data.school)!==JSON.stringify(current.data.school))M.error('การแก้ไขส่วนเว็บไซต์ใช้ได้เฉพาะผู้ดูแลระบบ','permission-denied');
  const result=await repo.save({data,expectedRevision:input.expectedRevision,requestId:input.requestId,uid:p.uid,method});
  if(['saveSubstitute','saveDatabase'].includes(method)){

@@ -2,6 +2,7 @@
 <html lang="th">
 <head>
 <link rel="stylesheet" href="css/substitute-summary.css?v=20261028-compact1">
+<link rel="stylesheet" href="css/exchange.css?v=20261028-exchange1">
 <link rel="stylesheet" href="css/daily-teacher-report.css?v=20261028-cleargrid2">
 <script src="js/teacher-export.js?v=20261027-roles1"></script>
 <script src="js/ui-state.js?v=20261027-roles1"></script>
@@ -1834,6 +1835,7 @@ body.support-mode .logout-top-btn{
     <div class="sb-label">รายงานและส่งออก</div>
     <div class="sb-item" onclick="nav('export')" id="nav-export"><span class="icon">✨</span>ดูตัวอย่าง & ส่งออก</div>
     <div class="sb-item" onclick="nav('substitute')" id="nav-substitute"><span class="icon">🔄</span>ตารางสอนแทนรายวัน</div>
+    <div class="sb-item" onclick="nav('exchange')" id="nav-exchange"><span class="icon">⇄</span>แลกคาบ</div>
     <div class="sb-item" onclick="nav('leave-test')" id="nav-leave-test"><span class="icon">📋</span>ประวัติการลาของครู</div>
     <div class="sb-item" onclick="nav('announcements')" id="nav-announcements"><span class="icon">📢</span>ประกาศ</div>
   </div>
@@ -2429,6 +2431,7 @@ body.support-mode .logout-top-btn{
   </div>
 </div>
 
+<div class="page" id="page-exchange"><div class="ph"><div class="ph-left"><h1>⇄ แลกคาบ</h1><p>เลือกคาบต้นทางและคาบรับคืนของนักเรียนห้องเดียวกัน · สลับครูและวิชาเฉพาะวันที่เลือก</p></div></div><div id="exchangeWorkspace"></div></div>
 <!-- ═══════════ PAGE: SUBSTITUTE ═══════════ -->
 <div class="page" id="page-substitute">
   <div class="ph">
@@ -26281,6 +26284,7 @@ function nav(p){
   else if(p==='workload') renderWorkload();
   else if(p==='export') renderExportPage();
   else if(p==='storage') renderStoragePage();
+  else if(p==='exchange'){ renderExchangePage(); }
   else if(p==='substitute'){ if(currentSubDate){ renderSubContent(); } else { setSubDateToday(); } }
   else if(p==='leave-test') renderLeaveTest();
   else if(p==='announcements') renderAnnouncements();
@@ -29121,6 +29125,7 @@ function renderAllUI(){
   else if(p==='teacher-view') renderTeacherViewPage();
   else if(p==='workload') renderWorkload();
   else if(p==='export') renderExportPage();
+  else if(p==='exchange'){ renderExchangePage(); }
   else if(p==='substitute'){ if(currentSubDate){ renderSubContent(); } else { setSubDateToday(); } }
   else if(p==='announcements') renderAnnouncements();
   else if(p==='sub-history') renderSubHistoryPage();
@@ -30548,7 +30553,8 @@ function subV2FindTeachingCells(teacher, slot, schedDay){
   if(!teacher || !slot || slot.isBreak)return [];
   var tName=subV2TeacherName(teacher),out=[];
   (DB.rooms||[]).forEach(function(room){
-    var cv=DB.sched[room.id+'_'+slot.id+'_'+schedDay];
+    var table=window.PeriodExchange?PeriodExchange.effective(DB,currentSubDate):DB;
+    var cv=table.sched[room.id+'_'+slot.id+'_'+schedDay];
     if(cv&&cv.subject&&(cv.teacher===tName||cv.teacher2===tName||cv.teacher3===tName))out.push({room:room,cv:cv});
   });
   TeacherSchedule.activities(DB,tName,slot.id,schedDay).forEach(function(a){out.push({room:{id:'',label:'กิจกรรมครู'},cv:{subject:a.subject,teacher:tName},teacherOnly:true});});
@@ -30669,6 +30675,7 @@ async function renderSubContent(){
       }else if(absent && !teach){
         body='<div class="sub-v2-subj">ว่าง</div><div class="sub-v2-room">(ลา)</div>';
       }
+      if(window.PeriodExchange&&PeriodExchange.sides(DB,dateStr).some(function(x){return x.other.teacherId===t.id&&String(x.side.slotId)===String(slot.id);})){cls='exchange-blue';body+='<div class="sub-v2-group-status">แลกคาบ · ดูรายละเอียดในเมนูแลกคาบ</div>';}
       var sel=(String(subV2SelectedTeacherId)===String(t.id)&&String(subV2SelectedSlotId)===String(slot.id))?' selected':'';
       h+='<td><div class="sub-v2-cell '+cls+sel+'" onclick="selectSubCell(\''+
         String(t.id).replace(/'/g,"\\'")+'\',\''+String(slot.id).replace(/'/g,"\\'")+'\')">'+body+'</div></td>';
@@ -31029,7 +31036,7 @@ if(_subV2OldSetSubTeacher){
 })();
 </script>
 <script src="config.js?v=20261027-roles1"></script>
-<script>window.schoolFirebaseReady=window.SCHOOL_OS_STORAGE==='firebase'?import('./js/firebase-timetable.js?v=20261027-leavesync1'):null;</script>
+<script>window.schoolFirebaseReady=window.SCHOOL_OS_STORAGE==='firebase'?import('./js/firebase-timetable.js?v=20261028-exchange1'):null;</script>
 <script id="school-os-online-adapter">
 (function(){
   var SAFE_LOGO_URL='https://drivekup01.github.io/School-OS/assets/school-logo.svg';
@@ -31108,7 +31115,7 @@ if(_subV2OldSetSubTeacher){
   }
   function mergeData(part){
     part=part||{};
-    ['school','teachers','subjects','rooms','slots','days','customDepts','subjectColorSchemeVersion','systemMode','sched','teacherSched','substitute'].forEach(function(k){
+    ['school','teachers','subjects','rooms','slots','days','customDepts','subjectColorSchemeVersion','systemMode','sched','teacherSched','exchanges','exchangeTerm','substitute'].forEach(function(k){
       if(part[k]!==undefined) DB[k]=part[k];
     });
   }
@@ -31502,8 +31509,10 @@ async function renderLeaveTest(){
 }
 </script>
 <script src="leave-timetable-bridge.js?v=20261027-roles1"></script>
-<script src="substitute-leave-sync.js?v=20261028-cleargrid2"></script>
-<script src="js/daily-teacher-report.js?v=20261028-cleargrid2"></script>
+<script src="substitute-leave-sync.js?v=20261028-exchange1"></script>
+<script src="js/exchange-core.js?v=20261028-exchange1"></script>
+<script src="js/exchange-ui.js?v=20261028-exchange1"></script>
+<script src="js/daily-teacher-report.js?v=20261028-exchange1"></script>
 <script src="js/daily-teacher-report-ui.js?v=20261028-cleargrid2"></script>
 <script src="leave-history.js?v=20261027-roles1"></script>
 </body>
