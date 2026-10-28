@@ -19,3 +19,13 @@ test('exchange and combined labels follow explicit stored work types; HTML escap
  assert.equal(m.rows[1].cells['1'][0].kind,'swap');assert.equal(m.rows[2].cells['2'][0].kind,'combined');const html=R.html(m);assert.match(html,/&lt;script&gt;/);assert.doesNotMatch(html,/<script>/);assert.match(html,/&lt;bad&gt;/);assert.match(html,/2569/);assert.match(html,/ยังขาดครูสอนแทน/);
 });
 test('weekend is visibly unscheduled and impossible dates rejected',()=>{assert.equal(R.model(fixture(),'2026-10-31',{}).scheduled,false);assert.throws(()=>R.model(fixture(),'2026-02-30',{}));});
+
+test('single-digit hours sort chronologically and equivalent simultaneous class lessons display once',()=>{
+ const db=fixture();db.slots=[{id:3,label:'3',start:'10:10',end:'11:00'},{id:1,label:'1',start:'8:30',end:'9:20'},{id:2,label:'2',start:'9:20',end:'10:10'}];
+ const m=R.model(db,'2026-10-28',{});assert.deepEqual(m.slots.map(s=>s.id),[1,2,3]);assert.match(R.html(m),/08:30–09:20/);
+ const common={subject:'English',location:'หอประชุม',kind:'substitute',source:'A',rooms:['ม.5/1']};const cells=[common,{...common,rooms:['ม.5/2']},{...common,rooms:['ม.5/3']}],before=JSON.stringify(cells),display=R.displayLessons(cells);
+ assert.equal(display.length,1);assert.equal(R.roomLabel(display[0].rooms),'ม.5/1–3');assert.equal(JSON.stringify(cells),before);
+ assert.equal(R.displayLessons([...cells,{...common,location:'Lab',rooms:['ม.5/4']}]).length,2);
+ assert.equal(R.displayLessons([...cells,{...common,note:'Different instructions',rooms:['ม.5/4']}]).length,2);
+ assert.equal(R.displayLessons([...cells,{...common,source:'B',rooms:['ม.5/4']}]).length,2);
+});
