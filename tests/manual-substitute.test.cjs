@@ -78,3 +78,16 @@ test('cancelling a leave-based replacement keeps the absence and room work detai
  const {ctx}=boot();ctx.DB.substitute[ctx.currentSubDate]={absentList:[{teacherId:'t1',type:'ลาป่วย',periods:[{slotId:1,roomId:'r1',subTeacher:'ครูสอง ทดสอบ',workType:'ใบงาน',subNote:'แจกเอกสาร'},{slotId:1,roomId:'r2',subTeacher:'ครูสอง ทดสอบ',messageStatus:'ส่งแล้ว'}]}]};
  ctx.subV2ClearAssigned(0,0);const a=ctx.getSubDay(ctx.currentSubDate).absentList[0];assert.equal(a.type,'ลาป่วย');assert.equal(a.periods.length,2);assert.ok(a.periods.every(p=>!p.subTeacher));assert.equal(a.periods[0].subNote,'แจกเอกสาร');assert.equal(a.periods[1].messageStatus,'ส่งแล้ว');
 });
+
+test('onscreen summary sorts periods numerically and keeps edit controls bound to original records',()=>{
+ const {ctx,nodes}=boot();
+ ctx.DB.slots=[{id:6,label:'คาบที่ 6',start:'13:40',end:'14:30'},{id:7,label:'คาบที่ 7',start:'14:30',end:'15:20'},{id:3,label:'คาบที่ 3',start:'10:10',end:'11:00'},{id:1,label:'คาบที่ 1',start:'8:30',end:'9:20'},{id:10,label:'คาบที่ 10',start:'17:00',end:'17:50'}];
+ const periods=[6,7,3,1,10].map(slotId=>({slotId,roomId:'r1',subject:'ไทย',subTeacher:'ครูสอง ทดสอบ',workType:'ใบงาน',messageStatus:'ส่งแล้ว'}));
+ ctx.DB.substitute[ctx.currentSubDate]={absentList:[{teacherId:'t1',type:'ลากิจ',periods}]};
+ ctx.renderSubAssignedList();const output=nodes.subAssignedList.innerHTML;
+ const rows=[...output.matchAll(/<tr class="done">([\s\S]*?)<\/tr>/g)].map(m=>m[1]);
+ assert.deepEqual(rows.map(r=>Number(r.match(/class="sub-summary-period">คาบที่ (\d+)/)[1])),[1,3,6,7,10]);
+ for(const [position,index] of [3,2,0,1,4].entries())for(const action of ['setSubWorkType','setSubMessageStatus','subV2EditAssigned','subV2ClearAssigned'])assert.ok(rows[position].includes(action+'(0,'+index));
+ assert.deepEqual(periods.map(p=>p.slotId),[6,7,3,1,10]);
+ ctx.setSubWorkType(0,3,'สอนแทน');assert.equal(periods[3].workType,'สอนแทน');assert.equal(periods[0].workType,'ใบงาน');
+});

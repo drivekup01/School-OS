@@ -30886,6 +30886,15 @@ if(_subV2OldSetSubTeacher){
     a.periods[pi].messageStatus=val; markDirty(); renderSubAssignedList();
   };
 
+  function subSummaryPeriodRows(periods){
+    return periods.map(function(p,index){
+      var slot=(DB.slots||[]).find(function(s){return String(s.id)===String(p.slotId);});
+      var number=String(slot?slot.label:p.slotId).match(/\d+/);
+      var clock=String(slot&&slot.start||'').match(/^(\d{1,2})[:.](\d{2})$/);
+      return {p:p,index:index,number:number?Number(number[0]):Infinity,time:clock?Number(clock[1])*60+Number(clock[2]):Infinity};
+    }).sort(function(a,b){return (a.number===b.number?0:a.number-b.number)||(a.time===b.time?0:a.time-b.time)||a.index-b.index;});
+  }
+
   window.renderSubAssignedList=function(){
     var wrap=document.getElementById('subAssignedList');
     if(!wrap) return;
@@ -30912,7 +30921,8 @@ if(_subV2OldSetSubTeacher){
         h+='<div class="sub-group-table-wrap"><table class="sub-group-table"><caption class="sub-summary-sr">คาบสอนแทนของ '+esc(name)+'</caption><thead><tr>'+
           '<th scope="col">คาบ / เวลา</th><th scope="col">วิชา / ชั้นเรียน</th><th scope="col">ครูสอนแทน</th><th scope="col">รูปแบบงาน</th><th scope="col">บันทึกข้อความ</th><th scope="col">สถานะ</th><th scope="col"><span class="sub-summary-sr">จัดการ</span></th>'+
           '</tr></thead><tbody>';
-        periods.forEach(function(p,pi){
+        subSummaryPeriodRows(periods).forEach(function(entry){
+          var p=entry.p,pi=entry.index;
           ensurePeriodMeta(p);
           var slot=(DB.slots||[]).find(function(s){return String(s.id)===String(p.slotId);});
           var room=(DB.rooms||[]).find(function(r){return String(r.id)===String(p.roomId);});
