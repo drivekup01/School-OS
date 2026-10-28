@@ -35,12 +35,14 @@
  .sub-report-table td{padding:15px 13px;border:1px solid #d9d9d9;vertical-align:middle;overflow-wrap:anywhere}.sub-report-table tbody tr:nth-child(even){background:#f1f5fa}
  .sub-report-table th:nth-child(1){width:11%}.sub-report-table th:nth-child(2){width:20%}.sub-report-table th:nth-child(3){width:21%}.sub-report-table th:nth-child(4){width:21%}.sub-report-table th:nth-child(5){width:18%}.sub-report-table th:nth-child(6){width:9%}
  .sub-report-table strong{font-weight:700;display:block}.sub-report-table small{font-size:13px;display:block;color:#637791;line-height:1.65;margin-top:4px}.sub-report-table .report-assigned{color:#247557;font-weight:700}.sub-report-table .report-pending{color:#a16b1c;font-weight:700}.sub-report-period{border-top:2px solid #bbcce0!important}
+ .sub-report-group{margin:0 0 22px}.sub-report-group h2{margin:0;padding:11px 14px;background:#e7eff9;color:#193f6b;font-size:19px;line-height:1.5}.sub-report-group.pending h2{background:#fff0dc;color:#8b5715}.sub-report-group h2 small{font-size:13px;font-weight:400;margin-left:12px}
  .sub-report-empty{padding:30px;text-align:center;color:#6b7d94}
  `;
  function html(m,logo){
-  const ordered=m.groups.flatMap(group=>group.rows);
-  const rows=ordered.map((r,i)=>{const values=cells(r),newTeacher=i===0||ordered[i-1].replacement!==r.replacement;return '<tr'+(newTeacher?' class="sub-report-period"':'')+'>'+values.map((lines,col)=>'<td'+(col===5?' class="'+(r.replacement?'report-assigned':'report-pending')+'"':'')+'>'+lines.map((line,k)=>(k===0?'<strong>':'<small>')+esc(line)+(k===0?'</strong>':'</small>')).join('')+'</td>').join('')+'</tr>';}).join('');
-  const tables=rows?'<table class="sub-report-table"><thead><tr>'+columns.map(c=>'<th>'+esc(c)+'</th>').join('')+'</tr></thead><tbody>'+rows+'</tbody></table>':'';
+  const tables=m.groups.map(group=>{
+   const rows=group.rows.map((r,i)=>{const values=cells(r),newPeriod=i===0||group.rows[i-1].slotId!==r.slotId;return '<tr'+(newPeriod?' class="sub-report-period"':'')+'>'+values.map((lines,col)=>'<td'+(col===5?' class="'+(r.replacement?'report-assigned':'report-pending')+'"':'')+'>'+lines.map((line,k)=>(k===0?'<strong>':'<small>')+esc(line)+(k===0?'</strong>':'</small>')).join('')+'</td>').join('')+'</tr>';}).join('');
+   return '<section class="sub-report-group'+(group.pending?' pending':'')+'"><h2>'+esc(group.pending?'คาบที่ยังไม่มีครูสอนแทน':'ครูสอนแทน: '+group.teacher)+'<small>'+group.periods+' คาบ · '+group.rows.length+' รายการ</small></h2><table class="sub-report-table"><thead><tr>'+columns.map(c=>'<th>'+esc(c)+'</th>').join('')+'</tr></thead><tbody>'+rows+'</tbody></table></section>';
+  }).join('');
   const s=m.school;
   return '<style>'+css+'</style><article class="sub-report"><header class="sub-report-head"><img class="sub-report-logo" src="'+esc(logo)+'" alt="ตราโรงเรียน"><h1>ตารางสอนแทนประจำวัน</h1><div class="sub-report-school">'+esc(s.name||'โรงเรียน')+'</div><div class="sub-report-date">'+esc(m.dateLabel)+'</div><div class="sub-report-meta">ปีการศึกษา '+esc(s.year||'–')+' · ภาคเรียนที่ '+esc(s.semester||'–')+'</div></header><div class="sub-report-summary">'+esc(summary(m))+'</div>'+(tables||'<div class="sub-report-empty">ไม่มีรายการสอนแทนในวันที่เลือก</div>')+'</article>';
  }
@@ -54,9 +56,11 @@
   children.push(para('ตารางสอนแทนประจำวัน',{style:'Title',alignment:AlignmentType.CENTER,spacing:{after:70}},{size:36,bold:true,color:'000000'}),para(m.school.name||'โรงเรียน',{alignment:AlignmentType.CENTER},{size:25,color:'000000'}),para(m.dateLabel,{alignment:AlignmentType.CENTER},{size:23,color:'405A78'}),para('ปีการศึกษา '+(m.school.year||'–')+' · ภาคเรียนที่ '+(m.school.semester||'–'),{alignment:AlignmentType.CENTER,spacing:{after:190}},{size:18,color:'718197'}),para(summary(m),{spacing:{after:150}},{size:20,color:'405A78'}));
   const border={style:BorderStyle.SINGLE,size:4,color:'D9D9D9'},borders={top:border,bottom:border,left:border,right:border};
   const cell=(lines,index,fill,header=false,row)=>new TableCell({width:{size:widths[index],type:WidthType.DXA},borders,margins:{top:145,bottom:145,left:125,right:125},verticalAlign:VerticalAlign.CENTER,shading:{fill,type:ShadingType.CLEAR},children:lines.map((line,i)=>para(line,{spacing:{after:i===lines.length-1?0:60,line:290}},{bold:header||i===0,size:header?20:i===0?20:18,color:header?'FFFFFF':index===5?(row?.replacement?'247557':'A16B1C'):i===0?'25364D':'637791'}))});
-  const ordered=m.groups.flatMap(group=>group.rows);
-  const rows=[new TableRow({tableHeader:true,cantSplit:true,children:columns.map((c,i)=>cell([c],i,'193F6B',true))}),...ordered.map((r,i)=>new TableRow({cantSplit:true,children:cells(r).map((lines,col)=>cell(lines,col,i%2?'F1F5FA':'FFFFFF',false,r))}))];
+  for(const group of m.groups){
+  children.push(para(group.pending?'คาบที่ยังไม่มีครูสอนแทน':'ครูสอนแทน: '+group.teacher,{keepNext:true,spacing:{before:180,after:100}},{size:25,bold:true,color:group.pending?'8B5715':'193F6B'}));
+  const rows=[new TableRow({tableHeader:true,cantSplit:true,children:columns.map((c,i)=>cell([c],i,'193F6B',true))}),...group.rows.map((r,i)=>new TableRow({cantSplit:true,children:cells(r).map((lines,col)=>cell(lines,col,i%2?'F1F5FA':'FFFFFF',false,r))}))];
   children.push(new Table({width:{size:width,type:WidthType.DXA},columnWidths:widths,layout:TableLayoutType.FIXED,rows}));
+  }
   return new Document({styles:{default:{document:{run:{font,size:20,color:'25364D'},paragraph:{spacing:{line:290}}}},paragraphStyles:[{id:'Title',name:'Title',basedOn:'Normal',run:{font,size:36,bold:true,color:'000000'}}]},sections:[{properties:{page:{size:{width:11906,height:16838,orientation:PageOrientation.LANDSCAPE},margin:{top:650,right:720,bottom:650,left:720}}},children}]});
  }
  return {model,cells,summary,html,word,columns};
