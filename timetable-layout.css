@@ -563,7 +563,7 @@ textarea{resize:vertical;min-height:64px}
 .builder-table-titlebar .mini-icon{width:28px;height:28px;display:flex;align-items:center;justify-content:center}
 #page-builder .card.builder-grid-card{padding:0!important;overflow:auto}
 #page-builder .sched-tbl{border-radius:10px;overflow:hidden}
-#page-builder .sched-tbl th{background:#103B70!important}
+
 #page-builder .sched-tbl th[style*="E65100"],#page-builder .sched-tbl th[style*="#E65100"]{background:#E2AD35!important;color:#17345F!important}
 #page-builder .cell-subj-sel,#page-builder .cell-tchr-sel,#page-builder .cell-room-inp{border-radius:6px!important}
 @media(max-width:1100px){.school-topbar:before{width:360px}
