@@ -1,1 +1,8 @@
-.daily-report-dialog{width:96vw;max-width:none;max-height:94vh;padding:18px;border:1px solid #cbd6e5;border-radius:14px;color:#203e62;background:#f7f9fc}.daily-report-dialog::backdrop{background:#12243c99}.daily-report-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.daily-report-tools h2{font-size:18px;margin:0 auto 0 0}.daily-report-tools label{display:flex;align-items:center;gap:7px}.daily-report-tools input{width:165px;min-height:40px;font:inherit}.daily-report-preview{overflow:auto;max-height:72vh;background:white;border:1px solid #dce4ef}.daily-report-dialog [data-status]{font-size:13px;line-height:1.6}
+/* Structural and semantic rules. Screen theme: timetable-ui.css. */
+.daily-report-dialog{width:96vw;max-width:none;max-height:94vh;padding:18px}
+.daily-report-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.daily-report-tools h2{margin:0 auto 0 0}
+.daily-report-tools label{display:flex;align-items:center;gap:7px}
+.daily-report-tools input{width:165px;min-height:40px}
+.daily-report-preview{overflow:auto;max-height:72vh}
+.daily-report-dialog [data-status]{line-height:1.6}
