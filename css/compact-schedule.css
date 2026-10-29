@@ -1,0 +1,17 @@
+/* Dense editing grids are intentionally smaller than ordinary form fields. Print is unchanged. */
+@media screen {
+  body #page-builder .sched-tbl :is(select,input),body #page-teacher-builder .teacher-builder-table :is(select,input),body #page-auto-schedule .auto-result-tbl :is(select,input){min-height:28px!important;height:28px!important;padding:3px 6px!important;border-radius:5px!important;font-size:12px!important;line-height:1.3!important;margin-top:0!important;margin-bottom:2px!important}
+  #page-builder .sched-tbl td,#page-teacher-builder .teacher-builder-table td{padding:2px!important;min-width:96px}
+  #page-builder .cell-inner{min-height:0;padding:2px 3px;border-radius:6px}
+  #page-builder .sched-tbl th,#page-teacher-builder .teacher-builder-table th{padding:7px 4px;font-size:13px}
+  #page-builder .sched-tbl td.td-period{padding:4px!important;min-width:60px;width:60px;font-size:13px}
+  #page-builder .sched-tbl th.th-time{min-width:60px!important;width:60px!important}
+  #page-builder .sched-tbl :is(.p-num,.tv-subj){font-size:13px!important}
+  #page-builder .sched-tbl .p-time{font-size:11px!important}
+  #page-teacher-builder .teacher-builder-cell{height:auto!important;min-height:0;padding:3px!important}
+  #page-teacher-builder .teacher-builder-linked{padding:5px;margin-bottom:4px;font-size:12px}
+  #page-teacher-builder .teacher-builder-note{margin-top:3px;font-size:11px}
+  #page-auto-schedule .auto-result-cell{min-height:0;padding:4px 6px;gap:2px}
+}
+@media screen and (max-width:760px){body #page-builder .sched-tbl :is(select,input),body #page-teacher-builder .teacher-builder-table :is(select,input),body #page-auto-schedule .auto-result-tbl :is(select,input){min-height:32px!important;height:32px!important;font-size:13px!important}}
+@media screen{#page-builder .sched-tbl th:not(.th-time):not([style*="E65100"]){min-width:104px!important}#page-builder .sched-tbl .builder-break-cell,#page-builder .sched-tbl th[style*="E65100"]{min-width:48px!important;width:48px!important}}
