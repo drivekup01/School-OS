@@ -17,10 +17,10 @@
   #page-auto-schedule .auto-subj-table tbody tr:hover{background:#fbf9fd}
   #page-auto-schedule .auto-subj-table input[type=number]{width:68px;min-height:36px;height:36px;padding:4px 6px;text-align:center;font-size:14px!important;background:#fff;border:1px solid #d9cfdf;border-radius:8px}
   #page-auto-schedule .auto-subj-table td strong{font-size:14px;font-weight:600}
-  #page-auto-schedule .auto-subj-table td small{font-size:12px;color:var(--muted)}
+  #page-auto-schedule .auto-subj-table td small{font-size:13px;color:var(--muted)}
   #page-auto-schedule .auto-total-bar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:12px;padding:12px;border-radius:10px;background:#f0e6f8;font-size:13px;color:#594269}
   #page-auto-schedule .auto-total-num{font-size:20px;font-weight:700;color:#6d289b;font-variant-numeric:tabular-nums}
-  #page-auto-schedule #autoSlotInfo{font-size:12px!important}
+  #page-auto-schedule #autoSlotInfo{font-size:13px!important}
   #page-auto-schedule .auto-room-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
   #page-auto-schedule .auto-room-pill{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:7px 12px;border:1px solid #dcd0e5;border-radius:9px;background:#fff;color:#594269;font-size:14px;font-weight:500;cursor:pointer;user-select:none}
   #page-auto-schedule .auto-room-pill:hover{border-color:#b486d1;background:#faf6fd}
@@ -32,10 +32,10 @@
   #page-auto-schedule .auto-mode-card.selected::after{content:'✓';position:absolute;right:8px;top:5px;color:#8236b5;font-size:14px;font-weight:700}
   #page-auto-schedule .mode-icon{font-size:24px;line-height:1.3;margin-bottom:8px}
   #page-auto-schedule .mode-title{font-size:14px;font-weight:600;margin-bottom:6px}
-  #page-auto-schedule .mode-desc{font-size:12px;line-height:1.65;color:var(--muted)}
+  #page-auto-schedule .mode-desc{font-size:13px;line-height:1.65;color:var(--muted)}
   #page-auto-schedule .auto-config-card label{min-height:36px;font-size:14px!important;color:var(--text);line-height:1.6}
   #page-auto-schedule .auto-config-card input[type=checkbox]{width:18px!important;height:18px!important;accent-color:#8236b5}
-  #page-auto-schedule .auto-generate-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:48px;padding:12px 20px;border:1px solid #8236b5;border-radius:12px;background:#8236b5;color:#fff;font:600 16px/1.5 'IBM Plex Sans Thai',Tahoma,sans-serif;box-shadow:0 4px 14px #8236b51a;cursor:pointer}
+  #page-auto-schedule .auto-generate-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:48px;padding:12px 20px;border:1px solid #8236b5;border-radius:12px;background:#8236b5;color:#fff;font:600 16px/1.5 'IBM Plex Sans Thai','IBM Plex Sans Thai',Tahoma,sans-serif;box-shadow:0 4px 14px #8236b51a;cursor:pointer}
   #page-auto-schedule .auto-generate-btn:hover{background:#6d289b;border-color:#6d289b;transform:none}
   #page-auto-schedule .auto-generate-btn:disabled{opacity:.5;cursor:not-allowed}
   #page-auto-schedule .auto-result-info{border:1px solid var(--border);border-radius:10px;background:#f0e6f8;color:#594269;padding:12px 16px;font-size:14px}
@@ -65,7 +65,7 @@
   #page-auto-schedule .auto-config-title{font-size:16px}
   #page-auto-schedule .auto-step-card{padding:12px}
   #page-auto-schedule .auto-step-title{font-size:14px}
-  #page-auto-schedule .auto-step-sub{font-size:12px}
+  #page-auto-schedule .auto-step-sub{font-size:13px}
   #page-auto-schedule .auto-mode-cards{grid-template-columns:1fr}
   #page-auto-schedule .auto-mode-card{text-align:left;padding:12px 16px}
   #page-auto-schedule .auto-mode-card.selected{padding:11px 15px}

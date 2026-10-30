@@ -1,6 +1,6 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const html=fs.readFileSync(__dirname+'/../index.html','utf8');
-const scripts=['substitute-v2-script','substitute-production-share-script'].map(id=>html.split('<script id="'+id+'">')[1].split('</script>')[0]);
+const scripts=['substitute-v2-script','substitute-production-share-script'].map(id=>fs.readFileSync(__dirname+'/../'+html.match(new RegExp('<script[^>]*id="'+id+'"[^>]*src="([^"]+)"'))[1].split('?')[0],'utf8'));
 function boot(){
  const nodes={},messages=[];
  const db={school:{name:'โรงเรียนทดสอบ'},teachers:[{id:'t1',first:'ครูหนึ่ง',last:'ทดสอบ'},{id:'t2',first:'ครูสอง',last:'ทดสอบ'},{id:'t3',first:'ครูสาม',last:'ทดสอบ'}],rooms:[{id:'r1',label:'ม.1/1'},{id:'r2',label:'ม.1/2'}],slots:[{id:1,label:'คาบที่ 1',start:'08:30',end:'09:20'},{id:2,label:'คาบที่ 2',start:'09:20',end:'10:10'},{id:3,isBreak:true}],sched:{r1_1_พุธ:{subject:'ไทย',teacher:'ครูหนึ่ง ทดสอบ'},r1_2_พุธ:{subject:'ไทย',teacher:'ครูหนึ่ง ทดสอบ'}},substitute:{}};

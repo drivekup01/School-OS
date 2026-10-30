@@ -1,0 +1,1 @@
+window.schoolFirebaseResetView=function(){if(window.SCHOOL_ONLINE)SCHOOL_ONLINE.reset();DB=emptyDB();onlineSaveGeneration++;clearTimeout(saveTimer);onlineSavePending=false;if(typeof renderAllUI==='function')renderAllUI();if(typeof nav==='function')nav('dashboard');};

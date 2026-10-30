@@ -1,0 +1,1 @@
+if(window.SCHOOL_OS_STORAGE==='firebase'){var paintOriginal=window.applyAccessUI;window.applyAccessUI=function(){var r=paintOriginal.apply(this,arguments);if(window.schoolFirebasePaintIdentity)window.schoolFirebasePaintIdentity();return r;};}
