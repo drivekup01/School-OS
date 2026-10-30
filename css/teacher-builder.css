@@ -8,10 +8,10 @@ body.admin-mode #nav-teacher-builder{display:flex}
 .teacher-builder-table th{padding:8px 5px;min-width:118px}
 .teacher-builder-table th:first-child,.teacher-builder-table .td-period{width:76px;min-width:76px}
 .teacher-builder-cell{vertical-align:top;padding:6px!important;height:100px}
-.teacher-builder-cell select{font:11px Tahoma,sans-serif;width:100%;min-height:36px}
+.teacher-builder-cell select{font:11px 'IBM Plex Sans Thai',Tahoma,sans-serif;width:100%;min-height:36px}
 .teacher-builder-note,.teacher-builder-linked small{display:block;margin-top:6px}
 .teacher-builder-linked{padding:7px;margin-bottom:6px}
 .teacher-builder-linked .btn{margin-top:6px}
 .teacher-builder-break{background:#FFF8E1!important;color:#E65100!important;text-align:center!important;vertical-align:middle!important}
 .teacher-builder-table th.teacher-builder-break,.teacher-builder-table td.teacher-builder-break{width:66px!important;min-width:66px!important;max-width:66px!important;padding-left:3px!important;padding-right:3px!important}
-.teacher-builder-break .teacher-builder-time{font-size:9px;white-space:normal}
+.teacher-builder-break .teacher-builder-time{font-size:13px;white-space:normal}

@@ -1,0 +1,18 @@
+{
+  "version": "20261030-unified1",
+  "shared": "https://drivekup01.github.io/School-Portal/shared/school-ui.css?v=20261030-unified1",
+  "bundles": {
+    "styles/timetable.css": [
+      "css/substitute-summary.css",
+      "css/exchange.css",
+      "css/daily-teacher-report.css",
+      "css/teacher-builder.css",
+      "dashboard-shortcuts.css",
+      "timetable-navigation.css",
+      "timetable-layout.css",
+      "timetable-ui.css",
+      "css/auto-schedule-ui.css",
+      "css/compact-schedule.css"
+    ]
+  }
+}

@@ -1,0 +1,1 @@
+window.schoolFirebaseReady=window.SCHOOL_OS_STORAGE==='firebase'?import("https://drivekup01.github.io/School-OS/js/firebase-timetable.js?v=20261028-exchange1"):null;

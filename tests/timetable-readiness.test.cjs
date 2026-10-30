@@ -1,5 +1,5 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs'),path=require('node:path');
-const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+const html=['timetable-app.js',...fs.readdirSync(path.join(__dirname,'..')).filter(f=>/^timetable-runtime-.*\.js$/.test(f))].map(f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8')).join('\n');
 function between(start,end){const a=html.indexOf(start),b=html.indexOf(end,a+start.length);assert.ok(a>=0&&b>a,'Legacy function anchors must exist');return html.slice(a,b);}
 const teacherSource=between('async function renderTeacherViewPage() {','function renderTeacherList()');
 function teacherHarness(load){let paints=0;const list={innerHTML:'',setAttribute(){},removeAttribute(){}},count={textContent:''};const ctx={window:{SCHOOL_OS_STORAGE:'firebase',SCHOOL_ONLINE:{isReady:()=>false,isLoading:()=>true,loadDatabaseOnce:load}},document:{getElementById:id=>id==='tvTeacherList'?list:count},renderTeacherList:()=>{paints++;},_tvCurrentTeacherId:''};ctx.SCHOOL_ONLINE=ctx.window.SCHOOL_ONLINE;vm.createContext(ctx);vm.runInContext(teacherSource,ctx);return {ctx,list,count,paints:()=>paints};}
