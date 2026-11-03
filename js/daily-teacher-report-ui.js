@@ -25,12 +25,14 @@
   download.onclick=async()=>{
    if(!report||exporting)return;exporting=true;download.disabled=true;input.disabled=true;const current=report;let node;
    try{
-    if(typeof html2canvas!=='function')throw Error('เครื่องมือสร้างภาพยังไม่พร้อม กรุณาโหลดหน้าใหม่');
+    status.textContent='กำลังโหลดเครื่องมือสร้างภาพ…';
+    if(typeof window.html2canvas!=='function'&&typeof window.schoolLoadExportLibrary==='function')await window.schoolLoadExportLibrary('canvas');
+    if(typeof window.html2canvas!=='function')throw Error('โหลดเครื่องมือสร้างภาพไม่สำเร็จ กรุณากดดาวน์โหลดเพื่อลองใหม่');
     status.textContent='กำลังสร้างภาพตารางรวมทุกแถว…';
     node=document.createElement('div');node.style.cssText='position:fixed;left:-100000px;top:0;pointer-events:none;background:white';node.innerHTML=current.html;document.body.append(node);
     if(document.fonts)await document.fonts.ready;
     const target=node.querySelector('.daily-report'),width=target.scrollWidth,height=target.scrollHeight,scale=Math.min(2,15000/Math.max(width,height),Math.sqrt(28000000/(width*height)));
-    const canvas=await html2canvas(target,{scale,backgroundColor:'#ffffff',logging:false,useCORS:true,windowWidth:width,windowHeight:height,scrollX:0,scrollY:0});
+    const canvas=await window.html2canvas(target,{scale,backgroundColor:'#ffffff',logging:false,useCORS:true,windowWidth:width,windowHeight:height,scrollX:0,scrollY:0});
     const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));if(!blob)throw Error('สร้างไฟล์ภาพไม่สำเร็จ');
     const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='ตารางรวมครู_สอนแทน_'+current.date+'.png';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);status.textContent='ดาวน์โหลดภาพ PNG แล้ว · วันที่ '+current.date;
    }catch(error){status.textContent='สร้างภาพไม่สำเร็จ: '+error.message;}
