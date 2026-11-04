@@ -66,7 +66,7 @@
             '<td data-label="รูปแบบงาน"><select aria-label="รูปแบบงาน '+esc(slot?slot.label:p.slotId)+' '+esc(room?room.label:'')+'" class="sub-group-select" onchange="setSubWorkType('+ai+','+pi+',this.value)">'+(!works.includes(p.workType)?'<option value="'+esc(p.workType)+'" selected hidden>'+esc(p.workType)+'</option>':'')+works.map(function(x){return '<option '+(p.workType===x?'selected':'')+'>'+esc(x)+'</option>';}).join('')+'</select></td>'+
             '<td data-label="บันทึกข้อความ"><select aria-label="บันทึกข้อความ '+esc(slot?slot.label:p.slotId)+' '+esc(room?room.label:'')+'" class="sub-group-select" onchange="setSubMessageStatus('+ai+','+pi+',this.value)">'+msgs.map(function(x){return '<option value="'+esc(x)+'" '+(p.messageStatus===x?'selected':'')+'>'+(x||'–')+'</option>';}).join('')+'</select></td>'+
             '<td data-label="สถานะ"><span class="sub-status-pill '+(done?'done':'pending')+'">'+(done?'จัดแล้ว':'รอจัดครู')+'</span></td>'+
-            '<td class="sub-summary-action"><button type="button" class="sub-group-edit" onclick="subV2EditAssigned('+ai+','+pi+')">'+(done?'เปลี่ยนทั้งคาบ':'จัดแทนทั้งคาบ')+'</button>'+(done&&subV2CanManage()?'<button type="button" class="sub-group-cancel" onclick="subV2ClearAssigned('+ai+','+pi+')">ยกเลิกทั้งคาบ</button>':'')+'</td>'+
+            '<td class="sub-summary-action"><button type="button" class="sub-group-edit" onclick="subV2EditAssigned('+ai+','+pi+')">'+(done?'เปลี่ยน':'จัดแทน')+'</button>'+(done&&subV2CanManage()?'<button type="button" class="sub-group-cancel" onclick="subV2ClearAssigned('+ai+','+pi+')">ยกเลิก</button>':'')+'</td>'+
             '</tr>';
         });
         h+='</tbody></table></div>';
