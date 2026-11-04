@@ -37,3 +37,5 @@ function lockReadOnly(){
 new MutationObserver(lockReadOnly).observe(document.body,{childList:true,subtree:true});
 
 export async function exchange(input){if(!academic(currentProfile))throw Error('บัญชีนี้ไม่มีสิทธิ์ฝ่ายวิชาการ');const result=await identity.call('timetableApi',input);if(['exchangeConfirm','exchangeCancel','exchangeSetTerm'].includes(input.method)){revision=result.revision;privateCache=null;publicCache=null;}return result;}
+
+export async function readReportDatabase(){await profileTask;const epoch=scope;if(!academic(currentProfile)&&!reader(currentProfile))throw Error("กรุณาเข้าสู่ระบบ");const result=await identity.call("timetableApi",{method:"bootstrap"});if(epoch!==scope)throw Error("บัญชีเปลี่ยนแล้ว กรุณาโหลดใหม่");return result;}

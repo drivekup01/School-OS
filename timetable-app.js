@@ -3499,7 +3499,7 @@ function peekSubDay(dateStr){
 }
 function getSubDay(dateStr){
   const db = getSubDB();
-  if(!db[dateStr]) db[dateStr] = {absentList:[]};
+  if(!db[dateStr]){var period=typeof subAcademicPeriod==='function'?subAcademicPeriod(dateStr,DB):null;db[dateStr]={absentList:[],...(period?{academicYear:period.year,semester:period.term}:{})};}
   return db[dateStr];
 }
 
@@ -3897,7 +3897,7 @@ function saveManualPeriod(ai){
 function renderSubHistoryPage(){
   renderSubSemesterReport();
   const el = document.getElementById('subHistoryContent'); if(!el) return;
-  const sub = DB.substitute || {};
+  const sub = (subSemesterReportData||DB).substitute || {};
   const dates = Object.keys(sub).filter(function(d){
     var day=sub[d];
     return !!(day && Array.isArray(day.absentList) && day.absentList.length);
