@@ -1,0 +1,15 @@
+/* The daily grid and the assignment summary are independent sections. */
+@media screen{
+ #page-substitute>.sub-v2-layout{display:block;width:100%;min-width:0}
+ #page-substitute .sub-v2-main-card{width:100%;min-width:0}
+ #page-substitute .sub-v2-main-card .sub-v2-table{width:100%;font-size:13px!important}
+ #page-substitute .sub-v2-main-card .sub-v2-table th{padding:8px 5px!important;font-size:14px!important}
+ #page-substitute .sub-v2-main-card .sub-v2-table td{padding:3px!important;font-size:13px!important;line-height:1.3!important}
+ #page-substitute .sub-v2-main-card .sub-v2-table :is(th,td):first-child{width:220px;min-width:220px;padding:6px 10px!important}
+ #page-substitute .sub-v2-main-card .sub-v2-cell{height:auto!important;min-height:44px!important;padding:4px!important;gap:1px;line-height:1.25!important}
+ #page-substitute .sub-v2-main-card .sub-v2-lesson{min-height:0!important;padding:4px 2px!important}
+ #page-substitute .sub-v2-main-card :is(.sub-v2-subj,.sub-v2-room,.sub-v2-action,.sub-v2-th-time){font-size:13px!important;line-height:1.3!important;margin-top:1px!important}
+ #page-substitute .sub-v2-main-card .sub-v2-tname{font-size:14px!important;line-height:1.35!important}
+ #page-substitute .sub-v2-main-card .sub-v2-tmeta{font-size:12px!important;line-height:1.3!important}
+ #page-substitute .sub-v2-main-card .sub-v2-avatar{width:26px;height:26px;font-size:13px}
+}
