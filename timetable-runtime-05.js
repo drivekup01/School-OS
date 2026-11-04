@@ -118,6 +118,7 @@
     return root;
   }
   async function renderBlob(){
+    if(typeof window.schoolLoadExportLibrary==='function')await window.schoolLoadExportLibrary('canvas');
     if(typeof html2canvas==='undefined')throw new Error('ไลบรารีสร้างภาพยังไม่พร้อม');
     var logo=await getRequiredExportLogo(),node=buildExportNode(logo);
     if(!node)throw new Error('ยังไม่ได้เลือกวันที่');
