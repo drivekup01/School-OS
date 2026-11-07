@@ -1,5 +1,5 @@
 import * as auth from 'https://drivekup01.github.io/School-Portal/shared/school-auth.js?v=20261027-roles1';
-import {node as el,caseList,detailDialog,remedialStates} from 'https://drivekup01.github.io/School-Portal/shared/remedial-ui.js?v=20261107-layout1';
+import {node as el,caseList,detailDialog,remedialStates} from 'https://drivekup01.github.io/School-Portal/shared/remedial-ui.js?v=20261107-allstates1';
 const importing=new URLSearchParams(location.search).get('mode')==='import';
 const $=id=>document.getElementById(id),detail=detailDialog({allowPrint:true});let epoch=0,profile=null,batch=null,busy=false,pdfUrl=null,uploadRetry=null,publishRetry=null,actionRetry=null;
 const isFaculty=p=>p?.active===true&&(p.schoolRole?['admin','timetable'].includes(p.schoolRole):p.identityAdmin||p.timetableRole==='academic');
