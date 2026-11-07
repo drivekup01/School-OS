@@ -180,7 +180,7 @@ function renderTeacherAll(query){
   var oldNav=window.nav;
   if(typeof oldNav==='function'){
     window.nav=function(p){
-      if(p==='teacher-all'&&window.SCHOOL_OS_STORAGE==='firebase')p='substitute';
+
       if(!canAccessPage(p)){
         if(!SCHOOL_AUTH.loggedIn) toast('เมนูนี้สำหรับฝ่ายวิชาการ กรุณาเข้าสู่ระบบ','warn');
         else toast('ขณะนี้อยู่โหมด DAILY ข้อมูลหลักถูกล็อก','info');

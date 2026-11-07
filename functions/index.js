@@ -41,7 +41,6 @@ exports.timetableApi=audited('timetableApi',options,request=>handle(async()=>{
  else if(method==='deleteAnnouncement'){data.announcements=data.announcements.filter(x=>x.id!==String(input.id));}
  else M.error('ไม่รองรับคำสั่งตารางสอน');
  require('./exchanges').preserve(data,current.data);require('./exchanges').compatible(data);
- if(caps&&!caps.admin&&JSON.stringify(data.school)!==JSON.stringify(current.data.school))M.error('การแก้ไขส่วนเว็บไซต์ใช้ได้เฉพาะผู้ดูแลระบบ','permission-denied');
  const result=await repo.save({data,expectedRevision:input.expectedRevision,requestId:input.requestId,uid:p.uid,method});
  if(['saveSubstitute','saveDatabase'].includes(method)){
   const published=await repo.read();

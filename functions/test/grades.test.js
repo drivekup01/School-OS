@@ -5,7 +5,8 @@ const course={code:'ท22101',name:'ภาษาไทย',credits:1.5,maximum:1
 const page=()=>({page:1,code:'06678',year:2569,term:1,level:2,room:3,number:1,identityReady:true,tableReady:true,courses:[course]});
 const roster=[{code:'06678',studentId:'s1',classId:'c1',className:'ม.2/3',academicYear:2569,number:1,name:'นักเรียนทดสอบ'}];
 test('only verified current academic roles may upload; stale role flags cannot elevate',()=>{
- for(const schoolRole of ['admin','deputy','timetable'])assert.doesNotThrow(()=>M.requireFaculty(auth,{active:true,schoolRole}));
+ for(const schoolRole of ['admin','timetable'])assert.doesNotThrow(()=>M.requireFaculty(auth,{active:true,schoolRole}));
+ for(const schoolRole of ['teacher','budget','student_support','deputy','procurement'])assert.throws(()=>M.requireFaculty(auth,{active:true,schoolRole,identityAdmin:true,timetableRole:'academic'}),{code:'permission-denied'});
  for(const p of [{active:true,schoolRole:'teacher',timetableRole:'academic'},{active:false,schoolRole:'admin'}])assert.throws(()=>M.requireFaculty(auth,p),{code:'permission-denied'});
  assert.throws(()=>M.requireFaculty(null,{active:true,schoolRole:'admin'}),{code:'unauthenticated'});
 });
