@@ -11,7 +11,7 @@ function drawSelection(){
  if(!detail){$('gradeDetail').hidden=true;return;}
  const draft=detail.batch.status==='draft',count=selected().length;for(const input of $('gradeRoster').querySelectorAll('input'))input.disabled=busy||!draft||!detail.pages.find(p=>p.page===Number(input.value))?.ready;
  $('gradeSelectAll').disabled=busy||!draft;$('gradeReviewed').disabled=busy||!draft;$('gradeReplace').disabled=busy||!draft;
- for(const input of $('gradeSubjectNames').querySelectorAll('input'))input.disabled=busy||!draft;
+ for(const input of $('gradeSubjectNames').querySelectorAll('input,select'))input.disabled=busy||!draft;
  $('gradeSelectedCount').textContent=`เลือกเผยแพร่ ${count} คน จาก ${detail.pages.length} หน้า`;$('gradePublish').disabled=busy||!draft||!count||!$('gradeReviewed').checked;$('gradeWithdraw').hidden=detail.batch.status!=='published';$('gradePreview').disabled=busy||!currentPage;
 }
 function drawCourses(pageNumber){
@@ -32,7 +32,10 @@ function drawDetail(){
   const actions=el('td'),button=el('button','ตรวจหน้านี้');button.type='button';button.onclick=()=>{drawCourses(page.page);$('gradePageTitle').scrollIntoView({block:'center',behavior:'smooth'});};actions.append(button);row.append(actions);$('gradeRoster').append(row);
   for(const course of page.courses)if(!subjects.has(course.code))subjects.set(course.code,course);
  }
- for(const [code,course]of subjects){const label=el('label'),input=el('input');input.value=course.name;input.maxLength=150;input.dataset.code=code;input.onchange=()=>drawCourses(currentPage);label.append(el('span',code),input,el('small',course.nameSource==='catalog'?'ชื่อจากทะเบียนวิชา':'ชื่ออ่านจาก PDF · ตรวจสระและตัวสะกด'));$('gradeSubjectNames').append(label);}
+ for(const [code,course]of subjects){const label=el('label'),input=el('input');input.value=course.name;input.maxLength=150;input.dataset.code=code;input.onchange=()=>drawCourses(currentPage);label.append(el('span',code),input);
+  if(course.nameSource==='catalog'){input.readOnly=true;label.append(el('small','ชื่อจากระบบจัดตารางสอน · รหัสตรงกัน'));}
+  else{const select=el('select');select.setAttribute('aria-label','เลือกชื่อจากระบบจัดตารางสอนสำหรับ '+code);const prompt=el('option','เลือกชื่อวิชาจากระบบจัดตารางสอน');prompt.value='';select.append(prompt);for(const subject of detail.subjects||[]){const option=el('option',subject.code+' · '+subject.name+(subject.grade?' · '+subject.grade:''));option.value=subject.name;select.append(option);}select.onchange=()=>{if(select.value){input.value=select.value;drawCourses(currentPage);}};label.append(select,el('small','ไม่พบรหัสตรงกันในตารางปัจจุบัน · เลือกชื่ออ้างอิงหรือตรวจแก้ โดยคงรหัสจาก PDF'));}
+  $('gradeSubjectNames').append(label);}
  drawCourses(detail.pages[0]?.page);drawSelection();
 }
 async function loadDetail(id){if(!id){detail=null;drawSelection();return;}const own=++version;lock(true);try{const result=await api({method:'gradeDetail',batchId:id});if(own!==version)return;detail=result;drawDetail();}catch(error){status(error.message,true);}finally{if(own===version)lock(false);}}

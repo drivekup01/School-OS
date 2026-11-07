@@ -11,6 +11,9 @@ function requireFaculty(auth,p){
  return {uid:auth.uid,name:p.name||auth.token.name||'ฝ่ายวิชาการ'};
 }
 const roomParts=name=>{const m=String(name||'').replace(/\s/g,'').match(/(?:ม\.?|มัธยมศึกษาปีที่)([1-6])[\/-](\d+)/u);return m?{level:Number(m[1]),room:Number(m[2])}:null;};
+function resolveCourses(courses,subjects){
+ return courses.map(c=>{const names=[...new Set((subjects||[]).filter(s=>String(s.code||'').replace(/\s/g,'')===c.code).map(s=>String(s.name||'').trim()).filter(Boolean))];return {...c,name:names.length===1?names[0]:c.name,nameSource:names.length===1?'catalog':c.nameSource||'pdf'};});
+}
 function matchPage(page,roster,subjects){
  const matches=roster.filter(s=>s.code===page.code);
  const row={...page};delete row.pdf;
@@ -22,7 +25,7 @@ function matchPage(page,roster,subjects){
   if(!room||room.level!==page.level||room.room!==page.room||Number(student.number)!==page.number||Number(student.academicYear)!==page.year)row.problem='ห้อง เลขที่ หรือปีการศึกษาไม่ตรงกับทะเบียน';
   else row.match={studentId:student.studentId,classId:student.classId,name:student.name,code:student.code,className:student.className,number:student.number};
  }
- row.courses=page.courses.map(c=>{const names=[...new Set(subjects.filter(s=>String(s.code||'').replace(/\s/g,'')===c.code).map(s=>String(s.name||'').trim()).filter(Boolean))];return {...c,name:names.length===1?names[0]:c.name,nameSource:names.length===1?'catalog':'pdf'};});
+ row.courses=resolveCourses(page.courses,subjects);
  if(!page.tableReady)row.problem+=(row.problem?' · ':'')+'ตารางคะแนนอ่านไม่ครบ';
  row.ready=Boolean(row.match&&page.tableReady);return row;
 }
@@ -37,4 +40,4 @@ function selectedPages(pages,selected){
  const rows=selected.map(n=>pages.find(p=>p.page===n));if(rows.some(p=>!p?.ready||!p.match))fail('มีหน้าที่ยังจับคู่หรืออ่านคะแนนไม่ครบ ไม่สามารถเผยแพร่');
  if(new Set(rows.map(p=>p.code)).size!==rows.length)fail('เลือกได้เพียงหนึ่งหน้าต่อรหัสนักเรียนในชุดนี้');return rows;
 }
-module.exports={hash,personName,ownerKey,fail,id,requireFaculty,roomParts,matchPage,validateNames,selectedPages};
+module.exports={resolveCourses,hash,personName,ownerKey,fail,id,requireFaculty,roomParts,matchPage,validateNames,selectedPages};

@@ -39,6 +39,8 @@ function service(db,storage,stamp,repo,parser=require('./grades-parser').splitAn
  async function publish(request,input,actor){
   if(!M.id(input.requestId)||input.reviewed!==true||typeof input.replaceExisting!=='boolean')M.fail('กรุณาตรวจต้นฉบับ รายชื่อ และตารางคะแนนก่อนยืนยัน');
   const batch=await getBatch(input.batchId),all=await pagesOf(input.batchId),rows=M.selectedPages(all,input.pages),names=M.validateNames(input.subjectNames,all);
+  const source=await repo.read();for(const row of rows)row.courses=M.resolveCourses(row.courses,source.data.subjects);
+  for(const row of rows)for(const c of row.courses)if(c.nameSource==='catalog')names[c.code]=c.name;
   const signature=M.hash(JSON.stringify([input.batchId,[...input.pages].sort((a,b)=>a-b),names,input.replaceExisting])),operation=db.doc('school_grade_operations/'+M.hash(actor.uid+':'+input.requestId));
   return db.runTransaction(async tx=>{
    const [live,current,oldOperation]=await Promise.all([tx.get(db.doc('school_users/'+actor.uid)),tx.get(ref(input.batchId)),tx.get(operation)]);M.requireFaculty(request.auth,live.data());
@@ -54,7 +56,7 @@ function service(db,storage,stamp,repo,parser=require('./grades-parser').splitAn
   const input=request.data||{};validate(input);const actor=await faculty(request);
   if(input.method==='gradeUpload')return upload(request,input,actor);
   if(input.method==='gradeList'){const snap=await db.collection('school_grade_batches').orderBy('createdAt','desc').limit(30).get();return {batches:snap.docs.map(d=>({id:d.id,...d.data(),createdAt:d.data().createdAt?.toDate?.().toISOString()||''})).map(({hash,...v})=>v)};}
-  if(input.method==='gradeDetail'){const batch=await getBatch(input.batchId),pages=await pagesOf(input.batchId);return {batch:{id:input.batchId,name:batch.name,status:batch.status,year:batch.year,term:batch.term,kind:batch.kind,publishedPages:batch.publishedPages||[]},pages};}
+  if(input.method==='gradeDetail'){const batch=await getBatch(input.batchId),pages=await pagesOf(input.batchId),source=await repo.read();for(const page of pages)page.courses=M.resolveCourses(page.courses,source.data.subjects);return {subjects:(source.data.subjects||[]).map(s=>({code:s.code,name:s.name,grade:s.grade||''})),batch:{id:input.batchId,name:batch.name,status:batch.status,year:batch.year,term:batch.term,kind:batch.kind,publishedPages:batch.publishedPages||[]},pages};}
   if(input.method==='gradePreview'){const batch=await getBatch(input.batchId);if(!Number.isInteger(input.page)||input.page<1||input.page>batch.pageCount)M.fail('หน้าเอกสารไม่ถูกต้อง');const [bytes]=await bucket.file('batches/'+input.batchId+'/pages/'+input.page+'.pdf').download();await faculty(request);return {base64:bytes.toString('base64')};}
   if(input.method==='gradePublish')return publish(request,input,actor);
   if(input.method==='gradeWithdraw'){

@@ -20,3 +20,7 @@ test('cannot publish unresolved pages or multiple pages for the same student; na
  assert.deepEqual(M.validateNames({'ท22101':'ภาษาไทย'},[row]),{'ท22101':'ภาษาไทย'});assert.throws(()=>M.validateNames({'ค99999':'วิชาอื่น'},[row]));
 });
 test('unsupported image-only pages remain unresolved and cannot publish invented scores',()=>{const parsed=parsePage([],595,842);assert.equal(parsed.identityReady,false);assert.equal(parsed.tableReady,false);assert.deepEqual(parsed.courses,[]);});
+
+ test('course names use exact timetable codes, preserve scores, and never guess neighboring term codes',()=>{
+ const {resolveCourses}=require('../grades-model');const courses=[{code:'ค22101',name:'bad font',score:0,grade:0},{code:'ค22102',name:'another bad font',score:80,grade:4}];const resolved=resolveCourses(courses,[{code:' ค22101 ',name:'คณิตศาสตร์ 3'}]);assert.equal(resolved[0].name,'คณิตศาสตร์ 3');assert.equal(resolved[0].score,0);assert.equal(resolved[0].grade,0);assert.equal(resolved[1].name,'another bad font');assert.equal(courses[0].name,'bad font');
+ });
