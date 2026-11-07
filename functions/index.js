@@ -51,3 +51,6 @@ exports.timetableApi=audited('timetableApi',options,request=>handle(async()=>{
 }));
 
 function audited(name,options,handler){const db=require('firebase-admin/firestore').getFirestore(),stamp=()=>require('firebase-admin/firestore').FieldValue.serverTimestamp();const audit=require('./usage-audit').service(db,stamp);return onCall(options,request=>audit.track(name,request,()=>handler(request)));}
+
+const gradeReports=require('./grades-service').service(db,require('firebase-admin/storage').getStorage(),stamp,repo);
+exports.schoolGrades=audited('schoolGrades',{...options,memory:'512MiB',timeoutSeconds:300},request=>handle(()=>gradeReports.handle(request)));
