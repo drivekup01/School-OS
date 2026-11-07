@@ -53,3 +53,6 @@ function audited(name,options,handler){const db=require('firebase-admin/firestor
 
 const gradeReports=require('./grades-service').service(db,require('firebase-admin/storage').getStorage(),stamp,repo);
 exports.schoolGrades=audited('schoolGrades',{...options,memory:'512MiB',timeoutSeconds:300},request=>handle(()=>gradeReports.handle(request)));
+
+const remedial=require('./remedial-service').service(db,require('firebase-admin/storage').getStorage(),stamp,repo);
+exports.schoolRemedial=onCall({...options,memory:'512MiB',timeoutSeconds:300},request=>require('./usage-audit').service(db,stamp).track('schoolRemedial',{auth:request.auth,data:{method:'remedial'+String(request.data?.method||'').replace(/^./,c=>c.toUpperCase())},rawRequest:request.rawRequest},()=>handle(()=>remedial.handle(request))));
