@@ -9,3 +9,9 @@
 ข้อมูลอยู่ใน school_remedial_batches, school_remedial_cases, school_remedial_operations ผ่าน callable schoolRemedial เท่านั้น ชุดนำเข้าและ PDF รวมอยู่ใน private bucket school-budget-3e69d-student-reports และให้เฉพาะวิชาการ/ผู้ดูแลเปิดได้ นักเรียนอ่านผ่าน schoolStudentRemedial ซึ่งตรวจบัญชีผูกทะเบียนทุกครั้ง ไม่มี student write endpoint และไม่คืน PDF รวม/ชื่อเพื่อน/สถานะ/บันทึกครู รหัสนักเรียนเป็นข้อความรักษาเลขศูนย์ด้านหน้า เจ้าของข้อมูลผูกทั้งรหัสและชื่อ รหัสรายวิชาใช้ตัวอักษรไทยพร้อมเลขครบ ไม่จับคู่ด้วยเลขท้ายอย่างเดียว
 
 ทดสอบ: node --test functions/test/*.test.js และชุดทดสอบ student-remedial ใน School-Portal/functions/test ตัวอย่าง PDF ไม่อยู่ใน repository และไม่ถูกนำเข้าระบบจริงอัตโนมัติ
+
+## การแยกหน้าและคำขอลบ
+
+เมนู นำเข้าผลการเรียน เปิด grades.html?mode=import มีแท็บรายงานผลการเรียนและผลการเรียน 0 ร มส มผ (remedial.html?mode=import) เฉพาะวิชาการ/ผู้ดูแล หน้ารายงาน grades.html?mode=report แสดงเฉพาะชุดและหน้าที่เผยแพร่แล้ว ไม่มีส่วนอัปโหลด/แก้ชื่อ/เผยแพร่ หน้ารายการ remedial.html ไม่โหลดชุด PDF นำเข้า
+
+ครูมีปุ่มยื่นแก้ไขผลการเรียนและยื่นลบรายการ คำขอลบเป็น state delete_requested พร้อมเหตุผล ยังไม่ลบข้อมูลหรือนำออกจากหน้าของนักเรียน วิชาการเลือก ลบรายการ เพื่อ archive หรือ ส่งกลับ พร้อมเหตุผลได้ ครูไม่สามารถยืนยันลบเอง สีสถานะ: open/returned แดง, approval/delete_requested เหลือง, completed/archived เขียว มีข้อความประกอบและรายละเอียดสถานะเดิม นักเรียนยังดูเฉพาะรายการค้าง ไม่มีสถานะหรือแบบฟอร์ม
