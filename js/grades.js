@@ -1,4 +1,4 @@
-import * as auth from 'https://drivekup01.github.io/School-Portal/shared/school-auth.js?v=20261027-roles1';
+import * as auth from 'https://drivekup01.github.io/School-Portal/shared/school-auth.js?v=20261107-academic1';
 const importing=new URLSearchParams(location.search).get('mode')==='import';document.body.dataset.gradeMode=importing?'import':'report';
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 const states={staging:'กำลังประมวลผล',draft:'รอตรวจและเผยแพร่',published:'เผยแพร่แล้ว',withdrawn:'ยกเลิกเผยแพร่'},kindName=v=>v==='midterm'?'กลางภาค':'ปลายภาค',value=v=>v===null||v===undefined||v===''?'—':String(v);

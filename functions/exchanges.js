@@ -27,7 +27,7 @@ function service(db,identity,repo,stamp){
   if(input.method==='exchangePreview')return {ok:true,...E.validate(data,leaves,input.a,input.b,day,term),revision:current.revision};
   if(input.expectedRevision!==current.revision)M.error('ตารางสอนเปลี่ยนแล้ว กรุณาโหลดล่าสุดและเลือกคาบใหม่','aborted');
   if(input.method==='exchangeSetTerm'){
-   if(!(p.schoolRole==='admin'||p.identityAdmin))M.error('เฉพาะผู้ดูแลระบบกำหนดช่วงภาคเรียน','permission-denied');
+   if(!require('./academic-permissions').full(p))M.error('เฉพาะวิชาการ #1 และผู้ดูแลระบบกำหนดช่วงภาคเรียน','permission-denied');
    if(!E.valid(input.from)||!E.valid(input.to)||input.from>input.to||Date.parse(input.to)-Date.parse(input.from)>240*86400000)M.error('กำหนดช่วงภาคเรียนไม่เกิน 240 วัน');
    data.exchangeTerm={year:Number(data.school.year),term:Number(data.school.semester),from:input.from,to:input.to};
   }else if(input.method==='exchangeConfirm'){
@@ -40,7 +40,7 @@ function service(db,identity,repo,stamp){
    data.exchanges[input.id]={...x,active:false,cancelledBy:p.uid,cancelledAt:now.toISOString()};
   }
   return repo.save({data,expectedRevision:input.expectedRevision,requestId:input.requestId,uid:p.uid,method:input.method,requestHashOverride:hash,precondition:async tx=>{
-   const [profile,liveLeave]=await Promise.all([tx.get(db.doc('school_users/'+p.uid)),tx.get(db.doc('timetable_leave/current'))]);M.assertAcademic(profile.data());
+   const [profile,liveLeave]=await Promise.all([tx.get(db.doc('school_users/'+p.uid)),tx.get(db.doc('timetable_leave/current'))]);M.assertAcademic(profile.data());if(input.method==='exchangeSetTerm'&&!require('./academic-permissions').full(profile.data()))M.error('สิทธิ์เปลี่ยนแปลง','permission-denied');
    if(M.hash(liveLeave.data()?.json||'[]')!==leaveHash)M.error('ข้อมูลวันลาเปลี่ยนแล้ว กรุณาตรวจสอบใหม่','aborted');
    await require('./exchange-attendance').stageBlocks(db,tx,data,input,stamp);
   }});

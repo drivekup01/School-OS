@@ -20,7 +20,8 @@ const morning=require('./morning').service(db,identity,repo,stamp,Timestamp);
 exports.schoolIdentity=audited('schoolIdentity',options,request=>handle(async()=>{const input=request.data||{};switch(input.method){case 'morningClasses':case 'morningSession':case 'saveMorningSession':return morning.handle(request,input);case 'attendanceCatalog':return require('./attendance-catalog').service(db,identity,repo).get(request,input);case 'morningReport':return morning.handle(request,input);case 'attendanceHome':return require('./attendance-home').service(db,identity,repo).get(request,input);case 'attendanceSchedule':return attendanceSchedule.get(request,input);case 'readiness':return readiness.get(request);case 'reportReadiness':return readiness.report(request,input);case 'resolveProfile':return identity.resolve(request);case 'listUsers':return identity.list(request);case 'saveInvitation':return identity.saveInvite(request,input);case 'updateUser':return identity.updateUser(request,input);default:M.error('ไม่รองรับคำสั่งบัญชี');}}));
 exports.timetableApi=audited('timetableApi',options,request=>handle(async()=>{
  const input=request.data||{},method=input.method,p=await identity.resolve(request);
- const caps=require('./school-roles').capabilities(p);
+ const caps=require('./school-roles').capabilities(p),academicPermissions=require('./academic-permissions');
+ if(academicPermissions.scheduler(p)&&!['bootstrap','leaveHistory','saveDatabase','saveSubstitute'].includes(method)&&!String(method).startsWith('exchange'))M.error('สิทธิ์วิชาการ #2 ใช้ได้เฉพาะจัดตารางสอนและเพิ่มข้อมูลพื้นฐาน','permission-denied');
  if(['bootstrap','leaveHistory'].includes(method)){if(!(caps?caps.readAll:p.active&&p.timetableRole==='academic'))M.error('ไม่มีสิทธิ์ดูข้อมูลตารางสอน','permission-denied');}else M.assertAcademic(p);
  if(typeof method==='string'&&method.startsWith('exchange'))return require('./exchanges').service(db,identity,repo,stamp).handle(request,input);
  if(method==='bootstrap')return {ok:true,...await repo.read()};
@@ -32,7 +33,7 @@ exports.timetableApi=audited('timetableApi',options,request=>handle(async()=>{
   return importSource({source:await source(),sourceHash:input.sourceHash,uid:p.uid,requestId:input.requestId});
  }
  if(method==='leaveHistory'){const snap=await db.doc('timetable_leave/current').get();return {ok:true,rows:snap.exists?JSON.parse(snap.data().json):[],syncedAt:snap.exists?snap.data().updatedAt?.toDate?.().toISOString():null};}
- if(method==='refreshLeave'){const out=await legacy(LEAVE_API.value(),'leaveHistory');const rows=Array.isArray(out.rows)?out.rows:[];if(Buffer.byteLength(JSON.stringify(rows))>800000)M.error('ข้อมูลลาใหญ่เกินกำหนด');await db.doc('timetable_leave/current').set({json:JSON.stringify(rows),updatedAt:stamp(),updatedBy:p.uid});return {ok:true,rows};}
+ if(method==='refreshLeave'){const out=await legacy(LEAVE_API.value(),'leaveHistory');const rows=Array.isArray(out.rows)?out.rows:[];if(Buffer.byteLength(JSON.stringify(rows))>800000)M.error('ข้อมูลลาใหญ่เกินกำหนด');await db.runTransaction(async tx=>{const live=(await tx.get(db.doc('school_users/'+p.uid))).data();if(!academicPermissions.full(live))M.error('สิทธิ์เปลี่ยนแปลง','permission-denied');tx.set(db.doc('timetable_leave/current'),{json:JSON.stringify(rows),updatedAt:stamp(),updatedBy:p.uid});});return {ok:true,rows};}
  const current=await repo.read();let data=M.clone(current.data);
  if(method==='saveDatabase'){data=typeof input.data==='string'?JSON.parse(input.data):input.data;}
  else if(method==='saveSubstitute'){data.substitute=typeof input.substitute==='string'?JSON.parse(input.substitute):input.substitute;}
@@ -41,7 +42,8 @@ exports.timetableApi=audited('timetableApi',options,request=>handle(async()=>{
  else if(method==='deleteAnnouncement'){data.announcements=data.announcements.filter(x=>x.id!==String(input.id));}
  else M.error('ไม่รองรับคำสั่งตารางสอน');
  require('./exchanges').preserve(data,current.data);require('./exchanges').compatible(data);
- const result=await repo.save({data,expectedRevision:input.expectedRevision,requestId:input.requestId,uid:p.uid,method});
+ data=M.normalize(data);academicPermissions.change(p,M.normalize(current.data),data,method);
+ const result=await repo.save({data,expectedRevision:input.expectedRevision,requestId:input.requestId,uid:p.uid,method,precondition:async tx=>{const live=(await tx.get(db.doc('school_users/'+p.uid))).data();M.assertAcademic(live);academicPermissions.change(live,M.normalize(current.data),data,method);}});
  if(['saveSubstitute','saveDatabase'].includes(method)){
   const published=await repo.read();
   if(published.version===result.version)await require('./substitute-attendance').service(db,stamp,Timestamp).revokeMissing({data:published.data,version:published.version,uid:p.uid});
@@ -56,3 +58,6 @@ exports.schoolGrades=audited('schoolGrades',{...options,memory:'512MiB',timeoutS
 
 const remedial=require('./remedial-service').service(db,require('firebase-admin/storage').getStorage(),stamp,repo);
 exports.schoolRemedial=onCall({...options,memory:'512MiB',timeoutSeconds:300},request=>require('./usage-audit').service(db,stamp).track('schoolRemedial',{auth:request.auth,data:{method:'remedial'+String(request.data?.method||'').replace(/^./,c=>c.toUpperCase())},rawRequest:request.rawRequest},()=>handle(()=>remedial.handle(request))));
+
+const academicStudents=require('./academic-students').service(db,repo,stamp);
+exports.schoolAcademicStudents=onCall(options,request=>require('./usage-audit').service(db,stamp).track('schoolAcademicStudents',{auth:request.auth,data:{method:request.data?.method==='save'?'academicSaveStudent':'read'},rawRequest:request.rawRequest},()=>handle(()=>academicStudents.handle(request))));

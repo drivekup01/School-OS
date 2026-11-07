@@ -7,7 +7,7 @@ const fail=(message,code='invalid-argument')=>{throw Object.assign(Error(message
 const id=s=>typeof s==='string'&&/^[A-Za-z0-9_-]{1,100}$/.test(s);
 function requireFaculty(auth,p){
  if(!auth?.uid||auth.token?.email_verified!==true||auth.token?.firebase?.sign_in_provider!=='google.com')fail('กรุณาเข้าสู่ระบบฝ่ายวิชาการ','unauthenticated');
- if(!p?.active||!(p.schoolRole?['admin','timetable'].includes(p.schoolRole):p.identityAdmin===true||p.timetableRole==='academic'))fail('เฉพาะผู้ดูแลและครูฝ่ายวิชาการที่ได้รับสิทธิ์','permission-denied');
+ if(!require('./academic-permissions').full(p))fail('เฉพาะผู้ดูแลและครูฝ่ายวิชาการที่ได้รับสิทธิ์','permission-denied');
  return {uid:auth.uid,name:p.name||auth.token.name||'ฝ่ายวิชาการ'};
 }
 const roomParts=name=>{const m=String(name||'').replace(/\s/g,'').match(/(?:ม\.?|มัธยมศึกษาปีที่)([1-6])[\/-](\d+)/u);return m?{level:Number(m[1]),room:Number(m[2])}:null;};
