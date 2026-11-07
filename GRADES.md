@@ -29,3 +29,5 @@ locally: 19 roster matches, 20 course/activity rows each, and every split page r
 identically to its original. No sample student reports are seeded or auto-published.
 Image-only or different report layouts require an additional parser and currently
 remain unresolved. The UI requires review before publication.
+
+Wrong uploads can be removed from the latest-batches selector with gradeDelete. Published batches must be withdrawn first. Deletion is a server-checked, idempotent soft deletion: original files and audit metadata remain private for internal review; deleted batch details/previews/publication are unavailable.

@@ -6,11 +6,11 @@ function service(db,storage,stamp,repo,parser=require('./grades-parser').splitAn
  const bucket=storage.bucket(BUCKET),ref=id=>db.doc('school_grade_batches/'+id);
  async function faculty(request){return M.requireFaculty(request.auth,(await db.doc('school_users/'+request.auth?.uid).get()).data());}
  function validate(input){
-  const fields={gradeUpload:['method','requestId','name','base64','kind'],gradeList:['method'],gradeDetail:['method','batchId'],gradePreview:['method','batchId','page'],gradePublish:['method','batchId','pages','subjectNames','reviewed','replaceExisting','requestId'],gradeWithdraw:['method','batchId','requestId']};
+  const fields={gradeUpload:['method','requestId','name','base64','kind'],gradeList:['method'],gradeDetail:['method','batchId'],gradePreview:['method','batchId','page'],gradePublish:['method','batchId','pages','subjectNames','reviewed','replaceExisting','requestId'],gradeWithdraw:['method','batchId','requestId'],gradeDelete:['method','batchId','requestId']};
   if(!input||!Object.hasOwn(fields,input.method)||Object.keys(input).some(k=>!fields[input.method].includes(k)))M.fail('คำขอไม่ถูกต้อง');
   if(input.method!=='gradeUpload'&&input.method!=='gradeList'&&!/^[a-f0-9]{64}$/.test(input.batchId||''))M.fail('รหัสชุดเอกสารไม่ถูกต้อง');
  }
- async function getBatch(batchId){const snap=await ref(batchId).get();if(!snap.exists)M.fail('ไม่พบชุดเอกสาร','not-found');return snap.data();}
+ async function getBatch(batchId){const snap=await ref(batchId).get();if(!snap.exists||snap.data().status==='deleted')M.fail('ไม่พบชุดเอกสาร','not-found');return snap.data();}
  async function pagesOf(batchId){return (await ref(batchId).collection('pages').orderBy('page').get()).docs.map(d=>d.data());}
  async function storeFile(path,bytes){
   const digest=M.hash(bytes),file=bucket.file(path);
@@ -55,7 +55,15 @@ function service(db,storage,stamp,repo,parser=require('./grades-parser').splitAn
  async function handle(request){
   const input=request.data||{};validate(input);const actor=await faculty(request);
   if(input.method==='gradeUpload')return upload(request,input,actor);
-  if(input.method==='gradeList'){const snap=await db.collection('school_grade_batches').orderBy('createdAt','desc').limit(30).get();return {batches:snap.docs.map(d=>({id:d.id,...d.data(),createdAt:d.data().createdAt?.toDate?.().toISOString()||''})).map(({hash,...v})=>v)};}
+  if(input.method==='gradeList'){
+   const batches=[];let cursor=null;
+   do{let query=db.collection('school_grade_batches').orderBy('createdAt','desc').limit(30);if(cursor)query=query.startAfter(cursor);const snap=await query.get();for(const d of snap.docs){const v=d.data();if(v.status!=='deleted'){const {hash,...visible}=v;batches.push({id:d.id,...visible,createdAt:v.createdAt?.toDate?.().toISOString()||''});if(batches.length===30)break;}}cursor=snap.docs.length===30?snap.docs.at(-1):null;}while(cursor&&batches.length<30);
+   return {batches};
+  }
+  if(input.method==='gradeDelete'){
+   if(!M.id(input.requestId))M.fail('รหัสรายการไม่ถูกต้อง');
+   return db.runTransaction(async tx=>{const [live,snap]=await Promise.all([tx.get(db.doc('school_users/'+actor.uid)),tx.get(ref(input.batchId))]);M.requireFaculty(request.auth,live.data());if(!snap.exists)M.fail('ไม่พบชุดเอกสาร','not-found');const batch=snap.data();if(batch.status==='deleted')return {deleted:true,replayed:true};if(!['draft','withdrawn'].includes(batch.status))M.fail(batch.status==='published'?'กรุณายกเลิกการเผยแพร่ก่อนลบชุดเอกสาร':'กรุณารอประมวลผลให้เสร็จก่อนลบ','failed-precondition');tx.update(ref(input.batchId),{status:'deleted',deletedAt:stamp(),deletedBy:actor.uid});tx.create(db.collection('school_grade_audit').doc(),{action:'delete',uid:actor.uid,batchId:input.batchId,createdAt:stamp()});return {deleted:true};});
+  }
   if(input.method==='gradeDetail'){const batch=await getBatch(input.batchId),pages=await pagesOf(input.batchId),source=await repo.read();for(const page of pages)page.courses=M.resolveCourses(page.courses,source.data.subjects);return {subjects:(source.data.subjects||[]).map(s=>({code:s.code,name:s.name,grade:s.grade||''})),batch:{id:input.batchId,name:batch.name,status:batch.status,year:batch.year,term:batch.term,kind:batch.kind,publishedPages:batch.publishedPages||[]},pages};}
   if(input.method==='gradePreview'){const batch=await getBatch(input.batchId);if(!Number.isInteger(input.page)||input.page<1||input.page>batch.pageCount)M.fail('หน้าเอกสารไม่ถูกต้อง');const [bytes]=await bucket.file('batches/'+input.batchId+'/pages/'+input.page+'.pdf').download();await faculty(request);return {base64:bytes.toString('base64')};}
   if(input.method==='gradePublish')return publish(request,input,actor);
