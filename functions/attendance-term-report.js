@@ -2,6 +2,7 @@
 const {capabilities}=require('./school-roles');
 const {dateOf}=require('./attendance-schedule');
 const {effective}=require('./exchange-core');
+const Blocks=require('./attendance-blocks');
 const norm=v=>String(v||'').replace(/\s+/g,'');
 const valid=d=>typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&Number.isFinite(Date.parse(d))&&new Date(d+'T00:00:00Z').toISOString().slice(0,10)===d;
 const fail=(message,code='invalid-argument')=>{throw Object.assign(Error(message),{code});};
@@ -15,13 +16,14 @@ function courses(data,classes,jobs,actor){
 }
 function plan(data,room,subject,range){
  const result=new Map();for(let tick=Date.parse(range.from+'T00:00:00Z');tick<=Date.parse(range.to+'T00:00:00Z');tick+=86400000){const date=new Date(tick).toISOString().slice(0,10),weekday=new Date(tick).getUTCDay(),day=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'][weekday];if(!data.days.includes(day)||(data.exchangeTerm.excludedDates||[]).includes(date))continue;const table=effective(data,date);
-  data.slots.forEach((s,i)=>{if(s.isBreak||s.teacherOnly)return;const cell=table.sched[room.id+'_'+s.id+'_'+day];if(cell?.subject===subject){const period=Number(String(s.label).match(/\d+/)?.[0]||i+1);result.set(date+'_'+period,{date,period,source:'timetable'});}});
+  data.slots.forEach((s,i)=>{if(s.isBreak||s.teacherOnly)return;const cell=table.sched[room.id+'_'+s.id+'_'+day];if(cell?.subject===subject){const period=Number(String(s.label).match(/\d+/)?.[0]||i+1);result.set(date+'_'+period,{date,period,start:s.start||'',end:s.end||'',source:'timetable'});}});
  }return result;
 }
 function summarize({students,events,sessions,today,range}){
  const total=sessions.size,elapsed=[...sessions.values()].filter(s=>s.date<=today).length;
  return students.map(s=>{const counts={present:0,late:0,leave:0,absent:0,pending:0},history=[];let conflicts=0;
-  for(const [key,lesson]of sessions){if(lesson.date>today)continue;const event=events.get(key+'_'+s.id);if(event?.conflict)conflicts++;if(event&&['present','late','leave','absent'].includes(event.status)){counts[event.status]++;history.push({date:lesson.date,period:lesson.period,status:event.status});}else counts.pending++;}
+  const projected=Blocks.project([...sessions].map(([key,lesson])=>({key,...lesson})),lesson=>events.get(lesson.key+'_'+s.id));
+  for(const [key,lesson]of sessions){if(lesson.date>today)continue;const event=projected.get(key);if(event?.conflict)conflicts++;if(event&&['present','late','leave','absent'].includes(event.status)){counts[event.status]++;history.push({date:lesson.date,period:lesson.period,status:event.status,blockPeriods:event.blockPeriods,sourcePeriod:event.sourcePeriod,originalStatus:event.originalStatus,start:lesson.start||'',end:lesson.end||''});}else counts.pending++;}
   const remaining=total-counts.absent,percentage=total?remaining/total*100:null,risk=total>0&&remaining*100<total*70;
   return {id:s.id,number:s.number,code:s.code||'',name:s.name,...counts,total,elapsed,percentage,risk,conflicts,incomplete:counts.pending>0||today<range.to||conflicts>0,history:history.sort((a,b)=>a.date.localeCompare(b.date)||a.period-b.period)};
  });
@@ -43,11 +45,11 @@ function service(db,identity,repo,now=()=>new Date()){
   const sessions=plan(data,room,i.subject,range),today=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).format(now()),events=new Map(),roster=(await db.collection('attendance_classes/'+i.classId+'/students').get()).docs.map(d=>({id:d.id,...d.data()})).filter(s=>year+'_'+term!==currentKey||s.active!==false),studentIds=new Set(roster.map(s=>s.id)),tasks=[];
   for(const job of jobs.filter(j=>j.classId===i.classId&&j.subject===i.subject&&['subject','substitute'].includes(j.kind))){for(let tick=Date.parse(range.from+'T00:00:00Z');tick<=Math.min(Date.parse(range.to+'T00:00:00Z'),Date.parse(today+'T00:00:00Z'));tick+=86400000){const date=new Date(tick).toISOString().slice(0,10);if((data.exchangeTerm.excludedDates||[]).includes(date)||job.excludedDates?.includes(date)||date<dateOf(job.from)||date>dateOf(job.to)||(job.kind==='substitute'?date!==dateOf(job.date):new Date(tick).getUTCDay()!==job.weekday))continue;tasks.push({job,date});}}
   if(tasks.length>2000)fail('รายการคาบเก่ามากเกินไป กรุณาติดต่อผู้ดูแล','resource-exhausted');
-  let outside=0;for(let offset=0;offset<tasks.length;offset+=8){await Promise.all(tasks.slice(offset,offset+8).map(async({job,date})=>{const marks=await db.collection('attendance_assignments/'+job.id+'/days/'+date.replaceAll('-','')+'/marks').get(),key=date+'_'+job.period;if(marks.docs.some(d=>{const m=d.data();return studentIds.has(d.id)&&m.classId===i.classId&&m.assignmentId===job.id&&['present','late','leave','absent'].includes(m.status);})&&!sessions.has(key)){sessions.set(key,{date,period:job.period,source:'recorded-history'});outside++;}
-   for(const mark of marks.docs){const m=mark.data();if(!studentIds.has(mark.id)||m.classId!==i.classId||m.assignmentId!==job.id||!['present','late','leave','absent'].includes(m.status))continue;const k=key+'_'+mark.id,old=events.get(k),time=m.updatedAt?.toMillis?.()||0;const conflict=old&&(old.conflict||old.status!==m.status);if(!old||time>old.time||time===old.time&&job.id>old.assignmentId)events.set(k,{status:m.status,time,assignmentId:job.id,conflict:!!conflict});else if(conflict)old.conflict=true;}
+  let outside=0;for(let offset=0;offset<tasks.length;offset+=8){await Promise.all(tasks.slice(offset,offset+8).map(async({job,date})=>{const marks=await db.collection('attendance_assignments/'+job.id+'/days/'+date.replaceAll('-','')+'/marks').get(),key=date+'_'+job.period;if(marks.docs.some(d=>{const m=d.data();return studentIds.has(d.id)&&m.classId===i.classId&&m.assignmentId===job.id&&['present','late','leave','absent'].includes(m.status);})&&!sessions.has(key)){sessions.set(key,{date,period:job.period,source:'recorded-history',time:job.time||''});outside++;}
+   for(const mark of marks.docs){const m=mark.data();if(!studentIds.has(mark.id)||m.classId!==i.classId||m.assignmentId!==job.id||!['present','late','leave','absent'].includes(m.status))continue;const k=key+'_'+mark.id,old=events.get(k),time=m.updatedAt?.toMillis?.()||0;const conflict=old&&time===old.time&&(old.conflict||old.status!==m.status);if(!old||time>old.time||time===old.time&&job.id>old.assignmentId)events.set(k,{status:m.status,time,assignmentId:job.id,conflict:!!conflict});else if(conflict)old.conflict=true;}
   }));}
   await authorized(request);
-  return {year,term,range,className:roomClass.name,subject:i.subject,threshold:70,total:sessions.size,outside,students:summarize({students:roster,events,sessions,today,range}).sort((a,b)=>a.number-b.number),sourceVersion:source.version,note:'อิงตารางสอนของภาคเรียนนี้ รวมคาบเก่าที่มีผลเช็คชื่อและไม่นับคาบซ้ำ ไม่หักวันหยุดที่ยังไม่ได้กำหนดในตาราง'};
+  return {year,term,range,className:roomClass.name,subject:i.subject,threshold:70,total:sessions.size,outside,students:summarize({students:roster,events,sessions,today,range}).sort((a,b)=>a.number-b.number),sourceVersion:source.version,note:'คาบติดกันใช้ผลเช็คครั้งล่าสุดของทั้งช่วง · อิงตารางสอนของภาคเรียนนี้ รวมคาบเก่าที่มีผลเช็คชื่อและไม่นับคาบซ้ำ ไม่หักวันหยุดที่ยังไม่ได้กำหนดในตาราง'};
  }};
 }
 module.exports={calendar,courses,plan,summarize,service};
