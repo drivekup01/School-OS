@@ -137,6 +137,11 @@
 
   </div>
 
+<section id="academicOverview" class="academic-overview" hidden>
+<div class="ao-heading"><div><p>ACADEMIC OVERVIEW</p><h2>ภาพรวมวิชาการ</h2><span id="ao-period"></span></div><button type="button" id="ao-refresh">โหลดข้อมูลล่าสุด</button></div>
+<div class="ao-metrics"><article class="ao-metric"><span class="ao-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="7" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M17 4a3 3 0 0 1 0 6M21 21v-3a6 6 0 0 0-4-5"/></svg></span><p>นักเรียนทั้งหมด</p><strong id="ao-students">—</strong><small>คน · ภาคเรียนปัจจุบัน</small></article><article class="ao-metric ao-leave"><span class="ao-symbol">◷</span><p>ครูลาในวันนี้</p><strong id="ao-leave-count">—</strong><small id="ao-leave-note">เฉพาะรายการอนุมัติแล้ว</small><details><summary>ดูรายการที่ยืนยันแล้ว</summary><div id="ao-leave-list"></div></details></article><a class="ao-metric ao-online-leave" href="https://aiizeimposs.github.io/webapp/?apps=https://script.google.com/macros/s/AKfycbwgwqy0DpRD4bIsR6Womk5aVMVc82LU9yey924uYbUOKdcXwAYZtRArAoP2d783MrkH/exec" target="_blank" rel="noopener noreferrer"><span class="ao-symbol">↗</span><p>ใบลาออนไลน์</p><strong>ยื่นใบลา</strong><small>เปิดระบบใบลาของโรงเรียน ↗</small></a></div>
+<section class="ao-panel"><div class="ao-panel-title"><h3>แจ้งเตือนของฉัน</h3><span>สอนแทน / แลกคาบ</span></div><div id="ao-notifications" class="ao-notifications">กำลังโหลด…</div></section>
+<section class="ao-panel"><div class="ao-panel-title"><div><h3>ตารางสอนของฉัน</h3><p id="ao-teacher"></p></div><button type="button" id="ao-open-table">เปิดตารางสอนรายครู ↗</button></div><p id="ao-image-status">กำลังตรวจสอบบัญชีครู…</p><button type="button" id="ao-image-zoom" class="ao-image-button" hidden aria-label="ขยายภาพตารางสอน"><img id="ao-schedule-image" alt="ตารางสอนประจำสัปดาห์ของฉัน"></button></section><p id="ao-status" role="status"></p></section>
   <div class="dashboard-action-grid">
     <section class="card dashboard-action-card dashboard-shortcut-panel">
       <div class="dashboard-card-head">
@@ -1106,4 +1111,6 @@
 <script  src="timetable-runtime-19.js?v=20261104-semester1"></script>
 <script src="timetable-export-loader.js?v=20261030-unified1"></script>
 <script src="js/workspace-navigation.js?v=20261104-groups1"></script>
+<script src="js/academic-overview.js?v=20261109-overview1"></script>
+<link rel="stylesheet" href="styles/academic-overview.css?v=20261109-overview1">
 </html>
