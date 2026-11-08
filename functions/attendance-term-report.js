@@ -7,12 +7,17 @@ const norm=v=>String(v||'').replace(/\s+/g,'');
 const valid=d=>typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&Number.isFinite(Date.parse(d))&&new Date(d+'T00:00:00Z').toISOString().slice(0,10)===d;
 const fail=(message,code='invalid-argument')=>{throw Object.assign(Error(message),{code});};
 function calendar(data){const term=data.exchangeTerm;if(!term||!valid(term.from)||!valid(term.to)||term.from>term.to||(Date.parse(term.to)-Date.parse(term.from))/86400000>250||Number(term.year)!==Number(data.school.year)||Number(term.term)!==Number(data.school.semester))return null;return {from:term.from,to:term.to};}
+function courseInfo(data,roomClass,subject){
+ const registered=(data.subjects||[]).filter(s=>norm(s.name)===norm(subject)),grade=norm(roomClass.name.split('/')[0]),matching=registered.filter(s=>norm(s.grade)===grade),info=matching.length===1?matching[0]:matching.length===0&&registered.length===1?registered[0]:null;
+ const subjectCode=typeof info?.code==='string'?info.code.trim():'';
+ return {subjectCode,courseKey:JSON.stringify(subjectCode?[subjectCode,subject]:['unresolved',roomClass.id,subject]),credits:info?.credits??info?.credit??null};
+}
 function courses(data,classes,jobs,actor){
  const all=actor.attendanceRole==='admin'||actor.attendanceRole==='viewer'||capabilities(actor)?.admin||require('./academic-permissions').full(actor),teacher=data.teachers.find(t=>t.id===actor.teacherId),name=teacher?norm((teacher.prefix||'')+(teacher.first||'')+' '+(teacher.last||'')):'';
- const result=new Map(),add=(c,subject)=>{const key=JSON.stringify([c.id,subject]);result.set(key,{classId:c.id,className:c.name,subject});};
+ const result=new Map(),add=(c,subject)=>{const key=JSON.stringify([c.id,subject]);result.set(key,{classId:c.id,className:c.name,subject,...courseInfo(data,c,subject)});};
  for(const room of data.rooms){const c=classes.find(c=>norm(c.name)===norm(room.label));if(!c)continue;for(const day of data.days)for(const slot of data.slots.filter(s=>!s.isBreak&&!s.teacherOnly)){const cell=data.sched[room.id+'_'+slot.id+'_'+day];if(cell?.subject&&(all||name&&[cell.teacher,cell.teacher2,cell.teacher3].some(v=>norm(v)===name)))add(c,cell.subject);}}
  for(const job of jobs){const c=classes.find(c=>c.id===job.classId);if(c&&job.kind==='subject'&&(all||job.teacherUid===actor.uid)&&job.subject)add(c,job.subject);}
- return [...result.values()].sort((a,b)=>a.subject.localeCompare(b.subject,'th')||a.className.localeCompare(b.className,'th',{numeric:true}));
+ return [...result.values()].sort((a,b)=>a.subjectCode.localeCompare(b.subjectCode,'th',{numeric:true})||a.subject.localeCompare(b.subject,'th')||a.className.localeCompare(b.className,'th',{numeric:true}));
 }
 function plan(data,room,subject,range){
  const result=new Map();for(let tick=Date.parse(range.from+'T00:00:00Z');tick<=Date.parse(range.to+'T00:00:00Z');tick+=86400000){const date=new Date(tick).toISOString().slice(0,10),weekday=new Date(tick).getUTCDay(),day=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'][weekday];if(!data.days.includes(day)||(data.exchangeTerm.excludedDates||[]).includes(date))continue;const table=effective(data,date);
@@ -31,15 +36,16 @@ function summarize({students,events,sessions,today,range}){
 function service(db,identity,repo,now=()=>new Date()){
  async function authorized(request){const p=await identity.resolve(request),caps=capabilities(p);if(!(caps?caps.readAll:p.active&&p.registered&&['admin','teacher','viewer'].includes(p.attendanceRole)))fail('ไม่มีสิทธิ์ดูรายงาน','permission-denied');return p;}
  return {async get(request,i){
-  const actor=await authorized(request);if(Object.keys(i).some(k=>!['method','year','term','classId','subject'].includes(k)))fail('คำขอไม่ถูกต้อง');
+  const actor=await authorized(request);if(Object.keys(i).some(k=>!['method','year','term','classId','subject','subjectCode'].includes(k)))fail('คำขอไม่ถูกต้อง');
   const current=await repo.read(),saved=await db.collection('timetable_report_terms').get(),terms=new Map(saved.docs.map(d=>[d.id,d.data()]));const currentKey=current.data.school.year+'_'+current.data.school.semester;terms.set(currentKey,{year:Number(current.data.school.year),term:Number(current.data.school.semester),version:current.version,...calendar(current.data)});
   const year=i.year===undefined?Number(current.data.school.year):i.year,term=i.term===undefined?Number(current.data.school.semester):i.term;
+  if(i.subjectCode!==undefined&&(typeof i.subjectCode!=='string'||i.subjectCode.length>80))fail('รหัสวิชาไม่ถูกต้อง');
   if(!Number.isInteger(year)||![1,2].includes(term))fail('ปีและภาคเรียนไม่ถูกต้อง');const source=terms.get(year+'_'+term);if(!source)fail('ยังไม่มีตารางสอนของภาคเรียนนี้','not-found');
   const data=year+'_'+term===currentKey?current.data:await repo.readVersion(source.version);
   if(Number(data.school.year)!==year||Number(data.school.semester)!==term)fail('ตารางสอนไม่ตรงกับภาคเรียน','failed-precondition');
   const [cs,js]=await Promise.all([db.collection('attendance_classes').get(),db.collection('attendance_assignments').get()]);const classes=cs.docs.map(d=>({id:d.id,...d.data()})).filter(c=>Number(c.academicYear)===year&&Number(c.term)===term),jobs=js.docs.map(d=>({id:d.id,...d.data()})),available=courses(data,classes,jobs,actor),range=calendar(data);
   if(i.method==='attendanceTermCatalog'){await authorized(request);return {year,term,terms:[...terms.values()].map(t=>({year:Number(t.year),term:Number(t.term)})).sort((a,b)=>b.year-a.year||b.term-a.term),range,courses:available};}
-  if(i.method!=='attendanceTermReport'||typeof i.classId!=='string'||typeof i.subject!=='string'||!available.some(c=>c.classId===i.classId&&c.subject===i.subject))fail('ไม่มีสิทธิ์ดูรายวิชาและห้องนี้','permission-denied');
+  if(i.method!=='attendanceTermReport'||typeof i.classId!=='string'||typeof i.subject!=='string'||!available.some(c=>c.classId===i.classId&&c.subject===i.subject&&(i.subjectCode===undefined||c.subjectCode===i.subjectCode)))fail('ไม่มีสิทธิ์ดูรายวิชาและห้องนี้','permission-denied');
   if(!range)fail('กรุณาให้ฝ่ายวิชาการกำหนดวันเปิด–ปิดภาคเรียนในระบบตารางสอนก่อน','failed-precondition');
   const roomClass=classes.find(c=>c.id===i.classId),room=data.rooms.find(r=>norm(r.label)===norm(roomClass.name));if(!room)fail('ไม่พบห้องในตารางสอน','failed-precondition');
   const sessions=plan(data,room,i.subject,range),today=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).format(now()),events=new Map(),roster=(await db.collection('attendance_classes/'+i.classId+'/students').get()).docs.map(d=>({id:d.id,...d.data()})).filter(s=>year+'_'+term!==currentKey||s.active!==false),studentIds=new Set(roster.map(s=>s.id)),tasks=[];
@@ -49,8 +55,8 @@ function service(db,identity,repo,now=()=>new Date()){
    for(const mark of marks.docs){const m=mark.data();if(!studentIds.has(mark.id)||m.classId!==i.classId||m.assignmentId!==job.id||!['present','late','leave','absent'].includes(m.status))continue;const k=key+'_'+mark.id,old=events.get(k),time=m.updatedAt?.toMillis?.()||0;const conflict=old&&time===old.time&&(old.conflict||old.status!==m.status);if(!old||time>old.time||time===old.time&&job.id>old.assignmentId)events.set(k,{status:m.status,time,assignmentId:job.id,leaveType:['sick','personal'].includes(m.leaveType)?m.leaveType:'',conflict:!!conflict});else if(conflict)old.conflict=true;}
   }));}
   await authorized(request);
-  const registered=(data.subjects||[]).filter(s=>s.name===i.subject),subjectInfo=registered.find(s=>s.grade===roomClass.name.split('/')[0])||(registered.length===1?registered[0]:null),teacherNames=[...new Set(data.days.flatMap(day=>data.slots.flatMap(slot=>{const cell=data.sched[room.id+'_'+slot.id+'_'+day];return cell?.subject===i.subject?[cell.teacher,cell.teacher2,cell.teacher3].filter(Boolean):[];})))];
-  return {year,term,range,schoolName:data.school.name||'',asOf:today,subjectCode:subjectInfo?.code||'',credits:subjectInfo?.credits??subjectInfo?.credit??null,teacherNames,lessons:[...sessions.values()].sort((a,b)=>a.date.localeCompare(b.date)||a.period-b.period),className:roomClass.name,subject:i.subject,threshold:70,total:sessions.size,outside,students:summarize({students:roster,events,sessions,today,range}).sort((a,b)=>a.number-b.number),sourceVersion:source.version,note:'คาบติดกันใช้ผลเช็คครั้งล่าสุดของทั้งช่วง · อิงตารางสอนของภาคเรียนนี้ รวมคาบเก่าที่มีผลเช็คชื่อและไม่นับคาบซ้ำ ไม่หักวันหยุดที่ยังไม่ได้กำหนดในตาราง'};
+  const info=courseInfo(data,roomClass,i.subject),teacherNames=[...new Set(data.days.flatMap(day=>data.slots.flatMap(slot=>{const cell=data.sched[room.id+'_'+slot.id+'_'+day];return cell?.subject===i.subject?[cell.teacher,cell.teacher2,cell.teacher3].filter(Boolean):[];})))];
+  return {year,term,range,schoolName:data.school.name||'',asOf:today,...info,teacherNames,lessons:[...sessions.values()].sort((a,b)=>a.date.localeCompare(b.date)||a.period-b.period),className:roomClass.name,subject:i.subject,threshold:70,total:sessions.size,outside,students:summarize({students:roster,events,sessions,today,range}).sort((a,b)=>a.number-b.number),sourceVersion:source.version,note:'คาบติดกันใช้ผลเช็คครั้งล่าสุดของทั้งช่วง · อิงตารางสอนของภาคเรียนนี้ รวมคาบเก่าที่มีผลเช็คชื่อและไม่นับคาบซ้ำ ไม่หักวันหยุดที่ยังไม่ได้กำหนดในตาราง'};
  }};
 }
-module.exports={calendar,courses,plan,summarize,service};
+module.exports={calendar,courseInfo,courses,plan,summarize,service};
