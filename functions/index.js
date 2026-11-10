@@ -3,6 +3,8 @@ const {onCall,HttpsError}=require('firebase-functions/v2/https');
 const {initializeApp,getApps}=require('firebase-admin/app');
 const {getFirestore,FieldValue,Timestamp}=require('firebase-admin/firestore');
 const {defineString}=require('firebase-functions/params');
+const {defineSecret}=require('firebase-functions/params');
+const TELEGRAM_BOT_TOKEN=defineSecret('TELEGRAM_BOT_TOKEN');
 const {getAuth}=require('firebase-admin/auth');
 const M=require('./model'),I=require('./identity'),{repository}=require('./storage');
 if(!getApps().length)initializeApp();const db=getFirestore(),stamp=()=>FieldValue.serverTimestamp(),identity=I.service(db,stamp),repo=repository(db,stamp),importSource=require('./migration').migration(db,repo,stamp);
@@ -17,6 +19,7 @@ async function source(){const [body,leave]=await Promise.all([legacy(LEGACY_API.
 const readiness=require('./readiness').service(db,identity,repo,getAuth(),stamp);
 const attendanceSchedule=require('./attendance-schedule').service(db,identity,repo,stamp,Timestamp);
 const morning=require('./morning').service(db,identity,repo,stamp,Timestamp);
+exports.schoolNotifications=onCall({...options,secrets:[TELEGRAM_BOT_TOKEN]},request=>handle(()=>require('./school-notifications').service(db,identity,repo,stamp,()=>TELEGRAM_BOT_TOKEN.value()).handle(request)));
 exports.schoolIdentity=audited('schoolIdentity',options,request=>handle(async()=>{const input=request.data||{};switch(input.method){case 'academicOverview':return require('./academic-overview').service(db,identity,repo).get(request,input);case 'regularAttendanceSession':case 'saveRegularAttendance':return require('./regular-attendance').service(db,identity,repo,Timestamp).handle(request,input);case 'attendanceSpecialReport':case 'attendanceTermCatalog':case 'attendanceTermReport':return require('./attendance-term-report').service(db,identity,repo).get(request,input);case 'morningClasses':case 'morningSession':case 'saveMorningSession':return morning.handle(request,input);case 'attendanceCatalog':return require('./attendance-catalog').service(db,identity,repo).get(request,input);case 'morningReport':return morning.handle(request,input);case 'attendanceHome':return require('./attendance-home').service(db,identity,repo).get(request,input);case 'attendanceSchedule':return attendanceSchedule.get(request,input);case 'readiness':return readiness.get(request);case 'reportReadiness':return readiness.report(request,input);case 'resolveProfile':return identity.resolve(request);case 'listUsers':return identity.list(request);case 'saveInvitation':return identity.saveInvite(request,input);case 'updateUser':return identity.updateUser(request,input);default:M.error('ไม่รองรับคำสั่งบัญชี');}}));
 exports.timetableApi=audited('timetableApi',options,request=>handle(async()=>{
  const input=request.data||{},method=input.method,p=await identity.resolve(request);
