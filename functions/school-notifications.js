@@ -5,10 +5,11 @@ const fail=(message,code='invalid-argument')=>{throw Object.assign(Error(message
 const hash=v=>require('node:crypto').createHash('sha256').update(JSON.stringify(v)).digest('hex');
 function counts(marks){const c={present:0,late:0,absent:0,leave:0};for(const m of marks){if(!(m.status in c))fail('ยังมีนักเรียนที่ไม่ได้เลือกสถานะ');c[m.status]++;}return c;}
 function morningText(date,room,students,byId){
+ const [year,month,day]=date.split('-');const displayDate=day+'/'+month+'/'+(Number(year)+543);
  const ordered=[...students].sort((a,b)=>Number(a.data().number||0)-Number(b.data().number||0)||a.id.localeCompare(b.id));
  const c=counts(ordered.map(s=>byId.get(s.id))),labels={late:'🕘 สาย',absent:'❌ ขาด',leave:'📝 ลา'};
  const lines=ordered.filter(s=>byId.get(s.id).status!=='present').map((s,index)=>{const mark=byId.get(s.id),note=String(mark.note||'').replace(/[\r\n]+/g,' ').trim();return `${index+1}. ${String(s.data().name||'ไม่ระบุชื่อ').replace(/[\r\n]+/g,' ')} : ${labels[mark.status]}${note?' ('+note+')':''}`;});
- return `📌 เช็คชื่อเข้าแถว วันที่ ${date}\n🏫 ห้อง ${room} นักเรียนทั้งหมด ${ordered.length} คน\n\n✅ มาเรียน ${c.present+c.late} คน (รวมมาสาย ${c.late} คน)\n❌ ไม่มาเรียน ${c.absent+c.leave} คน\n   ขาด ${c.absent} คน · ลา ${c.leave} คน\n\n📊 รายชื่อนักเรียนที่สาย / ขาด / ลา\n${lines.length?lines.join('\n'):'ไม่มีนักเรียนที่สาย / ขาด / ลา'}`;
+ return `📌 เช็คชื่อเข้าแถว วันที่ ${displayDate}\n🏫 ห้อง ${room} นักเรียนทั้งหมด ${ordered.length} คน\n\n✅ มาเรียน ${c.present+c.late} คน (รวมมาสาย ${c.late} คน)\n❌ ไม่มาเรียน ${c.absent+c.leave} คน\n   ขาด ${c.absent} คน · ลา ${c.leave} คน\n\n📊 รายชื่อนักเรียนที่สาย / ขาด / ลา\n${lines.length?lines.join('\n'):'ไม่มีนักเรียนที่สาย / ขาด / ลา'}`;
 }
 function messageParts(text){const parts=[];let current='';for(const line of text.split('\n')){if(line.length>3700)fail('ข้อความหนึ่งบรรทัดยาวเกินกำหนด');if(current.length+line.length+1>3700){parts.push(current);current='';}current+=(current?'\n':'')+line;}if(current)parts.push(current);return parts;}
 function service(db,identity,repo,stamp,token,transport=N.send){
